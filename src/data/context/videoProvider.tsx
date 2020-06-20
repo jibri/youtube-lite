@@ -90,7 +90,7 @@ const VideoProvider = ({ children }: any) => {
         })
       }
 
-      if (process.env.REACT_APP_DEV_MODE) {
+      if (process.env.REACT_APP_DEV_MODE === 'true') {
         const { FEED_VIDEOS } = await import('src/__mock__/feedVideos')
         setFeedVideos(FEED_VIDEOS)
       } else {

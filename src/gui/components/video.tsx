@@ -22,6 +22,8 @@ const Title = styled(Author)`
 `
 
 const Video = ({ video }: { video: gapi.client.youtube.PlaylistItem }) => (
+  // TODO fixe img width
+  // TODO show video duration
   <VideoWrapper key={video.id} href={`https://www.youtube.com/watch?v=${video.snippet?.resourceId?.videoId}`}>
     <img
       alt="youtube thumbnail"
