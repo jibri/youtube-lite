@@ -11,13 +11,9 @@ function Watchlist() {
   const { wlVideos, loadWatchList, deleteFromWatchlist } = useContext(VideoContext)
 
   const removeFromWatchlist = (video: gapi.client.youtube.PlaylistItem) => {
-    const request = gapi.client.youtube.playlistItems.delete({
+    gapi.client.youtube.playlistItems.delete({
       id: video.id || '',
-    })
-    request.execute((response) => {
-      if (handleError(response)) return
-      deleteFromWatchlist(video.id)
-    })
+    }).then(() => deleteFromWatchlist(video.id), handleError)
   }
 
   return (

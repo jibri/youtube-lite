@@ -10,26 +10,23 @@ function Login() {
 
   useEffect(() => {
     const loadPlaylists = (pageToken?: string) => {
-      const request = gapi.client.youtube.playlists.list({
+      gapi.client.youtube.playlists.list({
         part: "snippet,contentDetails",
         mine: true,
         pageToken,
-      })
-      request.execute((response) => {
-        if (handleError(response)) return
-
-        if (response.items?.length) {
+      }).then(response => {
+        const result = response.result
+        if (result.items?.length) {
           if (pageToken) {
-            setPlaylists(pl => pl.concat(response.items || []))
+            setPlaylists(pl => pl.concat(result.items || []))
           } else {
-            console.log(response.items)
-            setPlaylists(response.items)
+            setPlaylists(result.items)
           }
         }
-        if (response?.nextPageToken) {
-          loadPlaylists(response.nextPageToken)
+        if (result.nextPageToken) {
+          loadPlaylists(result.nextPageToken)
         }
-      })
+      }, handleError)
     }
     if (loggedIn) loadPlaylists()
   }, [loggedIn, handleError])

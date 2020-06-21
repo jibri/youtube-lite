@@ -12,7 +12,7 @@ function Feed() {
   const { handleError } = useContext(LoginContext)
 
   function addToWatchlist(video: gapi.client.youtube.PlaylistItem) {
-    const request = gapi.client.youtube.playlistItems.insert({
+    gapi.client.youtube.playlistItems.insert({
       part: "snippet",
       resource: {
         snippet: {
@@ -20,8 +20,7 @@ function Feed() {
           playlistId: PLAYLIST_ID
         }
       }
-    })
-    request.execute((response) => handleError(response))
+    }).then(undefined, handleError)
   }
 
   return (

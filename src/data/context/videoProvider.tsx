@@ -34,60 +34,52 @@ const VideoProvider = ({ children }: any) => {
     const doIt = async () => {
 
       const subs = (pageToken?: string) => {
-        const request = gapi.client.youtube.subscriptions.list({
+        setLoading(l => l + 1)
+        setTotalApiCall(c => c + 1)
+        gapi.client.youtube.subscriptions.list({
           part: "snippet",
           mine: true,
           maxResults: 50,
           pageToken: pageToken,
-        })
-        setLoading(l => l + 1)
-        setTotalApiCall(c => c + 1)
-        request.execute((response) => {
-          setLoading(l => l - 1)
-          if (handleError(response)) return
-
-          if (response?.items?.length) channels(response.items.map((sub) => sub.snippet?.resourceId?.channelId).join(","))
-          if (response?.nextPageToken) subs(response?.nextPageToken)
-        })
+        }).then(response => {
+          const result = response.result
+          if (result.items?.length) channels(result.items.map((sub) => sub.snippet?.resourceId?.channelId).join(","))
+          if (result.nextPageToken) subs(result.nextPageToken)
+        }, handleError)
+          .finally(() => setLoading(l => l - 1))
       }
 
       const channels = (chanIds: string) => {
-        const request = gapi.client.youtube.channels.list({
-          part: "contentDetails",
-          id: chanIds,
-        })
         setLoading(l => l + 1)
         setTotalApiCall(c => c + 1)
-        request.execute((response) => {
+        gapi.client.youtube.channels.list({
+          part: "contentDetails",
+          id: chanIds,
+        }).then(response => {
           setLoading(l => l - 1)
-          if (handleError(response)) return
-
-          response.items?.forEach(chan => {
+          response.result.items?.forEach(chan => {
             const playlistId = chan.contentDetails?.relatedPlaylists?.uploads
             if (playlistId) playlistItems(playlistId)
           })
-        })
+        }, handleError)
+          .finally(() => setLoading(l => l - 1))
       }
 
       const playlistItems = (playlistId: string) => {
-        const request = gapi.client.youtube.playlistItems.list({
+        setLoading(l => l + 1)
+        setTotalApiCall(c => c + 1)
+        gapi.client.youtube.playlistItems.list({
           part: "snippet",
           playlistId,
           maxResults: 10,
-        })
-        setLoading(l => l + 1)
-        setTotalApiCall(c => c + 1)
-        request.execute((response) => {
-          setLoading(l => l - 1)
-          if (handleError(response)) return
-
+        }).then(response => {
           setFeedVideos(videos => {
             const fiveDaysAgo = new Date()
             fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
-            const keepVideos = response.items?.filter(v => new Date(v.snippet?.publishedAt || '') > fiveDaysAgo)
+            const keepVideos = response.result.items?.filter(v => new Date(v.snippet?.publishedAt || '') > fiveDaysAgo)
             return videos.concat(keepVideos || [])
           })
-        })
+        }, handleError).finally(() => setLoading(l => l - 1))
       }
 
       if (process.env.REACT_APP_DEV_MODE === 'true') {
@@ -102,22 +94,19 @@ const VideoProvider = ({ children }: any) => {
 
   useEffect(() => {
     feedVideos.sort((v1, v2) => v2.snippet?.publishedAt?.localeCompare(v1.snippet?.publishedAt || '') || 0)
-    console.log('feedVideos', feedVideos)
   }, [feedVideos])
 
   const loadWatchList = async (pageToken?: string) => {
-    const request = gapi.client.youtube.playlistItems.list({
+    gapi.client.youtube.playlistItems.list({
       part: "snippet",
       playlistId: PLAYLIST_ID,
       pageToken,
-    })
-    request.execute((response) => {
-      if (handleError(response)) return
-
-      if (pageToken) setWlVideos(videos => videos.concat(response.items || []))
-      else setWlVideos(response.items || [])
-      if (response?.nextPageToken) loadWatchList(response.nextPageToken)
-    })
+    }).then(response => {
+      const result = response.result
+      if (pageToken) setWlVideos(videos => videos.concat(result.items || []))
+      else setWlVideos(result.items || [])
+      if (result.nextPageToken) loadWatchList(result.nextPageToken)
+    }, handleError)
   }
 
   const deleteFromWatchlist = (id?: string) => {

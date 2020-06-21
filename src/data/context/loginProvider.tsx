@@ -6,12 +6,12 @@ interface LoginData {
   googleAuth?: gapi.auth2.GoogleAuth
   error?: string
 
-  handleError: (response: any) => boolean
+  handleError: (reason: gapi.client.HttpRequestRejected) => void
 }
 
 const defaultData = {
   loggedIn: false,
-  handleError: () => false,
+  handleError: () => {/** */ },
 }
 
 const SCOPE = "https://www.googleapis.com/auth/youtube"
@@ -66,13 +66,9 @@ const LoginProvider = ({ children }: any) => {
 
   }, [googleAuth])
 
-  const handleError = useCallback((response: any) => {
-    if (response?.hasOwnProperty('code')) {
-      setError(`Erreur : ${response.error}`)
-      setTimeout(() => setError(undefined), 5000)
-      return true
-    }
-    return false
+  const handleError = useCallback((reason: gapi.client.HttpRequestRejected) => {
+    setError(`Error : ${reason.result.error.message}`)
+    setTimeout(() => setError(undefined), 5000)
   }, [])
 
   const values: LoginData = {
