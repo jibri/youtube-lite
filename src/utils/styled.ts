@@ -4,7 +4,7 @@ import { theme } from './theme'
 export const Loader = styled.div`
   height: 10px;
   width: 10px;
-  border: 3px solid ${theme.primary};
+  border: 3px solid ${theme.active};
   border-bottom-color: transparent;
   border-radius: 50%;
 
@@ -27,8 +27,10 @@ export const button = css`
   line-height: 3em;
   font-weight:bold;
   background-color: ${theme.primary};
+  cursor: pointer;
   :hover {
     background-color: ${theme.secondary};
+    color: ${theme.active};
   }
 `
 export const Button = styled.div`

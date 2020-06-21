@@ -5,22 +5,23 @@ import { VideoContext } from 'src/data/context/videoProvider'
 import Video from 'src/gui/components/video'
 import { VideoWrapper, ActionButton, Button } from 'src/utils/styled'
 import { LoginContext } from 'src/data/context/loginProvider'
+import { VideoItem } from 'src/utils/types'
 
 function Watchlist() {
   const { handleError } = useContext(LoginContext)
-  const { wlVideos, loadWatchList, deleteFromWatchlist } = useContext(VideoContext)
+  const { wlVideos, fetchWatchList, deleteFromWatchlist } = useContext(VideoContext)
 
-  const removeFromWatchlist = (video: gapi.client.youtube.PlaylistItem) => {
+  const removeFromWatchlist = (video: VideoItem) => {
     gapi.client.youtube.playlistItems.delete({
-      id: video.id || '',
-    }).then(() => deleteFromWatchlist(video.id), handleError)
+      id: video.playlistItem.id || '',
+    }).then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
   }
 
   return (
     <div>
-      <Button onClick={() => loadWatchList()}>Reload</Button>
+      <Button onClick={() => fetchWatchList()}>Reload</Button>
       {wlVideos.map(video => (
-        <VideoWrapper key={video.id}>
+        <VideoWrapper key={video.video.id}>
           <Video video={video} />
           <ActionButton onClick={e => removeFromWatchlist(video)}>
             <FontAwesomeIcon icon={faMinus} />

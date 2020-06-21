@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { theme } from 'src/utils/theme'
+import { VideoItem } from 'src/utils/types'
 
 const VideoWrapper = styled.a`
   display: flex;
@@ -20,20 +21,27 @@ const Title = styled(Author)`
   color: inherit;
   font-weight: bold;
 `
+const Image = styled.img`
+  flex: 0 0 110px;
+`
 
-const Video = ({ video }: { video: gapi.client.youtube.PlaylistItem }) => (
-  // TODO fixe img width
+const getTime = (duration?: string) => {
+  return duration?.replace('PT', '').replace('M', ':').replace('S', '')
+}
+
+const Video = ({ video }: { video: VideoItem }) => (
   // TODO show video duration
-  <VideoWrapper key={video.id} href={`https://www.youtube.com/watch?v=${video.snippet?.resourceId?.videoId}`}>
-    <img
+  <VideoWrapper key={video.video.id} href={`https://www.youtube.com/watch?v=${video.video.id}`}>
+    <Image
       alt="youtube thumbnail"
-      src={video.snippet?.thumbnails?.default?.url}
-      width={video.snippet?.thumbnails?.default?.width}
-      height={video.snippet?.thumbnails?.default?.height}
+      src={video.video.snippet?.thumbnails?.default?.url}
+      width={video.video.snippet?.thumbnails?.default?.width}
+      height={video.video.snippet?.thumbnails?.default?.height}
     />
     <div>
-      <Author>{video.snippet?.channelTitle}</Author>
-      <Title>{video.snippet?.title}</Title>
+      <Author>{video.video.snippet?.channelTitle}</Author>
+      <Title>{video.video.snippet?.title}</Title>
+      <div>{getTime(video.video.contentDetails?.duration)}</div>
     </div>
   </VideoWrapper>
 )

@@ -52,7 +52,6 @@ const LoginProvider = ({ children }: any) => {
 
       if (googleAuth) {
         var user = googleAuth.currentUser.get()
-        console.log("user connected", user)
         setLoggedIn(user.hasGrantedScopes(SCOPE))
       } else {
         setLoggedIn(false)

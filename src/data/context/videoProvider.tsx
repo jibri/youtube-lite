@@ -1,116 +1,133 @@
 import React, { createContext, useState, useEffect, useContext } from 'react'
 import { PLAYLIST_ID } from 'src/utils/constants'
 import { LoginContext } from './loginProvider'
+import { VideoItem } from 'src/utils/types'
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
 interface VideoData {
-  feedVideos: gapi.client.youtube.PlaylistItem[]
-  wlVideos: gapi.client.youtube.PlaylistItem[]
+  feedVideos: VideoItem[]
+  wlVideos: VideoItem[]
   loading: number
   totalApiCall: number
-  loadWatchList: (pageToken?: string) => void
-  deleteFromWatchlist: (id?: string) => void
+  fetchWatchList: (pageToken?: string) => void
+  fetchSubscriptions: () => void
+  deleteFromWatchlist: (playlistItemId?: string) => void
 }
 const defaultData: VideoData = {
   feedVideos: [],
   wlVideos: [],
   loading: 0,
   totalApiCall: 0,
-  loadWatchList: e => e,
+  fetchWatchList: e => e,
+  fetchSubscriptions: () => {/** */ },
   deleteFromWatchlist: e => e,
 }
 
 export const VideoContext = createContext<VideoData>(defaultData)
 
 const VideoProvider = ({ children }: any) => {
-  const [feedVideos, setFeedVideos] = useState<gapi.client.youtube.PlaylistItem[]>([])
-  const [wlVideos, setWlVideos] = useState<gapi.client.youtube.PlaylistItem[]>([])
+  const [feedVideos, setFeedVideos] = useState<VideoItem[]>([])
+  const [wlVideos, setWlVideos] = useState<VideoItem[]>([])
   const [loading, setLoading] = useState(0)
   const [totalApiCall, setTotalApiCall] = useState(0)
   const { handleError } = useContext(LoginContext)
 
   useEffect(() => {
-    const doIt = async () => {
-
-      const subs = (pageToken?: string) => {
-        setLoading(l => l + 1)
-        setTotalApiCall(c => c + 1)
-        gapi.client.youtube.subscriptions.list({
-          part: "snippet",
-          mine: true,
-          maxResults: 50,
-          pageToken: pageToken,
-        }).then(response => {
-          const result = response.result
-          if (result.items?.length) channels(result.items.map((sub) => sub.snippet?.resourceId?.channelId).join(","))
-          if (result.nextPageToken) subs(result.nextPageToken)
-        }, handleError)
-          .finally(() => setLoading(l => l - 1))
-      }
-
-      const channels = (chanIds: string) => {
-        setLoading(l => l + 1)
-        setTotalApiCall(c => c + 1)
-        gapi.client.youtube.channels.list({
-          part: "contentDetails",
-          id: chanIds,
-        }).then(response => {
-          setLoading(l => l - 1)
-          response.result.items?.forEach(chan => {
-            const playlistId = chan.contentDetails?.relatedPlaylists?.uploads
-            if (playlistId) playlistItems(playlistId)
-          })
-        }, handleError)
-          .finally(() => setLoading(l => l - 1))
-      }
-
-      const playlistItems = (playlistId: string) => {
-        setLoading(l => l + 1)
-        setTotalApiCall(c => c + 1)
-        gapi.client.youtube.playlistItems.list({
-          part: "snippet",
-          playlistId,
-          maxResults: 10,
-        }).then(response => {
-          setFeedVideos(videos => {
-            const fiveDaysAgo = new Date()
-            fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
-            const keepVideos = response.result.items?.filter(v => new Date(v.snippet?.publishedAt || '') > fiveDaysAgo)
-            return videos.concat(keepVideos || [])
-          })
-        }, handleError).finally(() => setLoading(l => l - 1))
-      }
-
-      if (process.env.REACT_APP_DEV_MODE === 'true') {
-        const { FEED_VIDEOS } = await import('src/__mock__/feedVideos')
-        setFeedVideos(FEED_VIDEOS)
-      } else {
-        subs()
-      }
-    }
-    doIt()
-  }, [handleError])
-
-  useEffect(() => {
-    feedVideos.sort((v1, v2) => v2.snippet?.publishedAt?.localeCompare(v1.snippet?.publishedAt || '') || 0)
+    feedVideos.sort((v1, v2) => v2.video?.snippet?.publishedAt?.localeCompare(v1.video?.snippet?.publishedAt || '') || 0)
   }, [feedVideos])
 
-  const loadWatchList = async (pageToken?: string) => {
+  const fetchSubscriptions = async (pageToken?: string) => {
+    if (process.env.REACT_APP_DEV_MODE === 'true') {
+      const { FEED_VIDEOS } = await import('src/__mock__/feedVideos')
+      for (let i = 0; i < 100; i++) {
+        setLoading(l => l + 1)
+        setTotalApiCall(c => c + 1)
+      }
+
+      setTimeout(() => {
+        setLoading(0)
+        setTotalApiCall(0)
+        setFeedVideos(FEED_VIDEOS)
+      }, 5000)
+    } else {
+      gapi.client.youtube.subscriptions.list({
+        part: "snippet",
+        mine: true,
+        maxResults: 50,
+        pageToken: pageToken,
+      }).then(response => {
+        const result = response.result
+        if (result.items?.length) fetchChannels(result.items.map((sub) => sub.snippet?.resourceId?.channelId).join(","))
+        if (result.nextPageToken) fetchSubscriptions(result.nextPageToken)
+      }, handleError)
+        .finally(() => setLoading(l => l - 1))
+    }
+  }
+
+  const fetchChannels = (chanIds: string) => {
+    setLoading(l => l + 1)
+    setTotalApiCall(c => c + 1)
+    gapi.client.youtube.channels.list({
+      part: "contentDetails",
+      id: chanIds,
+      maxResults: 50,
+    }).then(response => {
+      setLoading(l => l - 1)
+      response.result.items?.forEach(chan => {
+        const playlistId = chan.contentDetails?.relatedPlaylists?.uploads
+        if (playlistId) fetchPlaylistItems(playlistId)
+      })
+    }, handleError)
+      .finally(() => setLoading(l => l - 1))
+  }
+
+  const fetchPlaylistItems = (playlistId: string) => {
+    setLoading(l => l + 1)
+    setTotalApiCall(c => c + 1)
     gapi.client.youtube.playlistItems.list({
       part: "snippet",
-      playlistId: PLAYLIST_ID,
-      pageToken,
+      playlistId,
+      maxResults: 10,
     }).then(response => {
-      const result = response.result
-      if (pageToken) setWlVideos(videos => videos.concat(result.items || []))
-      else setWlVideos(result.items || [])
-      if (result.nextPageToken) loadWatchList(result.nextPageToken)
+      const fiveDaysAgo = new Date()
+      fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
+      const keepVideos = response.result.items?.filter(v => new Date(v.snippet?.publishedAt || '') > fiveDaysAgo)
+      fetchVideos(setFeedVideos, keepVideos || [])
+    }, handleError)
+      .finally(() => setLoading(l => l - 1))
+  }
+
+  const fetchVideos = (
+    setter: React.Dispatch<React.SetStateAction<VideoItem[]>>,
+    playlistItems: gapi.client.youtube.PlaylistItem[]
+  ) => {
+    gapi.client.youtube.videos.list({
+      part: 'snippet,contentDetails',
+      id: playlistItems.map(i => i.snippet?.resourceId?.videoId).join(','),
+      maxResults: 50,
+    }).then(response => {
+      setter(response.result.items?.map(v => ({
+        playlistItem: playlistItems.find(i => i.snippet?.resourceId?.videoId === v.id) || {},
+        video: v
+      })) || [])
     }, handleError)
   }
 
-  const deleteFromWatchlist = (id?: string) => {
-    setWlVideos(wl => wl.filter(v => v.id !== id))
+  const fetchWatchList = (pageToken?: string) => {
+    gapi.client.youtube.playlistItems.list({
+      part: "snippet",
+      playlistId: PLAYLIST_ID,
+      maxResults: 50,
+      pageToken,
+    }).then(response => {
+      fetchVideos(setWlVideos, response.result.items || [])
+      // TODO wxhat if we have more than 50 videos ?
+    }, handleError)
+  }
+
+  const deleteFromWatchlist = (playlistItemId?: string) => {
+    setWlVideos(wl => wl.filter(v => v.playlistItem.id !== playlistItemId))
   }
 
   const values: VideoData = {
@@ -118,7 +135,8 @@ const VideoProvider = ({ children }: any) => {
     wlVideos,
     loading,
     totalApiCall,
-    loadWatchList,
+    fetchWatchList,
+    fetchSubscriptions,
     deleteFromWatchlist,
   }
 

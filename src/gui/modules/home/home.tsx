@@ -10,7 +10,7 @@ import { theme } from 'src/utils/theme'
 
 const MainScreeen = styled.div`
   height: 100vh;
-  width: 100vw;
+  width: 100%;
 `
 const ContentWrapper = styled.div`
   margin-bottom: ${theme.footerHeigth};
