@@ -40,10 +40,8 @@ const VideoProvider = ({ children }: any) => {
   const fetchSubscriptions = async (pageToken?: string) => {
     if (process.env.REACT_APP_DEV_MODE === 'true') {
       const { FEED_VIDEOS } = await import('src/__mock__/feedVideos')
-      for (let i = 0; i < 100; i++) {
-        setLoading(l => l + 1)
-        setTotalApiCall(c => c + 1)
-      }
+      setLoading(100)
+      setTotalApiCall(120)
 
       setTimeout(() => {
         setLoading(0)
@@ -51,6 +49,9 @@ const VideoProvider = ({ children }: any) => {
         setFeedVideos(FEED_VIDEOS)
       }, 5000)
     } else {
+      if (!pageToken) setFeedVideos([])
+      setLoading(l => l + 1)
+      setTotalApiCall(c => c + 1)
       gapi.client.youtube.subscriptions.list({
         part: "snippet",
         mine: true,
@@ -61,7 +62,7 @@ const VideoProvider = ({ children }: any) => {
         if (result.items?.length) fetchChannels(result.items.map((sub) => sub.snippet?.resourceId?.channelId).join(","))
         if (result.nextPageToken) fetchSubscriptions(result.nextPageToken)
       }, handleError)
-        .finally(() => setLoading(l => l - 1))
+        .then(() => setLoading(l => l - 1))
     }
   }
 
@@ -73,13 +74,12 @@ const VideoProvider = ({ children }: any) => {
       id: chanIds,
       maxResults: 50,
     }).then(response => {
-      setLoading(l => l - 1)
       response.result.items?.forEach(chan => {
         const playlistId = chan.contentDetails?.relatedPlaylists?.uploads
         if (playlistId) fetchPlaylistItems(playlistId)
       })
     }, handleError)
-      .finally(() => setLoading(l => l - 1))
+      .then(() => setLoading(l => l - 1))
   }
 
   const fetchPlaylistItems = (playlistId: string) => {
@@ -95,7 +95,7 @@ const VideoProvider = ({ children }: any) => {
       const keepVideos = response.result.items?.filter(v => new Date(v.snippet?.publishedAt || '') > fiveDaysAgo)
       fetchVideos(setFeedVideos, keepVideos || [])
     }, handleError)
-      .finally(() => setLoading(l => l - 1))
+      .then(() => setLoading(l => l - 1))
   }
 
   const fetchVideos = (
@@ -107,14 +107,17 @@ const VideoProvider = ({ children }: any) => {
       id: playlistItems.map(i => i.snippet?.resourceId?.videoId).join(','),
       maxResults: 50,
     }).then(response => {
-      setter(response.result.items?.map(v => ({
-        playlistItem: playlistItems.find(i => i.snippet?.resourceId?.videoId === v.id) || {},
-        video: v
-      })) || [])
+      setter(currentVideos => {
+        return currentVideos.concat(response.result.items?.map(v => ({
+          playlistItem: playlistItems.find(i => i.snippet?.resourceId?.videoId === v.id) || {},
+          video: v
+        })) || [])
+      })
     }, handleError)
   }
 
   const fetchWatchList = (pageToken?: string) => {
+    if (!pageToken) setWlVideos([])
     gapi.client.youtube.playlistItems.list({
       part: "snippet",
       playlistId: PLAYLIST_ID,
@@ -122,7 +125,6 @@ const VideoProvider = ({ children }: any) => {
       pageToken,
     }).then(response => {
       fetchVideos(setWlVideos, response.result.items || [])
-      // TODO wxhat if we have more than 50 videos ?
     }, handleError)
   }
 

@@ -12,7 +12,7 @@ const FooterWrapper = styled.div`
   width: 100%;
   border-top: 1px solid #dddddd;
 `
-const ButtonLink = styled(Link) <{ active: boolean }>`
+const ButtonLink = styled(({ active, ...other }) => <Link {...other} />) <{ active: boolean }>`
   ${button}
   width: 35%;
   text-decoration: none;
