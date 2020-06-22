@@ -9,7 +9,6 @@ interface VideoData {
   feedVideos: VideoItem[]
   wlVideos: VideoItem[]
   loading: number
-  totalApiCall: number
   fetchWatchList: (pageToken?: string) => void
   fetchSubscriptions: () => void
   deleteFromWatchlist: (playlistItemId?: string) => void
@@ -18,7 +17,6 @@ const defaultData: VideoData = {
   feedVideos: [],
   wlVideos: [],
   loading: 0,
-  totalApiCall: 0,
   fetchWatchList: e => e,
   fetchSubscriptions: () => {/** */ },
   deleteFromWatchlist: e => e,
@@ -29,9 +27,7 @@ export const VideoContext = createContext<VideoData>(defaultData)
 const VideoProvider = ({ children }: any) => {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>([])
   const [wlVideos, setWlVideos] = useState<VideoItem[]>([])
-  const [loading, setLoading] = useState(0)
-  const [totalApiCall, setTotalApiCall] = useState(0)
-  const { handleError } = useContext(LoginContext)
+  const { handleError, loading, incLoading } = useContext(LoginContext)
 
   useEffect(() => {
     feedVideos.sort((v1, v2) => v2.video?.snippet?.publishedAt?.localeCompare(v1.video?.snippet?.publishedAt || '') || 0)
@@ -40,18 +36,14 @@ const VideoProvider = ({ children }: any) => {
   const fetchSubscriptions = async (pageToken?: string) => {
     if (process.env.REACT_APP_DEV_MODE === 'true') {
       const { FEED_VIDEOS } = await import('src/__mock__/feedVideos')
-      setLoading(100)
-      setTotalApiCall(120)
-
+      incLoading(1)
       setTimeout(() => {
-        setLoading(0)
-        setTotalApiCall(0)
+        incLoading(-1)
         setFeedVideos(FEED_VIDEOS)
       }, 5000)
     } else {
       if (!pageToken) setFeedVideos([])
-      setLoading(l => l + 1)
-      setTotalApiCall(c => c + 1)
+      incLoading(1)
       gapi.client.youtube.subscriptions.list({
         part: "snippet",
         mine: true,
@@ -62,13 +54,12 @@ const VideoProvider = ({ children }: any) => {
         if (result.items?.length) fetchChannels(result.items.map((sub) => sub.snippet?.resourceId?.channelId).join(","))
         if (result.nextPageToken) fetchSubscriptions(result.nextPageToken)
       }, handleError)
-        .then(() => setLoading(l => l - 1))
+        .then(() => incLoading(-1))
     }
   }
 
   const fetchChannels = (chanIds: string) => {
-    setLoading(l => l + 1)
-    setTotalApiCall(c => c + 1)
+    incLoading(1)
     gapi.client.youtube.channels.list({
       part: "contentDetails",
       id: chanIds,
@@ -79,12 +70,11 @@ const VideoProvider = ({ children }: any) => {
         if (playlistId) fetchPlaylistItems(playlistId)
       })
     }, handleError)
-      .then(() => setLoading(l => l - 1))
+      .then(() => incLoading(-1))
   }
 
   const fetchPlaylistItems = (playlistId: string) => {
-    setLoading(l => l + 1)
-    setTotalApiCall(c => c + 1)
+    incLoading(1)
     gapi.client.youtube.playlistItems.list({
       part: "snippet",
       playlistId,
@@ -95,13 +85,14 @@ const VideoProvider = ({ children }: any) => {
       const keepVideos = response.result.items?.filter(v => new Date(v.snippet?.publishedAt || '') > fiveDaysAgo)
       fetchVideos(setFeedVideos, keepVideos || [])
     }, handleError)
-      .then(() => setLoading(l => l - 1))
+      .then(() => incLoading(-1))
   }
 
   const fetchVideos = (
     setter: React.Dispatch<React.SetStateAction<VideoItem[]>>,
     playlistItems: gapi.client.youtube.PlaylistItem[]
   ) => {
+    incLoading(1)
     gapi.client.youtube.videos.list({
       part: 'snippet,contentDetails',
       id: playlistItems.map(i => i.snippet?.resourceId?.videoId).join(','),
@@ -114,10 +105,12 @@ const VideoProvider = ({ children }: any) => {
         })) || [])
       })
     }, handleError)
+      .then(() => incLoading(-1))
   }
 
   const fetchWatchList = (pageToken?: string) => {
     if (!pageToken) setWlVideos([])
+    incLoading(1)
     gapi.client.youtube.playlistItems.list({
       part: "snippet",
       playlistId: PLAYLIST_ID,
@@ -126,6 +119,7 @@ const VideoProvider = ({ children }: any) => {
     }).then(response => {
       fetchVideos(setWlVideos, response.result.items || [])
     }, handleError)
+      .then(() => incLoading(-1))
   }
 
   const deleteFromWatchlist = (playlistItemId?: string) => {
@@ -136,7 +130,6 @@ const VideoProvider = ({ children }: any) => {
     feedVideos,
     wlVideos,
     loading,
-    totalApiCall,
     fetchWatchList,
     fetchSubscriptions,
     deleteFromWatchlist,

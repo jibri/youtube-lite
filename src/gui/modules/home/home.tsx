@@ -7,6 +7,7 @@ import VideoProvider from 'src/data/context/videoProvider'
 import styled from 'styled-components'
 import Error from 'src/gui/components/error'
 import { theme } from 'src/utils/theme'
+import Loader from 'src/gui/components/loader'
 
 const MainScreeen = styled.div`
   height: 100vh;
@@ -17,7 +18,7 @@ const ContentWrapper = styled.div`
 `
 
 const Home = () => {
-  const { loggedIn, error } = useContext(LoginContext)
+  const { loggedIn, error, loading } = useContext(LoginContext)
 
   return (
     <MainScreeen>
@@ -27,6 +28,7 @@ const Home = () => {
             <ContentWrapper>
               <Router />
             </ContentWrapper>
+            {loading > 0 && <Loader />}
             <Footer />
           </VideoProvider>
         ) : <Login />

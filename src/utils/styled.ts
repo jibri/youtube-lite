@@ -1,19 +1,6 @@
 import styled, { css } from 'styled-components'
 import { theme } from './theme'
 
-export const Loader = styled.div`
-  height: 10px;
-  width: 10px;
-  border: 3px solid ${theme.active};
-  border-bottom-color: transparent;
-  border-radius: 50%;
-
-  animation: goRound 1s infinite linear;
-  @keyframes goRound {
-    from { transform: rotate(0); }
-    to { transform: rotate(360deg); }
-  }
-`
 export const Flex = styled.div<{ jc?: string, ai?: string, fw?: string }>`
   display: flex;
   justify-content: ${p => p.jc};

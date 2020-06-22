@@ -5,13 +5,17 @@ interface LoginData {
   loggedIn: boolean
   googleAuth?: gapi.auth2.GoogleAuth
   error?: string
+  loading: number
 
   handleError: (reason: gapi.client.HttpRequestRejected) => void
+  incLoading: (inc: number) => void
 }
 
 const defaultData = {
   loggedIn: false,
+  loading: 0,
   handleError: () => {/** */ },
+  incLoading: () => {/** */ },
 }
 
 const SCOPE = "https://www.googleapis.com/auth/youtube"
@@ -22,6 +26,7 @@ const LoginProvider = ({ children }: any) => {
   const [loggedIn, setLoggedIn] = useState(false)
   const [googleAuth, setGoogleAuth] = useState<gapi.auth2.GoogleAuth>()
   const [error, setError] = useState<string>()
+  const [loading, setLoading] = useState(0)
 
   useEffect(() => {
 
@@ -70,11 +75,15 @@ const LoginProvider = ({ children }: any) => {
     setTimeout(() => setError(undefined), 5000)
   }, [])
 
+  const incLoading = (inc: number) => setLoading(l => l + inc)
+
   const values: LoginData = {
     loggedIn,
     googleAuth,
     error,
+    loading,
     handleError,
+    incLoading,
   }
 
   return <LoginContext.Provider value={values} > {children} </LoginContext.Provider>
