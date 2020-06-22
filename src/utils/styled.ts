@@ -20,8 +20,11 @@ export const button = css`
     color: ${theme.active};
   }
 `
-export const Button = styled.div`
+export const TopButton = styled.div`
   ${button}
+  position: relative;
+  z-index: ${theme.zIndex.header};
+  box-shadow: 0 0 5px #00000055;
 `
 export const ActionButton = styled(Flex).attrs(() => ({ ai: 'center' }))`
   font-weight: bold;
@@ -32,6 +35,7 @@ export const ActionButton = styled(Flex).attrs(() => ({ ai: 'center' }))`
   cursor: pointer;
   &:hover {
     background-color: ${theme.secondary};
+    color: ${theme.active};
   }
 `
 export const VideoWrapper = styled(Flex)`

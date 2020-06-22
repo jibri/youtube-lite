@@ -10,13 +10,14 @@ const FooterWrapper = styled.div`
   bottom: 0;
   display: flex;
   width: 100%;
-  border-top: 1px solid #dddddd;
+  box-shadow: 0 0 5px #00000055;
+  z-index: ${theme.zIndex.footer};
 `
 const ButtonLink = styled(NavLink)`
   ${button}
   width: 35%;
   text-decoration: none;
-  border-top: 2px solid ${theme.primary};
+  border-top: 2px solid transparent;
   
   &.active {
     border-color: ${theme.active};

@@ -6,10 +6,11 @@ let GoogleAuth: gapi.auth2.GoogleAuth
 
 function Login() {
   const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>([])
-  const { loggedIn, googleAuth, handleError } = useContext(LoginContext)
+  const { loggedIn, googleAuth, handleError, incLoading } = useContext(LoginContext)
 
   useEffect(() => {
     const loadPlaylists = (pageToken?: string) => {
+      incLoading(1)
       gapi.client.youtube.playlists.list({
         part: "snippet,contentDetails",
         mine: true,
@@ -27,9 +28,10 @@ function Login() {
           loadPlaylists(result.nextPageToken)
         }
       }, handleError)
+        .then(() => incLoading(-1))
     }
     if (loggedIn) loadPlaylists()
-  }, [loggedIn, handleError])
+  }, [loggedIn, handleError, incLoading])
 
   function handleAuthClick() {
     if (googleAuth?.isSignedIn.get()) {

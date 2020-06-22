@@ -9,7 +9,11 @@ export const theme = {
     light: '#666666',
     main: '#333333',
   },
-
+  zIndex: {
+    header: 1000,
+    footer: 1000,
+    popup: 2000,
+  },
   // Misc
   footerHeigth: '3em',
 }

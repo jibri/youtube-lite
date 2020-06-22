@@ -75,7 +75,7 @@ const LoginProvider = ({ children }: any) => {
     setTimeout(() => setError(undefined), 5000)
   }, [])
 
-  const incLoading = (inc: number) => setLoading(l => l + inc)
+  const incLoading = useCallback((inc: number) => setLoading(l => l + inc), [])
 
   const values: LoginData = {
     loggedIn,
