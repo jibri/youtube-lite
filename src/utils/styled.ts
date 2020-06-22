@@ -1,11 +1,12 @@
 import styled, { css } from 'styled-components'
 import { theme } from './theme'
 
-export const Flex = styled.div<{ jc?: string, ai?: string, fw?: string }>`
+export const Flex = styled.div<{ jc?: string, ai?: string, fw?: string, fd?: string }>`
   display: flex;
   justify-content: ${p => p.jc};
   align-items: ${p => p.ai};
   flex-wrap: ${p => p.fw};
+  flex-direction: ${p => p.fd};
 `
 export const button = css`
   color: ${theme.text.main};
@@ -26,12 +27,11 @@ export const TopButton = styled.div`
   z-index: ${theme.zIndex.header};
   box-shadow: 0 0 5px #00000055;
 `
-export const ActionButton = styled(Flex).attrs(() => ({ ai: 'center' }))`
-  font-weight: bold;
-  font-size: 2em;
+export const ActionButton = styled(Flex).attrs(() => ({ ai: 'center' })) <{ height?: string }>`
   background-color: ${theme.primary};
-  padding: 5px;
+  padding: 0 10px;
   border-left: 1px solid #dddddd;
+  height: ${p => p.height};
   cursor: pointer;
   &:hover {
     background-color: ${theme.secondary};
@@ -40,7 +40,6 @@ export const ActionButton = styled(Flex).attrs(() => ({ ai: 'center' }))`
 `
 export const VideoWrapper = styled(Flex)`
   margin-bottom: 1px;
-  width: 100%;
   cursor: pointer;
   &:hover {
     background-color: ${theme.secondary};

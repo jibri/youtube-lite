@@ -9,9 +9,11 @@ interface VideoData {
   feedVideos: VideoItem[]
   wlVideos: VideoItem[]
   loading: number
+  player?: string
   fetchWatchList: (pageToken?: string) => void
   fetchSubscriptions: () => void
   deleteFromWatchlist: (playlistItemId?: string) => void
+  setPlayer: React.Dispatch<React.SetStateAction<string | undefined>>
 }
 const defaultData: VideoData = {
   feedVideos: [],
@@ -20,6 +22,7 @@ const defaultData: VideoData = {
   fetchWatchList: e => e,
   fetchSubscriptions: () => {/** */ },
   deleteFromWatchlist: e => e,
+  setPlayer: e => e,
 }
 
 export const VideoContext = createContext<VideoData>(defaultData)
@@ -27,6 +30,7 @@ export const VideoContext = createContext<VideoData>(defaultData)
 const VideoProvider = ({ children }: any) => {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>([])
   const [wlVideos, setWlVideos] = useState<VideoItem[]>([])
+  const [player, setPlayer] = useState<string>()
   const { handleError, loading, incLoading } = useContext(LoginContext)
 
   useEffect(() => {
@@ -94,10 +98,11 @@ const VideoProvider = ({ children }: any) => {
   ) => {
     incLoading(1)
     gapi.client.youtube.videos.list({
-      part: 'snippet,contentDetails',
+      part: 'snippet,contentDetails,player',
       id: playlistItems.map(i => i.snippet?.resourceId?.videoId).join(','),
       maxResults: 50,
     }).then(response => {
+      console.log('videos', response.result.items)
       setter(currentVideos => {
         return currentVideos.concat(response.result.items?.map(v => ({
           playlistItem: playlistItems.find(i => i.snippet?.resourceId?.videoId === v.id) || {},
@@ -130,6 +135,8 @@ const VideoProvider = ({ children }: any) => {
     feedVideos,
     wlVideos,
     loading,
+    player,
+    setPlayer,
     fetchWatchList,
     fetchSubscriptions,
     deleteFromWatchlist,

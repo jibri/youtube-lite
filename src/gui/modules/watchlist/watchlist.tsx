@@ -1,6 +1,6 @@
 import React, { useContext } from "react"
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faMinus, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
+import { faTrash, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
 import { VideoContext } from 'src/data/context/videoProvider'
 import Video from 'src/gui/components/video'
 import { VideoWrapper, ActionButton, TopButton } from 'src/utils/styled'
@@ -35,10 +35,10 @@ function Watchlist() {
         <VideoWrapper key={video.video.id}>
           <Video video={video} />
           <div>
-            <ActionButton onClick={e => removeFromWatchlist(video)}>
-              <FontAwesomeIcon icon={faMinus} />
+            <ActionButton onClick={e => removeFromWatchlist(video)} height="50%">
+              <FontAwesomeIcon icon={faTrash} />
             </ActionButton>
-            <ActionButton onClick={() => likeVideo(video)}>
+            <ActionButton onClick={() => likeVideo(video)} height="50%">
               <FontAwesomeIcon icon={faThumbsUp} />
             </ActionButton>
           </div>
