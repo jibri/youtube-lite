@@ -7,12 +7,13 @@ const Wrapper = styled.div<{ error: boolean }>`
   bottom: 0;
   left: 0;
   width: 100vw;
+  z-index: ${theme.zIndex.popup};
 
   display: flex;
   align-items: center;
 
   background-color: ${theme.black};
-  color: ${theme.text};
+  color: ${theme.white};
 
   transition: all 0.3s ease;
   padding: ${p => p.error ? '5px 0' : 0};
