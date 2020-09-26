@@ -17,7 +17,7 @@ const Wrapper = styled.div<{ error: boolean }>`
 
   transition: all 0.3s ease;
   padding: ${p => p.error ? '5px 0' : 0};
-  height: ${p => p.error ? '2em' : 0};
+  min-height: ${p => p.error ? '2em' : 0};
   opacity: ${p => p.error ? 1 : 0};
 
 `

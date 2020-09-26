@@ -34,7 +34,7 @@ const getTime = (duration?: string) => {
 }
 
 const Video = ({ video }: { video: VideoItem }) => {
-  const { setPlayer } = useContext(VideoContext)
+  const { playVideo } = useContext(VideoContext)
   return (
     <VideoWrapper key={video.video.id}>
       <Image
@@ -42,7 +42,7 @@ const Video = ({ video }: { video: VideoItem }) => {
         src={video.video.snippet?.thumbnails?.default?.url}
         width={video.video.snippet?.thumbnails?.default?.width}
         height={video.video.snippet?.thumbnails?.default?.height}
-        onClick={() => setPlayer(video.video.id)}
+        onClick={() => playVideo(video)}
       />
       <LinkWrapper href={`https://www.youtube.com/watch?v=${video.video.id}`}>
         <Author>{video.video.snippet?.channelTitle}</Author>

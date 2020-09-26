@@ -11,9 +11,8 @@ export const theme = {
   },
   zIndex: {
     header: 1000,
-    footer: 1000,
     popup: 2000,
   },
   // Misc
-  footerHeigth: '3em',
+  headerHeigth: '3em',
 }

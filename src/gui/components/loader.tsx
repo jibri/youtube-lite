@@ -2,7 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { theme } from 'src/utils/theme'
 
-
+/*
 export const Spinner = styled.div`
 height: 50px;
 width: 50px;
@@ -28,10 +28,24 @@ const Overlay = styled.div`
   justify-content: center;
   align-items: center;
 `
-
+*/
+export const LoadingBar = styled.div`
+  position: fixed;
+  z-index: ${theme.zIndex.popup};
+  height: 3px;
+  width: 15%;
+  background-color: ${theme.active};
+  animation: run 1s infinite linear;
+    @keyframes run {
+      0% { margin-left: 0; width: 5%; }
+      50% { margin-left: 40%; width: 35%; }
+      90% { margin-left: 85%;  width: 15%; }
+      100% { margin-left: 100%;  width: 0%; }
+    }
+`
 const Loader = () => (
-  <Overlay>
-    <Spinner />
-  </Overlay>
+  <div>
+    <LoadingBar />
+  </div>
 )
 export default Loader

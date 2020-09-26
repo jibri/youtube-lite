@@ -8,44 +8,29 @@ import styled from 'styled-components'
 import Error from 'src/gui/components/error'
 import { theme } from 'src/utils/theme'
 import Loader from 'src/gui/components/loader'
-import { TopButton } from 'src/utils/styled'
+import Player from 'src/gui/components/player'
+import Header from '../layout/header'
 
 const MainScreeen = styled.div`
   min-height: 100vh;
   width: 100%;
 `
 const ContentWrapper = styled.div`
-  margin-bottom: ${theme.footerHeigth};
-`
-const IFrameWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  z-index: ${theme.zIndex.popup};
+  margin: ${theme.headerHeigth} 0;
 `
 
 const VideoModule = () => {
   const { loading } = useContext(LoginContext)
-  const { player, setPlayer } = useContext(VideoContext)
+  const { videoPlaying } = useContext(VideoContext)
+
   return (
     <>
-      {player && (
-        <IFrameWrapper>
-          <iframe
-            title="video_player"
-            width="100%"
-            height="270"
-            src={`//www.youtube.com/embed/${player}`}
-            frameBorder="0"
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-          <TopButton onClick={() => setPlayer(undefined)}>Close</TopButton>
-        </IFrameWrapper>
-      )}
+      {videoPlaying && <Player video={videoPlaying} />}
+      <Header />
       <ContentWrapper>
+        {loading > 0 && <Loader />}
         <Router />
       </ContentWrapper>
-      {loading > 0 && <Loader />}
       <Footer />
     </>
   )

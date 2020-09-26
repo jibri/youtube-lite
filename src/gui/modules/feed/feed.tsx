@@ -3,13 +3,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { VideoContext } from 'src/data/context/videoProvider'
 import Video from 'src/gui/components/video'
-import { PLAYLIST_ID } from 'src/utils/constants'
-import { VideoWrapper, ActionButton, TopButton } from 'src/utils/styled'
+import { DEFAULT_PLAYLIST_ID } from 'src/utils/constants'
+import { VideoWrapper, ActionButton } from 'src/utils/styled'
 import { LoginContext } from 'src/data/context/loginProvider'
 import { VideoItem } from 'src/utils/types'
 
 function Feed() {
-  const { feedVideos, fetchSubscriptions } = useContext(VideoContext)
+  const { feedVideos } = useContext(VideoContext)
   const { handleError, incLoading } = useContext(LoginContext)
 
   function addToWatchlist(video: VideoItem) {
@@ -19,7 +19,7 @@ function Feed() {
       resource: {
         snippet: {
           resourceId: video.playlistItem.snippet?.resourceId,
-          playlistId: PLAYLIST_ID
+          playlistId: DEFAULT_PLAYLIST_ID
         }
       }
     }).then(undefined, handleError)
@@ -27,8 +27,7 @@ function Feed() {
   }
 
   return (
-    <div>
-      <TopButton onClick={() => fetchSubscriptions()}>Reload</TopButton>
+    <>
       {feedVideos.map(video => (
         <VideoWrapper key={video.video.id}>
           <Video video={video} />
@@ -37,7 +36,7 @@ function Feed() {
           </ActionButton>
         </VideoWrapper>
       ))}
-    </div>
+    </>
   )
 }
 

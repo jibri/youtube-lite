@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, useCallback } from 'react'
+import { defaultHeaderComponents, HeaderComponentsType } from 'src/router/path'
 import { API_KEY } from 'src/utils/constants'
 
 interface LoginData {
@@ -6,16 +7,20 @@ interface LoginData {
   googleAuth?: gapi.auth2.GoogleAuth
   error?: string
   loading: number
+  headerComponents: HeaderComponentsType
 
   handleError: (reason: gapi.client.HttpRequestRejected) => void
   incLoading: (inc: number) => void
+  setHeaderComponents: React.Dispatch<React.SetStateAction<HeaderComponentsType>>
 }
 
 const defaultData = {
   loggedIn: false,
   loading: 0,
+  headerComponents: defaultHeaderComponents,
   handleError: () => {/** */ },
   incLoading: () => {/** */ },
+  setHeaderComponents: () => {/** */ },
 }
 
 const SCOPE = "https://www.googleapis.com/auth/youtube"
@@ -27,6 +32,9 @@ const LoginProvider = ({ children }: any) => {
   const [googleAuth, setGoogleAuth] = useState<gapi.auth2.GoogleAuth>()
   const [error, setError] = useState<string>()
   const [loading, setLoading] = useState(0)
+  const [totalCalls, setTotalCalls] = useState(0)
+  const [headerComponents, setHeaderComponents] = useState<HeaderComponentsType>(defaultHeaderComponents)
+
 
   useEffect(() => {
 
@@ -70,22 +78,29 @@ const LoginProvider = ({ children }: any) => {
 
   }, [googleAuth])
 
+  useEffect(() => console.log('totalCalls', totalCalls), [totalCalls])
+
   const handleError = useCallback((reason: gapi.client.HttpRequestRejected) => {
     setError(`Error : ${reason.result.error.message}`)
     setTimeout(() => setError(undefined), 5000)
   }, [])
 
-  const incLoading = useCallback((inc: number) => setLoading(l => l + inc), [])
+  const incLoading = useCallback((inc: number) => {
+    setLoading(l => l + inc)
+    if (inc === 1) setTotalCalls(c => c + 1)
+  }, [])
 
   const values: LoginData = {
     loggedIn,
     googleAuth,
     error,
     loading,
+    headerComponents,
     handleError,
     incLoading,
+    setHeaderComponents
   }
 
-  return <LoginContext.Provider value={values} > {children} </LoginContext.Provider>
+  return <LoginContext.Provider value={values}>{children}</LoginContext.Provider>
 }
 export default LoginProvider

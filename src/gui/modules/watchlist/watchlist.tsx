@@ -3,13 +3,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faThumbsUp } from '@fortawesome/free-solid-svg-icons'
 import { VideoContext } from 'src/data/context/videoProvider'
 import Video from 'src/gui/components/video'
-import { VideoWrapper, ActionButton, TopButton } from 'src/utils/styled'
+import { VideoWrapper, ActionButton } from 'src/utils/styled'
 import { LoginContext } from 'src/data/context/loginProvider'
 import { VideoItem } from 'src/utils/types'
 
 function Watchlist() {
   const { handleError, incLoading } = useContext(LoginContext)
-  const { wlVideos, fetchWatchList, deleteFromWatchlist } = useContext(VideoContext)
+  const { wlVideos, deleteFromWatchlist } = useContext(VideoContext)
 
   const removeFromWatchlist = (video: VideoItem) => {
     incLoading(1)
@@ -25,12 +25,14 @@ function Watchlist() {
       id: video.video.id || '',
       rating: 'like',
     }).then(undefined, handleError)
-      .then(() => incLoading(-1))
+      .then(() => {
+        incLoading(-1)
+        removeFromWatchlist(video)
+      })
   }
 
   return (
-    <div>
-      <TopButton onClick={() => fetchWatchList()}>Reload</TopButton>
+    <>
       {wlVideos.map(video => (
         <VideoWrapper key={video.video.id}>
           <Video video={video} />
@@ -44,7 +46,7 @@ function Watchlist() {
           </div>
         </VideoWrapper>
       ))}
-    </div>
+    </>
   )
 }
 export default Watchlist
