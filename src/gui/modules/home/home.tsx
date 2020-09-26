@@ -25,10 +25,10 @@ const VideoModule = () => {
 
   return (
     <>
-      {videoPlaying && <Player video={videoPlaying} />}
+      {loading > 0 && <Loader />}
       <Header />
+      {videoPlaying && <Player video={videoPlaying} />}
       <ContentWrapper>
-        {loading > 0 && <Loader />}
         <Router />
       </ContentWrapper>
       <Footer />

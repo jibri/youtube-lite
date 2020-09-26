@@ -31,6 +31,7 @@ const Overlay = styled.div`
 */
 export const LoadingBar = styled.div`
   position: fixed;
+  top: 0;
   z-index: ${theme.zIndex.popup};
   height: 3px;
   width: 15%;
@@ -44,8 +45,6 @@ export const LoadingBar = styled.div`
     }
 `
 const Loader = () => (
-  <div>
-    <LoadingBar />
-  </div>
+  <LoadingBar />
 )
 export default Loader
