@@ -10,20 +10,17 @@ export const Flex = styled.div<{ jc?: string, ai?: string, fw?: string, fd?: str
   flex-wrap: ${p => p.fw};
   flex-direction: ${p => p.fd};
 `
-const FixedLayout = styled.div<{ top: boolean }>`
+const FixedLayout = styled.div<{ bottom?: boolean }>`
   position: fixed;
   display: flex;
   width: 100%;
   box-shadow: 0 0 5px #00000055;
   z-index: ${theme.zIndex.header};
   
-  ${props => props.top
-    ? css`top: 0;`
-    : css`bottom: 0;`
-  }
+  ${props => props.bottom && css`bottom: 0;`}
 `
-export const HeaderWrapper = (props: any) => <FixedLayout top={true} {...props} />
-export const FooterWrapper = (props: any) => <FixedLayout top={false} {...props} />
+export const HeaderWrapper = (props: any) => <FixedLayout {...props} />
+export const FooterWrapper = (props: any) => <FixedLayout bottom={true}  {...props} />
 
 export const button = css`
   color: ${theme.text.main};

@@ -10,9 +10,12 @@ export const theme = {
     main: '#333333',
   },
   zIndex: {
-    header: 1000,
-    popup: 2000,
+    player: 1000,
+    header: 3000,
+    popup: 9000,
+    loader: 9999,
   },
   // Misc
   headerHeigth: '3em',
+  playerHeight: '270px',
 }

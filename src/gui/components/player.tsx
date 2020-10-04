@@ -6,8 +6,8 @@ import { VideoContext } from 'src/data/context/videoProvider'
 
 const IFrameWrapper = styled.div`
   position: sticky;
-  top: ${theme.headerHeigth};
-  z-index: ${theme.zIndex.popup};
+  top: 0;
+  z-index: ${theme.zIndex.player};
   background-color: ${theme.white};
 `
 
@@ -28,7 +28,7 @@ const Player = ({ video }: { video: VideoItem }) => {
     if (readyPlayerOne.current && video.video.id) player.current?.loadVideoById(video.video.id)
     else {
       player.current = new window.YT.Player(`video_player`, {
-        height: '270',
+        height: theme.playerHeight,
         width: '100%',
         videoId: video.video.id,
         playerVars: {

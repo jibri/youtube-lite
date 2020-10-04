@@ -16,7 +16,7 @@ const Header = () => {
       {headerComponents[location.pathname as PATHS]?.map(component => {
         switch (component) {
           case HeaderComponents.FEED_RELOAD_BTN:
-            return <TopButton onClick={() => fetchSubscriptions()}> Reload</TopButton >
+            return <TopButton onClick={() => fetchSubscriptions()}>Reload</TopButton >
           case HeaderComponents.WL_RELOAD_BTN:
             return <TopButton onClick={() => fetchWatchList()}>Reload</TopButton>
           case HeaderComponents.CLOSE_BTN:

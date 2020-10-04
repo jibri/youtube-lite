@@ -16,7 +16,7 @@ const MainScreeen = styled.div`
   width: 100%;
 `
 const ContentWrapper = styled.div`
-  margin: ${theme.headerHeigth} 0;
+  padding: ${theme.headerHeigth} 0;
 `
 
 const VideoModule = () => {
@@ -26,8 +26,8 @@ const VideoModule = () => {
   return (
     <>
       {loading > 0 && <Loader />}
-      <Header />
       {videoPlaying && <Player video={videoPlaying} />}
+      <Header />
       <ContentWrapper>
         <Router />
       </ContentWrapper>
