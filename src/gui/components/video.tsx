@@ -1,21 +1,22 @@
 import React, { useContext } from 'react'
 import styled from 'styled-components'
-import { theme } from 'src/utils/theme'
 import { VideoItem } from 'src/utils/types'
 import { VideoContext } from 'src/data/context/videoProvider'
 
 const VideoWrapper = styled.div`
   display: flex;
   width: 100%;
+  *:hover {
+    color: ${props => props.theme.active};
+  }
 `
 const LinkWrapper = styled.a`
   text-decoration: none;
-  color: ${theme.text.main};
   width: 100%;
+  color: ${props => props.theme.text.main};
 `
 const Author = styled.h6`
   font-size: 0.8em;
-  color: ${theme.text.light};
   font-weight: initial;
   margin: 0;
   padding: 0;

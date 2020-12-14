@@ -1,10 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { theme } from 'src/utils/theme'
 import { LoginContext } from 'src/data/context/loginProvider'
 import { VideoContext } from 'src/data/context/videoProvider'
 import { Link } from 'react-router-dom'
 import { PATHS } from 'src/router/path'
+import { ActionButton, Text } from 'src/utils/styled'
+import { useMyTheme } from 'src/data/context/ThemeProvider'
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -16,7 +17,8 @@ const YoutubeButton = styled.a`
   border-radius: 5px;
   margin: 1em;
   padding: 1em;
-  background-color: ${theme.primary};
+  background-color: ${props => props.theme.primary};
+  max-width: 300px;
   
   text-decoration: none;
   color: inherit;
@@ -36,7 +38,7 @@ const PlaylistItem = styled(Link)`
   border-radius: 5px;
   margin-left: 0.5em;
   padding: 0.5em;
-  background-color: ${theme.primary};
+  background-color: ${props => props.theme.primary};
 
   text-decoration: none;
   color: inherit;
@@ -46,6 +48,7 @@ function Login() {
   const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>([])
   const { loggedIn, googleAuth, handleError, incLoading } = useContext(LoginContext)
   const { setPlaylistId } = useContext(VideoContext)
+  const { dark, light } = useMyTheme()
 
   useEffect(() => {
     const loadPlaylists = (pageToken?: string) => {
@@ -93,13 +96,13 @@ function Login() {
   return (
     <div>
       {!googleAuth
-        ? 'Waiting for auth initialization...'
+        ? <Text>Waiting for auth initialization...</Text>
         : (
           <>
             <div>
               {loggedIn
-                ? "You are currently signed in and have granted access to this app."
-                : "You have not authorized this app or you are signed out."}
+                ? <Text>You are currently signed in and have granted access to this app.</Text>
+                : <Text>You have not authorized this app or you are signed out.</Text>}
             </div>
             <button onClick={handleAuthClick}>
               {loggedIn ? "Sign out" : "Sign In/Authorize"}
@@ -107,12 +110,19 @@ function Login() {
             {loggedIn && <button onClick={revokeAccess}>Revoke access</button>}
             <YoutubeButton href="http://youtube.com" target="_blank" rel="noopener">
               <img src={`${process.env.PUBLIC_URL}/logo192.png`} width="100px" alt="Logo Youtube-lite" />
-              <span>Go to Youtube</span>
+              <Text>Go to Youtube</Text>
             </YoutubeButton>
             <div>
-              My playlists :
+              <Text>My playlists :</Text>
               <PlaylistItems>
-                {playlists.map(pl => <PlaylistItem to={PATHS.WATCHLIST} onClick={() => updatePlaylist(pl.id)} key={pl.id}>{pl.snippet?.title}</PlaylistItem>)}
+                {playlists.map(pl => <PlaylistItem to={PATHS.WATCHLIST} onClick={() => updatePlaylist(pl.id)} key={pl.id}><Text>{pl.snippet?.title}</Text></PlaylistItem>)}
+              </PlaylistItems>
+            </div>
+            <div>
+              <Text>Theme :</Text>
+              <PlaylistItems>
+                <ActionButton onClick={dark}>Dark Theme</ActionButton>
+                <ActionButton onClick={light}>Light Theme</ActionButton>
               </PlaylistItems>
             </div>
           </>

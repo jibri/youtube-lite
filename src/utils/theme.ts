@@ -1,10 +1,11 @@
-export const theme = {
+export const defaultTheme = {
   // Theme
   white: '#ffffff',
   black: '#333333',
   active: '#3388ff',
   primary: '#ffffff',
   secondary: '#ffffff',
+  background: '#ffffff',
   text: {
     light: '#666666',
     main: '#333333',
@@ -18,4 +19,19 @@ export const theme = {
   // Misc
   headerHeigth: '3em',
   playerHeight: '270px',
+}
+export const darkTheme = {
+  ...defaultTheme,
+
+  // Theme
+  white: '#ffffff',
+  black: '#333333',
+  active: '#ff55ff',
+  primary: '#222222',
+  secondary: '#333333',
+  background: '#222222',
+  text: {
+    light: '#ffffff',
+    main: '#dddddd',
+  },
 }

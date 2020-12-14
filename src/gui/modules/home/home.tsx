@@ -6,7 +6,6 @@ import { LoginContext } from 'src/data/context/loginProvider'
 import VideoProvider, { VideoContext } from 'src/data/context/videoProvider'
 import styled from 'styled-components'
 import Error from 'src/gui/components/error'
-import { theme } from 'src/utils/theme'
 import Loader from 'src/gui/components/loader'
 import Player from 'src/gui/components/player'
 import Header from '../layout/header'
@@ -14,9 +13,10 @@ import Header from '../layout/header'
 const MainScreeen = styled.div`
   min-height: 100vh;
   width: 100%;
+  background-color: ${props => props.theme.background};
 `
 const ContentWrapper = styled.div`
-  padding: ${theme.headerHeigth} 0;
+  padding: ${props => props.theme.headerHeigth} 0;
 `
 
 const VideoModule = () => {

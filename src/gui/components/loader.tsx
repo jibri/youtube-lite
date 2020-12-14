@@ -1,14 +1,13 @@
 import React from 'react'
 import styled from 'styled-components'
-import { theme } from 'src/utils/theme'
 
 export const LoadingBar = styled.div`
   position: fixed;
   top: 0;
-  z-index: ${theme.zIndex.loader};
+  z-index: ${props => props.theme.zIndex.loader};
   height: 3px;
   width: 15%;
-  background-color: ${theme.active};
+  background-color: ${props => props.theme.active};
   animation: run 1s infinite linear;
     @keyframes run {
       0% { margin-left: 0; width: 5%; }

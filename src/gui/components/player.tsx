@@ -1,14 +1,13 @@
 import React, { useContext, useEffect, useRef } from 'react'
-import styled from 'styled-components'
-import { theme } from 'src/utils/theme'
+import styled, { useTheme } from 'styled-components'
 import { VideoItem } from 'src/utils/types'
 import { VideoContext } from 'src/data/context/videoProvider'
 
 const IFrameWrapper = styled.div`
   position: sticky;
   top: 0;
-  z-index: ${theme.zIndex.player};
-  background-color: ${theme.white};
+  z-index: ${props => props.theme.zIndex.player};
+  background-color: ${props => props.theme.white};
 `
 
 const Description = styled.div<{ open: boolean }>`
@@ -23,12 +22,13 @@ const Player = ({ video }: { video: VideoItem }) => {
   const player = useRef<YT.Player>()
   const readyPlayerOne = useRef<boolean>(false)
   const { descriptionOpened } = useContext(VideoContext)
+  const theme = useTheme()
 
   useEffect(() => {
     if (readyPlayerOne.current && video.video.id) player.current?.loadVideoById(video.video.id)
     else {
       player.current = new window.YT.Player(`video_player`, {
-        height: theme.playerHeight,
+        height: (theme as any).playerHeight,
         width: '100%',
         videoId: video.video.id,
         playerVars: {
@@ -43,7 +43,7 @@ const Player = ({ video }: { video: VideoItem }) => {
         }
       })
     }
-  }, [video])
+  }, [video, theme])
 
   return (
     <IFrameWrapper>

@@ -42,9 +42,16 @@ const VideoProvider = ({ children }: any) => {
   const { handleError, loading, incLoading, setHeaderComponents } = useContext(LoginContext)
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false)
 
+
   useEffect(() => {
-    feedVideos.sort((v1, v2) => v2.video?.snippet?.publishedAt?.localeCompare(v1.video?.snippet?.publishedAt || '') || 0)
-  }, [feedVideos])
+    if (loading === 0) {
+      setFeedVideos(currentFeeds => {
+        const newFeeds = [...currentFeeds]
+        newFeeds.sort((v1, v2) => v2.video?.snippet?.publishedAt?.localeCompare(v1.video?.snippet?.publishedAt || '') || 0)
+        return newFeeds
+      })
+    }
+  }, [loading])
 
   const fetchVideos = useCallback((
     setter: React.Dispatch<React.SetStateAction<VideoItem[]>>,
