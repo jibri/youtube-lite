@@ -112,7 +112,7 @@ const VideoProvider = ({ children }: any) => {
       setTimeout(() => {
         incLoading(-1)
         setFeedVideos(FEED_VIDEOS)
-      }, 5000)
+      }, 200)
     } else {
       if (!pageToken) setFeedVideos([])
       incLoading(1)

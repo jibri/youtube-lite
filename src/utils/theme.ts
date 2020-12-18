@@ -34,4 +34,7 @@ export const darkTheme = {
     light: '#ffffff',
     main: '#dddddd',
   },
+  video: {
+    height: '90px',
+  }
 }
