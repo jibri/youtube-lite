@@ -1,160 +1,254 @@
-import React, { createContext, useState, useEffect, useContext, useCallback } from 'react'
-import { DEFAULT_PLAYLIST_ID } from 'src/utils/constants'
-import { LoginContext } from './loginProvider'
-import { VideoItem } from 'src/utils/types'
-import { defaultHeaderComponents, playingHeaderComponents } from 'src/router/path'
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+} from "react";
+import { DEFAULT_PLAYLIST_ID } from "src/utils/constants";
+import { LoginContext } from "./loginProvider";
+import { VideoItem } from "src/utils/types";
+import {
+  defaultHeaderComponents,
+  playingHeaderComponents,
+} from "src/router/path";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
+// fetch subscription => 1 request to get 50 result
+// for each batch of 50 subs => fetch Channels => 1 request to get 50 channels
+// for each channel => fetch Playlistitems => 1 request to get 10 playlist item
+// for each batch of 10 Playlistitems => fetch videos => 1 request to get 10 videos
+
+// nb request (if nb subs = 50) : 1 => 1 => 50 => 50 = 102 request
+
 interface VideoData {
-  feedVideos: VideoItem[]
-  wlVideos: VideoItem[]
-  loading: number
-  videoPlaying?: VideoItem
-  descriptionOpened: boolean
-  setDescriptionOpened: React.Dispatch<React.SetStateAction<boolean>>
-  fetchWatchList: (pageToken?: string) => void
-  fetchSubscriptions: () => void
-  deleteFromWatchlist: (playlistItemId?: string) => void
-  playVideo: (video?: VideoItem) => void
-  setPlaylistId: React.Dispatch<React.SetStateAction<string>>
+  feedVideos: VideoItem[];
+  wlVideos: VideoItem[];
+  loading: number;
+  videoPlaying?: VideoItem;
+  descriptionOpened: boolean;
+  setDescriptionOpened: React.Dispatch<React.SetStateAction<boolean>>;
+  fetchWatchList: (pageToken?: string) => void;
+  fetchSubscriptions: () => void;
+  deleteFromWatchlist: (playlistItemId?: string) => void;
+  playVideo: (video?: VideoItem) => void;
+  setPlaylistId: React.Dispatch<React.SetStateAction<string>>;
 }
 const defaultData: VideoData = {
   feedVideos: [],
   wlVideos: [],
   loading: 0,
   descriptionOpened: false,
-  setDescriptionOpened: e => e,
-  fetchWatchList: e => e,
-  fetchSubscriptions: () => {/** */ },
-  deleteFromWatchlist: e => e,
-  playVideo: () => {/** */ },
-  setPlaylistId: e => e,
-}
+  setDescriptionOpened: (e) => e,
+  fetchWatchList: (e) => e,
+  fetchSubscriptions: () => {
+    /** */
+  },
+  deleteFromWatchlist: (e) => e,
+  playVideo: () => {
+    /** */
+  },
+  setPlaylistId: (e) => e,
+};
 
-export const VideoContext = createContext<VideoData>(defaultData)
+export const VideoContext = createContext<VideoData>(defaultData);
 
 const VideoProvider = ({ children }: any) => {
-  const [feedVideos, setFeedVideos] = useState<VideoItem[]>([])
-  const [wlVideos, setWlVideos] = useState<VideoItem[]>([])
-  const [playlistId, setPlaylistId] = useState<string>(DEFAULT_PLAYLIST_ID || '')
-  const [videoPlaying, setVideoPlaying] = useState<VideoItem>()
-  const { handleError, loading, incLoading, setHeaderComponents } = useContext(LoginContext)
-  const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false)
-
+  const [feedVideos, setFeedVideos] = useState<VideoItem[]>([]);
+  const [wlVideos, setWlVideos] = useState<VideoItem[]>([]);
+  const [playlistId, setPlaylistId] = useState<string>(
+    DEFAULT_PLAYLIST_ID || ""
+  );
+  const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
+  const { handleError, loading, incLoading, setHeaderComponents } = useContext(
+    LoginContext
+  );
+  const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
 
   useEffect(() => {
     if (loading === 0) {
-      setFeedVideos(currentFeeds => {
-        const newFeeds = [...currentFeeds]
-        newFeeds.sort((v1, v2) => v2.video?.snippet?.publishedAt?.localeCompare(v1.video?.snippet?.publishedAt || '') || 0)
-        return newFeeds
-      })
+      setFeedVideos((currentFeeds) => {
+        const newFeeds = [...currentFeeds];
+        newFeeds.sort(
+          (v1, v2) =>
+            v2.video?.snippet?.publishedAt?.localeCompare(
+              v1.video?.snippet?.publishedAt || ""
+            ) || 0
+        );
+        return newFeeds;
+      });
     }
-  }, [loading])
+  }, [loading]);
 
-  const fetchVideos = useCallback((
-    setter: React.Dispatch<React.SetStateAction<VideoItem[]>>,
-    playlistItems: gapi.client.youtube.PlaylistItem[]
-  ) => {
-    incLoading(1)
-    gapi.client.youtube.videos.list({
-      part: 'snippet,contentDetails,player',
-      id: playlistItems.map(i => i.snippet?.resourceId?.videoId).join(','),
-      maxResults: 50,
-    }).then(response => {
-      console.log('videos', response.result.items)
-      setter(currentVideos => {
-        return currentVideos.concat(response.result.items?.map(v => ({
-          playlistItem: playlistItems.find(i => i.snippet?.resourceId?.videoId === v.id) || {},
-          video: v
-        })) || [])
-      })
-    }, handleError)
-      .then(() => incLoading(-1))
-  }, [handleError, incLoading])
+  const fetchVideos = useCallback(
+    (
+      setter: React.Dispatch<React.SetStateAction<VideoItem[]>>,
+      playlistItems: gapi.client.youtube.PlaylistItem[]
+    ) => {
+      incLoading(1);
+      gapi.client.youtube.videos
+        .list({
+          part: "snippet,contentDetails,player",
+          id: playlistItems
+            .map((i) => i.snippet?.resourceId?.videoId)
+            .join(","),
+          maxResults: 50,
+        })
+        .then((response) => {
+          const fiveDaysAgo = new Date();
+          fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+          const keepVideos = response.result.items?.filter(
+            (v) => new Date(v.snippet?.publishedAt || "") > fiveDaysAgo
+          );
+          if (keepVideos) {
+            setter((currentVideos) => {
+              const newVideos = [...currentVideos];
+              keepVideos.forEach((v) => {
+                if (!newVideos.find((cv) => v.id === cv.video.id)) {
+                  newVideos.push({
+                    playlistItem:
+                      playlistItems.find(
+                        (i) => i.snippet?.resourceId?.videoId === v.id
+                      ) || {},
+                    video: v,
+                  });
+                }
+              });
+              return newVideos;
+            });
+          }
+        }, handleError)
+        .then(() => incLoading(-1));
+    },
+    [handleError, incLoading]
+  );
 
-  const fetchPlaylistItems = useCallback((playlistId: string) => {
-    incLoading(1)
-    gapi.client.youtube.playlistItems.list({
-      part: "snippet",
-      playlistId,
-      maxResults: 10,
-    }).then(response => {
-      const fiveDaysAgo = new Date()
-      fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5)
-      const keepVideos = response.result.items?.filter(v => new Date(v.snippet?.publishedAt || '') > fiveDaysAgo)
-      if (keepVideos?.length) fetchVideos(setFeedVideos, keepVideos)
-    }, handleError)
-      .then(() => incLoading(-1))
-  }, [incLoading, handleError, fetchVideos])
+  const fetchPlaylistItems = useCallback(
+    (playlistId: string) => {
+      return new Promise((resolve, reject) => {
+        incLoading(1);
+        gapi.client.youtube.playlistItems
+          .list({
+            part: "snippet",
+            playlistId,
+            maxResults: 10,
+          })
+          .then((response) => {
+            if (response.result.items)
+              fetchVideos(setFeedVideos, response.result.items);
+          }, handleError)
+          .then(() => {
+            incLoading(-1);
+            resolve(true);
+          });
+      });
+    },
+    [incLoading, handleError, fetchVideos]
+  );
 
-  const fetchChannels = useCallback((chanIds: string) => {
-    incLoading(1)
-    gapi.client.youtube.channels.list({
-      part: "contentDetails",
-      id: chanIds,
-      maxResults: 50,
-    }).then(response => {
-      response.result.items?.forEach(chan => {
-        const playlistId = chan.contentDetails?.relatedPlaylists?.uploads
-        if (playlistId) fetchPlaylistItems(playlistId)
-      })
-    }, handleError)
-      .then(() => incLoading(-1))
-  }, [handleError, fetchPlaylistItems, incLoading])
+  const fetchPlaylistItemsCascade = useCallback(
+    async (playlistIds: (string | undefined)[], idx: number) => {
+      const id = playlistIds[idx];
+      if (id) {
+        await fetchPlaylistItems(id);
+        fetchPlaylistItemsCascade(playlistIds, ++idx);
+      }
+    },
+    [fetchPlaylistItems]
+  );
 
-  const fetchSubscriptions = useCallback(async (pageToken?: string) => {
-    if (process.env.REACT_APP_DEV_MODE === 'true') {
-      const { FEED_VIDEOS } = await import('src/__mock__/feedVideos')
-      console.log('fetch subs :', FEED_VIDEOS.length)
-      incLoading(1)
-      setTimeout(() => {
-        incLoading(-1)
-        setFeedVideos(FEED_VIDEOS)
-      }, 200)
-    } else {
-      if (!pageToken) setFeedVideos([])
-      incLoading(1)
-      gapi.client.youtube.subscriptions.list({
-        part: "snippet",
-        mine: true,
-        maxResults: 50,
-        pageToken: pageToken,
-      }).then(response => {
-        const result = response.result
-        if (result.items?.length) fetchChannels(result.items.map((sub) => sub.snippet?.resourceId?.channelId).join(","))
-        if (result.nextPageToken) fetchSubscriptions(result.nextPageToken)
-      }, handleError)
-        .then(() => incLoading(-1))
-    }
-  }, [incLoading, fetchChannels, handleError])
+  const fetchChannels = useCallback(
+    (chanIds: string) => {
+      incLoading(1);
+      gapi.client.youtube.channels
+        .list({
+          part: "contentDetails",
+          id: chanIds,
+          maxResults: 50,
+        })
+        .then((response) => {
+          const playlistIds = response.result.items?.map(
+            (chan) => chan.contentDetails?.relatedPlaylists?.uploads
+          );
+          if (playlistIds) fetchPlaylistItemsCascade(playlistIds, 0);
+        }, handleError)
+        .then(() => incLoading(-1));
+    },
+    [handleError, incLoading, fetchPlaylistItemsCascade]
+  );
 
-  const fetchWatchList = useCallback((pageToken?: string) => {
-    if (!pageToken) setWlVideos([])
-    incLoading(1)
-    gapi.client.youtube.playlistItems.list({
-      part: "snippet",
-      playlistId: playlistId,
-      maxResults: 50,
-      pageToken,
-    }).then(response => {
-      fetchVideos(setWlVideos, response.result.items || [])
-    }, handleError)
-      .then(() => incLoading(-1))
-  }, [fetchVideos, handleError, incLoading, playlistId])
+  const fetchSubscriptions = useCallback(
+    async (pageToken?: string) => {
+      if (process.env.REACT_APP_DEV_MODE === "true") {
+        const { FEED_VIDEOS } = await import("src/__mock__/feedVideos");
+        incLoading(1);
+        setTimeout(() => {
+          incLoading(-1);
+          setFeedVideos(FEED_VIDEOS);
+        }, 200);
+      } else {
+        if (!pageToken) setFeedVideos([]);
+        incLoading(1);
+        gapi.client.youtube.subscriptions
+          .list({
+            part: "snippet",
+            mine: true,
+            maxResults: 50,
+            pageToken: pageToken,
+          })
+          .then((response) => {
+            const result = response.result;
+            if (result.items?.length)
+              fetchChannels(
+                result.items
+                  .map((sub) => sub.snippet?.resourceId?.channelId)
+                  .join(",")
+              );
+            if (result.nextPageToken) fetchSubscriptions(result.nextPageToken);
+          }, handleError)
+          .then(() => incLoading(-1));
+      }
+    },
+    [incLoading, fetchChannels, handleError]
+  );
+
+  const fetchWatchList = useCallback(
+    (pageToken?: string) => {
+      if (!pageToken) setWlVideos([]);
+      incLoading(1);
+      gapi.client.youtube.playlistItems
+        .list({
+          part: "snippet",
+          playlistId: playlistId,
+          maxResults: 50,
+          pageToken,
+        })
+        .then((response) => {
+          fetchVideos(setWlVideos, response.result.items || []);
+        }, handleError)
+        .then(() => incLoading(-1));
+    },
+    [fetchVideos, handleError, incLoading, playlistId]
+  );
 
   const deleteFromWatchlist = (playlistItemId?: string) => {
-    setWlVideos(wl => wl.filter(v => v.playlistItem.id !== playlistItemId))
-  }
+    setWlVideos((wl) => wl.filter((v) => v.playlistItem.id !== playlistItemId));
+  };
 
   const playVideo = (video?: VideoItem) => {
-    setVideoPlaying(video)
-    setHeaderComponents(video ? playingHeaderComponents : defaultHeaderComponents)
-  }
+    setVideoPlaying(video);
+    setHeaderComponents(
+      video ? playingHeaderComponents : defaultHeaderComponents
+    );
+  };
 
-  useEffect(() => { fetchSubscriptions() }, [fetchSubscriptions])
-  useEffect(() => { fetchWatchList() }, [fetchWatchList])
+  useEffect(() => {
+    fetchSubscriptions();
+  }, [fetchSubscriptions]);
+  useEffect(() => {
+    fetchWatchList();
+  }, [fetchWatchList]);
 
   const values: VideoData = {
     feedVideos,
@@ -167,9 +261,11 @@ const VideoProvider = ({ children }: any) => {
     fetchSubscriptions,
     deleteFromWatchlist,
     setPlaylistId,
-    setDescriptionOpened
-  }
+    setDescriptionOpened,
+  };
 
-  return <VideoContext.Provider value={values} > {children} </VideoContext.Provider>
-}
-export default VideoProvider
+  return (
+    <VideoContext.Provider value={values}> {children} </VideoContext.Provider>
+  );
+};
+export default VideoProvider;

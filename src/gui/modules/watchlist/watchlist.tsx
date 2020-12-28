@@ -20,25 +20,26 @@ const ActionsMask = styled.div`
 
   display: flex;
   div {
-    font-size: 4em;
+    font-size: ${(props) => `calc(${props.theme.video.height} - 30px)`};
     flex: 1 1 33%;
     color: #00000055;
     padding: 0 15px;
+    display: flex;
+    align-items: center;
   }
 `;
 const MiddleActionWrapper = styled.div`
   background-image: linear-gradient(to right, #ff5050, #5050ff);
 `;
-
 const DeleteActionWrapper = styled.div`
   background-color: #ff5050;
 `;
 const LikeActionWrapper = styled.div`
-  text-align: right;
+  justify-content: flex-end;
   background-color: #5050ff;
 `;
 const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
-  transition: max-height 2s ease;
+  transition: max-height 0.5s ease;
   max-height: ${(props) => (props.removing ? "0" : props.theme.video.height)};
 `;
 
@@ -50,15 +51,18 @@ function Watchlist() {
   const removeFromWatchlist = (video: VideoItem) => {
     setRemoving(video.video.id);
     incLoading(1);
-    gapi.client.youtube.playlistItems
-      .delete({
-        id: video.playlistItem.id || "",
-      })
-      .then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
-      .then(() => incLoading(-1));
+    setTimeout(() => {
+      gapi.client.youtube.playlistItems
+        .delete({
+          id: video.playlistItem.id || "",
+        })
+        .then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
+        .then(() => incLoading(-1));
+    }, 500);
   };
 
   const likeVideo = (video: VideoItem) => {
+    setRemoving(video.video.id);
     incLoading(1);
     gapi.client.youtube.videos
       .rate({
@@ -92,7 +96,7 @@ function Watchlist() {
     <>
       {wlVideos.map((video) => (
         <WlVideoWrapper
-          key={video.video.id}
+          key={`${video.video.id}-${Math.random()}`}
           removing={removing === video.video.id}
         >
           <ActionsMask>
@@ -136,19 +140,3 @@ function Watchlist() {
   );
 }
 export default Watchlist;
-
-// {/* {(navigator as any).share && (
-//             <div>
-//               <ActionButton onClick={e => share(`https://www.youtube.com/watch?v=${video.video.id}`)} height="100%">
-//                 <FontAwesomeIcon icon={faShare} />
-//               </ActionButton>
-//             </div>
-//           )} */}
-// {/* <div>
-//             <ActionButton onClick={e => removeFromWatchlist(video)} height="50%">
-//               <FontAwesomeIcon icon={faTrash} />
-//             </ActionButton>
-//             <ActionButton onClick={() => likeVideo(video)} height="50%">
-//               <FontAwesomeIcon icon={faThumbsUp} />
-//             </ActionButton>
-//           </div> */}

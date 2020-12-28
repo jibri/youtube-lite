@@ -39,9 +39,9 @@ const Image = styled.img`
 `;
 const ActionWrapper = styled.div`
   width: ${(props) => props.theme.video.height};
-  padding: 15px;
-  font-size: 4em;
+  font-size: ${(props) => `calc(${props.theme.video.height} - 30px)`};
   display: flex;
+  justify-content: center;
   align-items: center;
 `;
 
