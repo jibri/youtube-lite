@@ -96,7 +96,7 @@ function Watchlist() {
     <>
       {wlVideos.map((video) => (
         <WlVideoWrapper
-          key={`${video.video.id}-${Math.random()}`}
+          key={video.video.id}
           removing={removing === video.video.id}
         >
           <ActionsMask>
