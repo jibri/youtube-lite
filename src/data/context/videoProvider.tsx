@@ -12,6 +12,8 @@ import {
   defaultHeaderComponents,
   playingHeaderComponents,
 } from "src/router/path";
+import { get, set } from "idb-keyval";
+import { differenceInDays, differenceInMinutes } from "date-fns";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -69,14 +71,20 @@ const VideoProvider = ({ children }: any) => {
   useEffect(() => {
     if (loading === 0) {
       setFeedVideos((currentFeeds) => {
-        const newFeeds = [...currentFeeds];
-        newFeeds.sort(
-          (v1, v2) =>
-            v2.video?.snippet?.publishedAt?.localeCompare(
-              v1.video?.snippet?.publishedAt || ""
-            ) || 0
-        );
-        return newFeeds;
+        if (currentFeeds.length > 0) {
+          const newFeeds = [...currentFeeds];
+          newFeeds.sort(
+            (v1, v2) =>
+              v2.video?.snippet?.publishedAt?.localeCompare(
+                v1.video?.snippet?.publishedAt || ""
+              ) || 0
+          );
+          // set indexedDb values and when it is sets
+          set("feed", newFeeds);
+          set("updateDate", new Date());
+          return newFeeds;
+        }
+        return [];
       });
     }
   }, [loading]);
@@ -84,7 +92,8 @@ const VideoProvider = ({ children }: any) => {
   const fetchVideos = useCallback(
     (
       setter: React.Dispatch<React.SetStateAction<VideoItem[]>>,
-      playlistItems: gapi.client.youtube.PlaylistItem[]
+      playlistItems: gapi.client.youtube.PlaylistItem[],
+      filter?: (v: gapi.client.youtube.Video) => boolean
     ) => {
       incLoading(1);
       gapi.client.youtube.videos
@@ -96,11 +105,9 @@ const VideoProvider = ({ children }: any) => {
           maxResults: 50,
         })
         .then((response) => {
-          const fiveDaysAgo = new Date();
-          fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-          const keepVideos = response.result.items?.filter(
-            (v) => new Date(v.snippet?.publishedAt || "") > fiveDaysAgo
-          );
+          const keepVideos = filter
+            ? response.result.items?.filter(filter)
+            : response.result.items;
           if (keepVideos) {
             setter((currentVideos) => {
               const newVideos = [...currentVideos];
@@ -135,8 +142,14 @@ const VideoProvider = ({ children }: any) => {
             maxResults: 10,
           })
           .then((response) => {
-            if (response.result.items)
-              fetchVideos(setFeedVideos, response.result.items);
+            if (response.result.items) {
+              const fiveDaysAgo = new Date();
+              fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+              const filter = (v: gapi.client.youtube.Video) => {
+                return new Date(v.snippet?.publishedAt || "") > fiveDaysAgo;
+              };
+              fetchVideos(setFeedVideos, response.result.items, filter);
+            }
           }, handleError)
           .then(() => {
             incLoading(-1);
@@ -244,7 +257,16 @@ const VideoProvider = ({ children }: any) => {
   };
 
   useEffect(() => {
-    fetchSubscriptions();
+    // we have a one day cache in idb
+    get("updateDate").then((date) => {
+      if (!date || differenceInDays(new Date(), date) >= 1) {
+        fetchSubscriptions();
+      } else {
+        get("feed").then((videos) => {
+          setFeedVideos(videos);
+        });
+      }
+    });
   }, [fetchSubscriptions]);
   useEffect(() => {
     fetchWatchList();

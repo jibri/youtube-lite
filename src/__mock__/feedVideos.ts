@@ -1,4 +1,5 @@
 import { VideoItem } from 'src/utils/types'
+import { cloneDeep } from 'lodash'
 
 export const video1: VideoItem = {
   playlistItem: {
@@ -130,30 +131,31 @@ export const video1: VideoItem = {
   },
 
 }
-const video2 = { ...video1 }
+const video2 = cloneDeep(video1)
 video2.playlistItem.id = 'video2'
 video2.video.id = 'video2'
-const video3 = { ...video1 }
+const video3 = cloneDeep(video1)
 video3.playlistItem.id = 'video3'
 video3.video.id = 'video3'
-const video4 = { ...video1 }
+const video4 = cloneDeep(video1)
 video4.playlistItem.id = 'video4'
 video4.video.id = 'video4'
-const video5 = { ...video1 }
+const video5 = cloneDeep(video1)
 video5.playlistItem.id = 'video5'
 video5.video.id = 'video5'
-const video6 = { ...video1 }
+const video6 = cloneDeep(video1)
 video6.playlistItem.id = 'video6'
 video6.video.id = 'video6'
-const video7 = { ...video1 }
+const video7 = cloneDeep(video1)
 video7.playlistItem.id = 'video7'
 video7.video.id = 'video7'
-const video8 = { ...video1 }
+const video8 = cloneDeep(video1)
 video8.playlistItem.id = 'video8'
 video8.video.id = 'video8'
-const video9 = { ...video1 }
+const video9 = cloneDeep(video1)
 video9.playlistItem.id = 'video9'
 video9.video.id = 'video9'
-const video10 = { ...video1 }
+const video10 = cloneDeep(video1)
 video10.playlistItem.id = 'video10'
+video10.video.id = 'video10'
 export const FEED_VIDEOS: VideoItem[] = [video1, video2, video3, video4, video5, video6, video7, video8, video9, video10]
