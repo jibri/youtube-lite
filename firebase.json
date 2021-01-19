@@ -8,5 +8,11 @@
         "destination": "/index.html"
       }
     ]
+  },
+  "functions": {
+    "predeploy": [
+      "yarn --cwd \"$RESOURCE_DIR\" lint",
+      "yarn --cwd \"$RESOURCE_DIR\" build"
+    ]
   }
 }

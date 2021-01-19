@@ -1,37 +1,22 @@
 import React from 'react'
 import styled from 'styled-components'
-import { theme } from 'src/utils/theme'
 
-
-export const Spinner = styled.div`
-height: 50px;
-width: 50px;
-border: 5px solid ${theme.active};
-border-bottom-color: transparent;
-border-radius: 50%;
-
-animation: goRound 1s infinite linear;
-  @keyframes goRound {
-    from { transform: rotate(0); }
-    to { transform: rotate(360deg); }
-  }
-`
-const Overlay = styled.div`
+export const LoadingBar = styled.div`
   position: fixed;
-  top:0;
-  left:0;
-  width: 100%;
-  height: 100%;
-  background-color: #00000011;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  top: 0;
+  z-index: ${props => props.theme.zIndex.loader};
+  height: 3px;
+  width: 15%;
+  background-color: ${props => props.theme.active};
+  animation: run 1s infinite linear;
+    @keyframes run {
+      0% { margin-left: 0; width: 5%; }
+      50% { margin-left: 40%; width: 35%; }
+      90% { margin-left: 85%;  width: 15%; }
+      100% { margin-left: 100%;  width: 0%; }
+    }
 `
-
 const Loader = () => (
-  <Overlay>
-    <Spinner />
-  </Overlay>
+  <LoadingBar />
 )
 export default Loader

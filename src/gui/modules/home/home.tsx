@@ -6,46 +6,31 @@ import { LoginContext } from 'src/data/context/loginProvider'
 import VideoProvider, { VideoContext } from 'src/data/context/videoProvider'
 import styled from 'styled-components'
 import Error from 'src/gui/components/error'
-import { theme } from 'src/utils/theme'
 import Loader from 'src/gui/components/loader'
-import { TopButton } from 'src/utils/styled'
+import Player from 'src/gui/components/player'
+import Header from '../layout/header'
 
 const MainScreeen = styled.div`
   min-height: 100vh;
   width: 100%;
+  background-color: ${props => props.theme.background};
 `
 const ContentWrapper = styled.div`
-  margin-bottom: ${theme.footerHeigth};
-`
-const IFrameWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  z-index: ${theme.zIndex.popup};
+  padding: ${props => props.theme.headerHeigth} 0;
 `
 
 const VideoModule = () => {
   const { loading } = useContext(LoginContext)
-  const { player, setPlayer } = useContext(VideoContext)
+  const { videoPlaying } = useContext(VideoContext)
+
   return (
     <>
-      {player && (
-        <IFrameWrapper>
-          <iframe
-            title="video_player"
-            width="100%"
-            height="270"
-            src={`//www.youtube.com/embed/${player}`}
-            frameBorder="0"
-            allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-          <TopButton onClick={() => setPlayer(undefined)}>Close</TopButton>
-        </IFrameWrapper>
-      )}
+      {loading > 0 && <Loader />}
+      {videoPlaying && <Player video={videoPlaying} />}
+      <Header />
       <ContentWrapper>
         <Router />
       </ContentWrapper>
-      {loading > 0 && <Loader />}
       <Footer />
     </>
   )

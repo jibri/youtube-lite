@@ -1,0 +1,43 @@
+[debug] [2020-09-25T12:00:33.492Z] ----------------------------------------------------------------------
+[debug] [2020-09-25T12:00:33.494Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\jerem\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js functions:shell
+[debug] [2020-09-25T12:00:33.494Z] CLI Version:   7.16.1
+[debug] [2020-09-25T12:00:33.494Z] Platform:      win32
+[debug] [2020-09-25T12:00:33.494Z] Node Version:  v10.21.0
+[debug] [2020-09-25T12:00:33.495Z] Time:          Fri Sep 25 2020 14:00:33 GMT+0200 (GMT+02:00)
+[debug] [2020-09-25T12:00:33.495Z] ----------------------------------------------------------------------
+[debug] [2020-09-25T12:00:33.495Z] 
+[debug] [2020-09-25T12:00:33.502Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2020-09-25T12:00:33.503Z] > authorizing via signed-in user
+[debug] [2020-09-25T12:00:33.503Z] [iam] checking project youtube-lite-280209 for permissions ["firebase.projects.get"]
+[debug] [2020-09-25T12:00:33.505Z] >>> HTTP REQUEST POST https://cloudresourcemanager.googleapis.com/v1/projects/youtube-lite-280209:testIamPermissions  
+
+[debug] [2020-09-25T12:00:34.159Z] <<< HTTP RESPONSE 200
+[debug] [2020-09-25T12:00:36.180Z] [functions] Using node@10 from host.
+[info] +  functions: functions emulator started at http://localhost:5000
+[debug] [2020-09-25T12:00:36.187Z] [functions] Watching "D:\Documents\Programmation\youtube-lite\functions" for Cloud Functions...
+[debug] [2020-09-25T12:00:36.200Z] DEBUG: [worker-pool] addWorker(~diagnostic~)
+[debug] [2020-09-25T12:00:36.200Z] DEBUG: [worker-pool] Adding worker with key ~diagnostic~, total=1
+[debug] [2020-09-25T12:00:36.200Z] DEBUG: [worker-pool] submitWork(triggerId=)
+[debug] [2020-09-25T12:00:36.200Z] DEBUG: [worker-~diagnostic~-1992ea3b-34bc-4ab1-a391-ede0370c1163]: Assigning socketPath: \\?\pipe\D:\Documents\Programmation\youtube-lite\functions\9976
+[debug] [2020-09-25T12:00:36.201Z] DEBUG: [worker-~diagnostic~-1992ea3b-34bc-4ab1-a391-ede0370c1163]: BUSY
+[debug] [2020-09-25T12:00:36.541Z] DEBUG: [runtime-status] [9976] Functions runtime initialized. {"cwd":"D:\\Documents\\Programmation\\youtube-lite\\functions","node_version":"10.21.0"}
+[debug] [2020-09-25T12:00:36.542Z] DEBUG: [runtime-status] [9976] Disabled runtime features: {"functions_config_helper":true,"network_filtering":true,"timeout":true,"memory_limiting":true,"admin_stubs":true,"pubsub_emulator":true}
+[debug] [2020-09-25T12:00:36.545Z] DEBUG: [runtime-status] [9976] Resolved module firebase-admin {"declared":true,"installed":true,"version":"8.12.1","resolution":"D:\\Documents\\Programmation\\youtube-lite\\functions\\node_modules\\firebase-admin\\lib\\index.js"}
+[debug] [2020-09-25T12:00:36.546Z] DEBUG: [runtime-status] [9976] Resolved module firebase-functions {"declared":true,"installed":true,"version":"3.7.0","resolution":"D:\\Documents\\Programmation\\youtube-lite\\functions\\node_modules\\firebase-functions\\lib\\index.js"}
+[debug] [2020-09-25T12:00:36.547Z] DEBUG: [runtime-status] [9976] Resolved module firebase-functions {"declared":true,"installed":true,"version":"3.7.0","resolution":"D:\\Documents\\Programmation\\youtube-lite\\functions\\node_modules\\firebase-functions\\lib\\index.js"}
+[warn] !  TypeError: Cannot read property 'clientid' of undefined
+    at Object.<anonymous> (D:\Documents\Programmation\youtube-lite\functions\lib\index.js:17:25)
+    at Module._compile (internal/modules/cjs/loader.js:778:30)
+    at Object.Module._extensions..js (internal/modules/cjs/loader.js:789:10)
+    at Module.load (internal/modules/cjs/loader.js:653:32)
+    at tryModuleLoad (internal/modules/cjs/loader.js:593:12)
+    at Function.Module._load (internal/modules/cjs/loader.js:585:3)
+    at Module.require (internal/modules/cjs/loader.js:692:17)
+    at require (internal/modules/cjs/helpers.js:25:18)
+    at C:\Users\jerem\AppData\Roaming\npm\node_modules\firebase-tools\lib\emulator\functionsEmulatorRuntime.js:761:33
+    at Generator.next (<anonymous>)
+[warn] !  We were unable to load your functions code. (see above)
+   - It appears your code is written in Typescript, which must be compiled before emulation.
+   - You may be able to run "npm run build" in your functions directory to resolve this.
+[debug] [2020-09-25T12:00:37.082Z] DEBUG: [worker-~diagnostic~-1992ea3b-34bc-4ab1-a391-ede0370c1163]: exited
+[debug] [2020-09-25T12:00:37.082Z] DEBUG: [worker-~diagnostic~-1992ea3b-34bc-4ab1-a391-ede0370c1163]: FINISHED
