@@ -16,11 +16,14 @@ export const defaultTheme = {
     popup: 9000,
     loader: 9999,
   },
+  video: {
+    height: '90px',
+  },
   // Misc
   headerHeigth: '3em',
   playerHeight: '270px',
 }
-export const darkTheme = {
+export const darkTheme: typeof defaultTheme = {
   ...defaultTheme,
 
   // Theme
@@ -34,7 +37,4 @@ export const darkTheme = {
     light: '#ffffff',
     main: '#dddddd',
   },
-  video: {
-    height: '90px',
-  }
 }
