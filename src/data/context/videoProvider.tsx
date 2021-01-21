@@ -5,7 +5,11 @@ import React, {
   useContext,
   useCallback,
 } from "react";
-import { DEFAULT_PLAYLIST_ID } from "src/utils/constants";
+import {
+  DEFAULT_PLAYLIST_ID,
+  FEED_KEY,
+  UPDATE_DATE_KEY,
+} from "src/utils/constants";
 import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
 import {
@@ -13,7 +17,7 @@ import {
   playingHeaderComponents,
 } from "src/router/path";
 import { get, set } from "idb-keyval";
-import { differenceInDays, differenceInMinutes } from "date-fns";
+import { differenceInDays } from "date-fns";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -80,8 +84,8 @@ const VideoProvider = ({ children }: any) => {
               ) || 0
           );
           // set indexedDb values and when it is sets
-          set("feed", newFeeds);
-          set("updateDate", new Date());
+          set(FEED_KEY, newFeeds);
+          set(UPDATE_DATE_KEY, new Date());
           return newFeeds;
         }
         return [];
@@ -258,11 +262,11 @@ const VideoProvider = ({ children }: any) => {
 
   useEffect(() => {
     // we have a one day cache in idb
-    get("updateDate").then((date) => {
+    get(UPDATE_DATE_KEY).then((date) => {
       if (!date || differenceInDays(new Date(), date) >= 1) {
         fetchSubscriptions();
       } else {
-        get("feed").then((videos) => {
+        get(FEED_KEY).then((videos) => {
           setFeedVideos(videos);
         });
       }
