@@ -6,8 +6,8 @@ import { Link } from "react-router-dom";
 import { PATHS } from "src/router/path";
 import { ActionButton, Text } from "src/utils/styled";
 import { useMyTheme } from "src/data/context/ThemeProvider";
-import { clear, del, get } from "idb-keyval";
-import { FEED_KEY, UPDATE_DATE_KEY, WL_KEY } from "src/utils/constants";
+import { clear, get } from "idb-keyval";
+import { WL_KEY } from "src/utils/constants";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -47,8 +47,6 @@ const PlaylistItem = styled(Link)`
 `;
 
 function Login() {
-  const [updateDate, setUpdateDate] = useState<Date>();
-  const [nbFeed, setNbFeed] = useState<number>(0);
   const [nbWl, setNbWl] = useState<number>(0);
   const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>(
     []
@@ -60,8 +58,6 @@ function Login() {
   const { dark, light } = useMyTheme();
 
   const updateIdbInfos = useCallback(() => {
-    get(UPDATE_DATE_KEY).then((date) => setUpdateDate(date));
-    get(FEED_KEY).then((lst) => setNbFeed(lst?.length || 0));
     get(WL_KEY).then((lst) => setNbWl(lst?.length || 0));
   }, []);
 
@@ -116,9 +112,6 @@ function Login() {
 
   const cleatIdb = () => {
     clear();
-  };
-  const cleatWLCache = () => {
-    del(WL_KEY);
   };
 
   return (
@@ -178,20 +171,11 @@ function Login() {
           <div>
             <Text>Idb :</Text>
             <p>
-              <Text>feed update date : {updateDate?.toISOString()}</Text>
-            </p>
-            <p>
-              <Text>nb feed videos : {nbFeed}</Text>
-            </p>
-            <p>
               <Text>feed update date : {nbWl}</Text>
             </p>
             <PlaylistItems>
               <ActionButton onClick={updateIdbInfos}>Update infos</ActionButton>
               <ActionButton onClick={cleatIdb}>Clear IndexedDb</ActionButton>
-              <ActionButton onClick={cleatWLCache}>
-                Clear Watchlist cache
-              </ActionButton>
             </PlaylistItems>
           </div>
         </>

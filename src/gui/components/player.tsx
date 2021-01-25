@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useRef } from "react";
 import styled, { useTheme } from "styled-components";
 import { VideoItem } from "src/utils/types";
 import { VideoContext } from "src/data/context/videoProvider";
+import { Text } from "src/utils/styled";
 
 const IFrameWrapper = styled.div`
   position: sticky;
@@ -50,7 +51,7 @@ const Player = ({ video }: { video: VideoItem }) => {
       {/* This div will be replaced by an iframe */}
       <div id="video_player" title="video_player" />
       <Description open={descriptionOpened}>
-        {video.video.snippet?.description}
+        <Text>{video.video.snippet?.description}</Text>
       </Description>
     </IFrameWrapper>
   );
