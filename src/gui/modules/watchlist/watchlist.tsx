@@ -13,7 +13,7 @@ import { VideoItem } from "src/utils/types";
 import ReactSwipe from "react-swipe";
 import styled from "styled-components";
 
-const ActionsMask = styled.div`
+export const ActionsMask = styled.div`
   position: absolute;
   width: 100%;
   height: 100%;
@@ -28,17 +28,17 @@ const ActionsMask = styled.div`
     align-items: center;
   }
 `;
-const MiddleActionWrapper = styled.div`
+export const MiddleActionWrapper = styled.div`
   background-image: linear-gradient(to right, #ff5050, #5050ff);
 `;
-const DeleteActionWrapper = styled.div`
+export const DeleteActionWrapper = styled.div`
   background-color: #ff5050;
 `;
-const LikeActionWrapper = styled.div`
+export const LikeActionWrapper = styled.div`
   justify-content: flex-end;
   background-color: #5050ff;
 `;
-const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
+export const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
   transition: max-height 0.5s ease;
   max-height: ${(props) => (props.removing ? "0" : props.theme.video.height)};
 `;
