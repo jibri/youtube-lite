@@ -138,7 +138,7 @@ function Login() {
           <YoutubeButton
             href="http://youtube.com"
             target="_blank"
-            rel="noopener"
+            rel="noopener noreferer"
           >
             <img
               src={`${process.env.PUBLIC_URL}/logo192.png`}
@@ -177,6 +177,9 @@ function Login() {
               <ActionButton onClick={updateIdbInfos}>Update infos</ActionButton>
               <ActionButton onClick={cleatIdb}>Clear IndexedDb</ActionButton>
             </PlaylistItems>
+          </div>
+          <div>
+            <Text>version v.{process.env.REACT_APP_VERSION}</Text>
           </div>
         </>
       )}
