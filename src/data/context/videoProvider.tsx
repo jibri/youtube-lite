@@ -5,7 +5,8 @@ import React, {
   useContext,
   useCallback,
 } from "react";
-import { DEFAULT_PLAYLIST_ID } from "src/utils/constants";
+import { get, update } from "idb-keyval";
+import { DEFAULT_PLAYLIST_ID, WL_KEY } from "src/utils/constants";
 import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
 import {
@@ -25,6 +26,7 @@ import {
 interface VideoData {
   feedVideos: VideoItem[];
   wlVideos: VideoItem[];
+  wlCache: VideoItem[];
   loading: number;
   videoPlaying?: VideoItem;
   descriptionOpened: boolean;
@@ -34,22 +36,21 @@ interface VideoData {
   deleteFromWatchlist: (playlistItemId?: string) => void;
   playVideo: (video?: VideoItem) => void;
   setPlaylistId: React.Dispatch<React.SetStateAction<string>>;
+  updateWlCache: () => void;
 }
 const defaultData: VideoData = {
   feedVideos: [],
   wlVideos: [],
+  wlCache: [],
   loading: 0,
   descriptionOpened: false,
   setDescriptionOpened: (e) => e,
   fetchWatchList: (e) => e,
-  fetchSubscriptions: () => {
-    /** */
-  },
+  fetchSubscriptions: () => null,
   deleteFromWatchlist: (e) => e,
-  playVideo: () => {
-    /** */
-  },
+  playVideo: () => null,
   setPlaylistId: (e) => e,
+  updateWlCache: () => null,
 };
 
 export const VideoContext = createContext<VideoData>(defaultData);
@@ -57,6 +58,7 @@ export const VideoContext = createContext<VideoData>(defaultData);
 const VideoProvider = ({ children }: any) => {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>([]);
   const [wlVideos, setWlVideos] = useState<VideoItem[]>([]);
+  const [wlCache, setWlCache] = useState<VideoItem[]>([]);
   const [playlistId, setPlaylistId] = useState<string>(
     DEFAULT_PLAYLIST_ID || ""
   );
@@ -251,13 +253,21 @@ const VideoProvider = ({ children }: any) => {
     );
   };
 
+  const updateWlCache = useCallback(() => {
+    get<VideoItem[]>(WL_KEY).then((wl) => {
+      setWlCache(wl || []);
+    });
+  }, []);
+
   useEffect(() => {
+    updateWlCache();
     fetchWatchList();
-  }, [fetchWatchList]);
+  }, [fetchWatchList, updateWlCache]);
 
   const values: VideoData = {
     feedVideos,
     wlVideos,
+    wlCache,
     loading,
     videoPlaying,
     descriptionOpened,
@@ -267,6 +277,7 @@ const VideoProvider = ({ children }: any) => {
     deleteFromWatchlist,
     setPlaylistId,
     setDescriptionOpened,
+    updateWlCache,
   };
 
   return (

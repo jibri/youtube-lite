@@ -17,21 +17,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactSwipe from "react-swipe";
 
 function Feed() {
-  const [wlCache, setWlCache] = useState<VideoItem[]>([]);
   const [removing, setRemoving] = useState<string>();
-  const { feedVideos } = useContext(VideoContext);
+  const { feedVideos, wlCache, updateWlCache } = useContext(VideoContext);
   const { handleError, incLoading } = useContext(LoginContext);
   let reactSwipeEl: ReactSwipe | null;
-
-  const updateWlCache = useCallback(() => {
-    get<VideoItem[]>(WL_KEY).then((wl) => {
-      setWlCache(wl || []);
-    });
-  }, []);
-
-  useEffect(() => {
-    updateWlCache();
-  }, [updateWlCache]);
 
   function addToWatchlist(video: VideoItem) {
     incLoading(1);
