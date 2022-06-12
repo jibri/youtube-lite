@@ -143,7 +143,7 @@ const VideoProvider = ({ children }: any) => {
               eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
               const filter = (v: gapi.client.youtube.Video) => {
                 if (
-                  !wlCache.find((cachedVideo) => cachedVideo.video.id === v.id)
+                  wlCache.find((cachedVideo) => cachedVideo.video.id === v.id)
                 )
                   return false;
                 return new Date(v.snippet?.publishedAt || "") > eightDaysAgo;
