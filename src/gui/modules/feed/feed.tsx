@@ -1,11 +1,11 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { faPlus, faThumbsUp, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video from "src/gui/components/video";
 import { DEFAULT_PLAYLIST_ID, WL_KEY } from "src/utils/constants";
 import { LoginContext } from "src/data/context/loginProvider";
 import { VideoItem } from "src/utils/types";
-import { get, update } from "idb-keyval";
+import { update } from "idb-keyval";
 import {
   WlVideoWrapper,
   ActionsMask,

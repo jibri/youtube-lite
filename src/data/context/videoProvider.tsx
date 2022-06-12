@@ -5,7 +5,7 @@ import React, {
   useContext,
   useCallback,
 } from "react";
-import { get, update } from "idb-keyval";
+import { get } from "idb-keyval";
 import { DEFAULT_PLAYLIST_ID, WL_KEY } from "src/utils/constants";
 import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
@@ -67,30 +67,12 @@ const VideoProvider = ({ children }: any) => {
     useContext(LoginContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
 
-  const setAndSortFeedVideos = useCallback(
-    (callback: VideoItem[] | ((currentVideo: VideoItem[]) => VideoItem[])) => {
-      setFeedVideos((realCurrentVideos) => {
-        const newFeedList =
-          typeof callback === "function"
-            ? callback(realCurrentVideos)
-            : [...callback];
-        newFeedList.sort(
-          (v1, v2) =>
-            v2.video?.snippet?.publishedAt?.localeCompare(
-              v1.video?.snippet?.publishedAt || ""
-            ) || 0
-        );
-        return newFeedList;
-      });
-    },
-    []
-  );
-
   const fetchVideos = useCallback(
     (
       setter: React.Dispatch<React.SetStateAction<VideoItem[]>>,
       playlistItems: gapi.client.youtube.PlaylistItem[],
-      filter?: (v: gapi.client.youtube.Video) => boolean
+      filter?: (v: gapi.client.youtube.Video) => boolean,
+      sortBy?: "publishedAt"
     ) => {
       incLoading(1);
       gapi.client.youtube.videos
@@ -110,13 +92,30 @@ const VideoProvider = ({ children }: any) => {
               const newVideos = [...currentVideos];
               keepVideos.forEach((v) => {
                 if (!newVideos.find((cv) => v.id === cv.video.id)) {
-                  newVideos.push({
+                  const videoToInsert = {
                     playlistItem:
                       playlistItems.find(
                         (i) => i.snippet?.resourceId?.videoId === v.id
                       ) || {},
                     video: v,
-                  });
+                  };
+                  if (sortBy === "publishedAt") {
+                    // idx pour lequel v est plus récente que oldV
+                    const idx = newVideos.findIndex((oldV) => {
+                      return (
+                        (oldV.video?.snippet?.publishedAt?.localeCompare(
+                          v.snippet?.publishedAt || ""
+                        ) || 0) < 0
+                      );
+                    });
+                    newVideos.splice(
+                      idx === -1 ? newVideos.length : idx,
+                      0,
+                      videoToInsert
+                    );
+                  } else {
+                    newVideos.push(videoToInsert);
+                  }
                 }
               });
               return newVideos;
@@ -145,7 +144,12 @@ const VideoProvider = ({ children }: any) => {
               const filter = (v: gapi.client.youtube.Video) => {
                 return new Date(v.snippet?.publishedAt || "") > eightDaysAgo;
               };
-              fetchVideos(setAndSortFeedVideos, response.result.items, filter);
+              fetchVideos(
+                setFeedVideos,
+                response.result.items,
+                filter,
+                "publishedAt"
+              );
             }
           }, handleError)
           .then(() => {
@@ -154,7 +158,7 @@ const VideoProvider = ({ children }: any) => {
           });
       });
     },
-    [incLoading, handleError, fetchVideos, setAndSortFeedVideos]
+    [incLoading, handleError, fetchVideos]
   );
 
   const fetchPlaylistItemsCascade = useCallback(
@@ -195,10 +199,10 @@ const VideoProvider = ({ children }: any) => {
         incLoading(1);
         setTimeout(() => {
           incLoading(-1);
-          setAndSortFeedVideos(FEED_VIDEOS);
+          setFeedVideos(FEED_VIDEOS);
         }, 200);
       } else {
-        if (!pageToken) setAndSortFeedVideos([]);
+        if (!pageToken) setFeedVideos([]);
         incLoading(1);
         gapi.client.youtube.subscriptions
           .list({
@@ -220,7 +224,7 @@ const VideoProvider = ({ children }: any) => {
           .then(() => incLoading(-1));
       }
     },
-    [incLoading, setAndSortFeedVideos, handleError, fetchChannels]
+    [incLoading, handleError, fetchChannels]
   );
 
   const fetchWatchList = useCallback(
