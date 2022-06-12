@@ -162,7 +162,7 @@ const VideoProvider = ({ children }: any) => {
           });
       });
     },
-    [incLoading, handleError, fetchVideos]
+    [incLoading, handleError, fetchVideos, wlCache]
   );
 
   const fetchPlaylistItemsCascade = useCallback(
