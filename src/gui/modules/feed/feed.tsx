@@ -18,7 +18,7 @@ import ReactSwipe from "react-swipe";
 
 function Feed() {
   const [removing, setRemoving] = useState<string>();
-  const { feedVideos, wlCache, updateWlCache } = useContext(VideoContext);
+  const { feedVideos, updateWlCache } = useContext(VideoContext);
   const { handleError, incLoading } = useContext(LoginContext);
   let reactSwipeEl: ReactSwipe | null;
 
@@ -70,51 +70,47 @@ function Feed() {
 
   return (
     <>
-      {feedVideos
-        .filter((video) => {
-          return !wlCache.find((wlv) => wlv.video.id === video.video.id);
-        })
-        .map((video) => (
-          <WlVideoWrapper
-            key={video.video.id}
-            removing={removing === video.video.id}
+      {feedVideos.map((video) => (
+        <WlVideoWrapper
+          key={video.video.id}
+          removing={removing === video.video.id}
+        >
+          <ActionsMask>
+            <DeleteActionWrapper>
+              <FontAwesomeIcon icon={faTrash} />
+            </DeleteActionWrapper>
+            <MiddleActionWrapper />
+            <LikeActionWrapper>
+              <FontAwesomeIcon icon={faThumbsUp} />
+            </LikeActionWrapper>
+          </ActionsMask>
+          <ReactSwipe
+            ref={(el) => (reactSwipeEl = el)}
+            swipeOptions={{
+              startSlide: 1,
+              continuous: false,
+              callback: (idx) => {
+                if (idx === 0) addVideoToWatchlistCache(video);
+                if (idx === 2) likeVideo(video);
+              },
+            }}
           >
-            <ActionsMask>
-              <DeleteActionWrapper>
-                <FontAwesomeIcon icon={faTrash} />
-              </DeleteActionWrapper>
-              <MiddleActionWrapper />
-              <LikeActionWrapper>
-                <FontAwesomeIcon icon={faThumbsUp} />
-              </LikeActionWrapper>
-            </ActionsMask>
-            <ReactSwipe
-              ref={(el) => (reactSwipeEl = el)}
-              swipeOptions={{
-                startSlide: 1,
-                continuous: false,
-                callback: (idx) => {
-                  if (idx === 0) addVideoToWatchlistCache(video);
-                  if (idx === 2) likeVideo(video);
-                },
-              }}
-            >
-              <div>
-                <div style={{ height: "10px" }}></div>
-              </div>
-              <div>
-                <Video
-                  video={video}
-                  action={() => addToWatchlist(video)}
-                  actionIcon={faPlus}
-                />
-              </div>
-              <div>
-                <div style={{ height: "10px" }}></div>
-              </div>
-            </ReactSwipe>
-          </WlVideoWrapper>
-        ))}
+            <div>
+              <div style={{ height: "10px" }}></div>
+            </div>
+            <div>
+              <Video
+                video={video}
+                action={() => addToWatchlist(video)}
+                actionIcon={faPlus}
+              />
+            </div>
+            <div>
+              <div style={{ height: "10px" }}></div>
+            </div>
+          </ReactSwipe>
+        </WlVideoWrapper>
+      ))}
     </>
   );
 }
