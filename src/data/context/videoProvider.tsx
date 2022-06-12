@@ -71,7 +71,7 @@ const VideoProvider = ({ children }: any) => {
         const newFeedList =
           typeof callback === "function"
             ? callback(realCurrentVideos)
-            : { ...callback };
+            : [...callback];
         newFeedList.sort(
           (v1, v2) =>
             v2.video?.snippet?.publishedAt?.localeCompare(
