@@ -41,6 +41,7 @@ export const LikeActionWrapper = styled.div`
 export const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
   transition: max-height 0.5s ease;
   max-height: ${(props) => (props.removing ? "0" : props.theme.video.height)};
+  overflow: hidden;
 `;
 
 function Watchlist() {

@@ -61,28 +61,28 @@ const VideoProvider = ({ children }: any) => {
     DEFAULT_PLAYLIST_ID || ""
   );
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
-  const { handleError, loading, incLoading, setHeaderComponents } = useContext(
-    LoginContext
-  );
+  const { handleError, loading, incLoading, setHeaderComponents } =
+    useContext(LoginContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (loading === 0) {
-      setFeedVideos((currentFeeds) => {
-        if (currentFeeds.length > 0) {
-          const newFeeds = [...currentFeeds];
-          newFeeds.sort(
-            (v1, v2) =>
-              v2.video?.snippet?.publishedAt?.localeCompare(
-                v1.video?.snippet?.publishedAt || ""
-              ) || 0
-          );
-          return newFeeds;
-        }
-        return [];
+  const setAndSortFeedVideos = useCallback(
+    (callback: VideoItem[] | ((currentVideo: VideoItem[]) => VideoItem[])) => {
+      setFeedVideos((realCurrentVideos) => {
+        const newFeedList =
+          typeof callback === "function"
+            ? callback(realCurrentVideos)
+            : { ...callback };
+        newFeedList.sort(
+          (v1, v2) =>
+            v2.video?.snippet?.publishedAt?.localeCompare(
+              v1.video?.snippet?.publishedAt || ""
+            ) || 0
+        );
+        return newFeedList;
       });
-    }
-  }, [loading]);
+    },
+    []
+  );
 
   const fetchVideos = useCallback(
     (
@@ -143,7 +143,7 @@ const VideoProvider = ({ children }: any) => {
               const filter = (v: gapi.client.youtube.Video) => {
                 return new Date(v.snippet?.publishedAt || "") > fiveDaysAgo;
               };
-              fetchVideos(setFeedVideos, response.result.items, filter);
+              fetchVideos(setAndSortFeedVideos, response.result.items, filter);
             }
           }, handleError)
           .then(() => {
@@ -152,7 +152,7 @@ const VideoProvider = ({ children }: any) => {
           });
       });
     },
-    [incLoading, handleError, fetchVideos]
+    [incLoading, handleError, fetchVideos, setAndSortFeedVideos]
   );
 
   const fetchPlaylistItemsCascade = useCallback(
@@ -193,10 +193,10 @@ const VideoProvider = ({ children }: any) => {
         incLoading(1);
         setTimeout(() => {
           incLoading(-1);
-          setFeedVideos(FEED_VIDEOS);
+          setAndSortFeedVideos(FEED_VIDEOS);
         }, 200);
       } else {
-        if (!pageToken) setFeedVideos([]);
+        if (!pageToken) setAndSortFeedVideos([]);
         incLoading(1);
         gapi.client.youtube.subscriptions
           .list({
@@ -218,7 +218,7 @@ const VideoProvider = ({ children }: any) => {
           .then(() => incLoading(-1));
       }
     },
-    [incLoading, fetchChannels, handleError]
+    [incLoading, setAndSortFeedVideos, handleError, fetchChannels]
   );
 
   const fetchWatchList = useCallback(
