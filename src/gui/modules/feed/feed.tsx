@@ -44,12 +44,11 @@ function Feed() {
     setRemoving(video.video.id);
     setTimeout(() => {
       update<VideoItem[]>(WL_KEY, (currentWL) => {
-        if (!currentWL?.find((cv) => video.video.id === cv.video.id)) {
-          const newWL = [...(currentWL || [])];
+        const newWL = [...(currentWL || [])];
+        if (!newWL?.find((cv) => video.video.id === cv.video.id)) {
           newWL.push(video);
-          return newWL;
         }
-        return [];
+        return newWL;
       }).then(updateWlCache);
     }, 500);
   };

@@ -230,6 +230,9 @@ const VideoProvider = ({ children }: any) => {
   const updateWlCache = useCallback(() => {
     get<VideoItem[]>(WL_KEY).then((wl) => {
       setWlCache(wl || []);
+      setFeedVideos((feeds) =>
+        feeds.filter((v) => !wl?.find((cached) => cached.video.id === v.video.id))
+      );
     });
   }, []);
 
