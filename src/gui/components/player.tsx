@@ -25,8 +25,7 @@ const Player = ({ video }: { video: VideoItem }) => {
   const theme = useTheme();
 
   useEffect(() => {
-    if (readyPlayerOne.current && video.video.id)
-      player.current?.loadVideoById(video.video.id);
+    if (readyPlayerOne.current && video.video.id) player.current?.loadVideoById(video.video.id);
     else {
       player.current = new window.YT.Player(`video_player`, {
         height: (theme as any).playerHeight,

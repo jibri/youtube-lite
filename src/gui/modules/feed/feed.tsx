@@ -71,10 +71,7 @@ function Feed() {
   return (
     <>
       {feedVideos.map((video) => (
-        <WlVideoWrapper
-          key={video.video.id}
-          removing={removing === video.video.id}
-        >
+        <WlVideoWrapper key={video.video.id} removing={removing === video.video.id}>
           <ActionsMask>
             <DeleteActionWrapper>
               <FontAwesomeIcon icon={faTrash} />
@@ -99,11 +96,7 @@ function Feed() {
               <div style={{ height: "10px" }}></div>
             </div>
             <div>
-              <Video
-                video={video}
-                action={() => addToWatchlist(video)}
-                actionIcon={faPlus}
-              />
+              <Video video={video} action={() => addToWatchlist(video)} actionIcon={faPlus} />
             </div>
             <div>
               <div style={{ height: "10px" }}></div>

@@ -7,12 +7,8 @@ import { HeaderWrapper, TopButton } from "src/utils/styled";
 
 const Header = () => {
   const { headerComponents } = useContext(LoginContext);
-  const {
-    fetchSubscriptions,
-    fetchWatchList,
-    setDescriptionOpened,
-    playVideo,
-  } = useContext(VideoContext);
+  const { fetchSubscriptions, fetchWatchList, setDescriptionOpened, playVideo } =
+    useContext(VideoContext);
   const location = useLocation();
 
   return (
@@ -21,10 +17,7 @@ const Header = () => {
         switch (component) {
           case HeaderComponents.FEED_RELOAD_BTN:
             return (
-              <TopButton
-                key="FEED_RELOAD_BTN"
-                onClick={() => fetchSubscriptions()}
-              >
+              <TopButton key="FEED_RELOAD_BTN" onClick={() => fetchSubscriptions()}>
                 Reload
               </TopButton>
             );
@@ -42,10 +35,7 @@ const Header = () => {
             );
           case HeaderComponents.DESC_BTN:
             return (
-              <TopButton
-                key="DESC_BTN"
-                onClick={() => setDescriptionOpened((old) => !old)}
-              >
+              <TopButton key="DESC_BTN" onClick={() => setDescriptionOpened((old) => !old)}>
                 Description
               </TopButton>
             );

@@ -1,6 +1,6 @@
-import React from "react"
-import { PATHS } from 'src/router/path'
-import { ButtonLink, FooterWrapper } from 'src/utils/styled'
+import React from "react";
+import { PATHS } from "src/router/path";
+import { ButtonLink, FooterWrapper } from "src/utils/styled";
 
 const Footer = () => (
   <FooterWrapper>
@@ -8,5 +8,5 @@ const Footer = () => (
     <ButtonLink to={PATHS.WATCHLIST}>Watchlist</ButtonLink>
     <ButtonLink to={PATHS.PROFILE}>Profile</ButtonLink>
   </FooterWrapper>
-)
-export default Footer
+);
+export default Footer;

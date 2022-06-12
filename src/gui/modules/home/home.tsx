@@ -1,27 +1,27 @@
-import React, { useContext } from "react"
-import Router from 'src/router'
-import Footer from 'src/gui/modules/layout/footer'
-import Login from 'src/gui/modules/login/login'
-import { LoginContext } from 'src/data/context/loginProvider'
-import VideoProvider, { VideoContext } from 'src/data/context/videoProvider'
-import styled from 'styled-components'
-import Error from 'src/gui/components/error'
-import Loader from 'src/gui/components/loader'
-import Player from 'src/gui/components/player'
-import Header from '../layout/header'
+import React, { useContext } from "react";
+import Router from "src/router";
+import Footer from "src/gui/modules/layout/footer";
+import Login from "src/gui/modules/login/login";
+import { LoginContext } from "src/data/context/loginProvider";
+import VideoProvider, { VideoContext } from "src/data/context/videoProvider";
+import styled from "styled-components";
+import Error from "src/gui/components/error";
+import Loader from "src/gui/components/loader";
+import Player from "src/gui/components/player";
+import Header from "../layout/header";
 
 const MainScreeen = styled.div`
   min-height: 100vh;
   width: 100%;
-  background-color: ${props => props.theme.background};
-`
+  background-color: ${(props) => props.theme.background};
+`;
 const ContentWrapper = styled.div`
-  padding: ${props => props.theme.headerHeigth} 0;
-`
+  padding: ${(props) => props.theme.headerHeigth} 0;
+`;
 
 const VideoModule = () => {
-  const { loading } = useContext(LoginContext)
-  const { videoPlaying } = useContext(VideoContext)
+  const { loading } = useContext(LoginContext);
+  const { videoPlaying } = useContext(VideoContext);
 
   return (
     <>
@@ -33,21 +33,24 @@ const VideoModule = () => {
       </ContentWrapper>
       <Footer />
     </>
-  )
-}
+  );
+};
 
 const Home = () => {
-  const { loggedIn, error } = useContext(LoginContext)
+  const { loggedIn, error } = useContext(LoginContext);
 
   return (
     <MainScreeen>
-      {loggedIn
-        ? <VideoProvider><VideoModule /></VideoProvider>
-        : <Login />
-      }
+      {loggedIn ? (
+        <VideoProvider>
+          <VideoModule />
+        </VideoProvider>
+      ) : (
+        <Login />
+      )}
       <Error error={error} />
     </MainScreeen>
-  )
-}
+  );
+};
 
-export default Home
+export default Home;

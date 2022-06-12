@@ -28,9 +28,7 @@ const FixedLayout = styled.div<{ bottom?: boolean }>`
     `}
 `;
 export const HeaderWrapper = (props: any) => <FixedLayout {...props} />;
-export const FooterWrapper = (props: any) => (
-  <FixedLayout bottom={true} {...props} />
-);
+export const FooterWrapper = (props: any) => <FixedLayout bottom={true} {...props} />;
 
 export const button = css`
   color: ${(props) => props.theme.text.main};

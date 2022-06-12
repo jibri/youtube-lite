@@ -11,9 +11,7 @@ interface LoginData {
 
   handleError: (reason: gapi.client.HttpRequestRejected) => void;
   incLoading: (inc: number) => void;
-  setHeaderComponents: React.Dispatch<
-    React.SetStateAction<HeaderComponentsType>
-  >;
+  setHeaderComponents: React.Dispatch<React.SetStateAction<HeaderComponentsType>>;
 }
 
 const defaultData = {
@@ -39,17 +37,14 @@ const LoginProvider = ({ children }: any) => {
   const [googleAuth, setGoogleAuth] = useState<gapi.auth2.GoogleAuth>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(0);
-  const [
-    headerComponents,
-    setHeaderComponents,
-  ] = useState<HeaderComponentsType>(defaultHeaderComponents);
+  const [headerComponents, setHeaderComponents] =
+    useState<HeaderComponentsType>(defaultHeaderComponents);
 
   useEffect(() => {
     function initClient() {
       // Retrieve the discovery document for version 3 of YouTube Data API.
       // In practice, your app can retrieve one or more discovery documents.
-      var discoveryUrl =
-        "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest";
+      var discoveryUrl = "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest";
 
       // Initialize the gapi.client object, which app uses to make API requests.
       // Get API key and client ID from API Console.
@@ -104,8 +99,6 @@ const LoginProvider = ({ children }: any) => {
     setHeaderComponents,
   };
 
-  return (
-    <LoginContext.Provider value={values}>{children}</LoginContext.Provider>
-  );
+  return <LoginContext.Provider value={values}>{children}</LoginContext.Provider>;
 };
 export default LoginProvider;

@@ -1,18 +1,9 @@
-import React, {
-  createContext,
-  useState,
-  useEffect,
-  useContext,
-  useCallback,
-} from "react";
+import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
 import { get } from "idb-keyval";
 import { DEFAULT_PLAYLIST_ID, WL_KEY } from "src/utils/constants";
 import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
-import {
-  defaultHeaderComponents,
-  playingHeaderComponents,
-} from "src/router/path";
+import { defaultHeaderComponents, playingHeaderComponents } from "src/router/path";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -59,12 +50,9 @@ const VideoProvider = ({ children }: any) => {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>([]);
   const [wlVideos, setWlVideos] = useState<VideoItem[]>([]);
   const [wlCache, setWlCache] = useState<VideoItem[]>([]);
-  const [playlistId, setPlaylistId] = useState<string>(
-    DEFAULT_PLAYLIST_ID || ""
-  );
+  const [playlistId, setPlaylistId] = useState<string>(DEFAULT_PLAYLIST_ID || "");
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
-  const { handleError, loading, incLoading, setHeaderComponents } =
-    useContext(LoginContext);
+  const { handleError, loading, incLoading, setHeaderComponents } = useContext(LoginContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
 
   const fetchVideos = useCallback(
@@ -78,15 +66,11 @@ const VideoProvider = ({ children }: any) => {
       gapi.client.youtube.videos
         .list({
           part: "snippet,contentDetails,player",
-          id: playlistItems
-            .map((i) => i.snippet?.resourceId?.videoId)
-            .join(","),
+          id: playlistItems.map((i) => i.snippet?.resourceId?.videoId).join(","),
           maxResults: 50,
         })
         .then((response) => {
-          const keepVideos = filter
-            ? response.result.items?.filter(filter)
-            : response.result.items;
+          const keepVideos = filter ? response.result.items?.filter(filter) : response.result.items;
           if (keepVideos) {
             setter((currentVideos) => {
               const newVideos = [...currentVideos];
@@ -94,9 +78,7 @@ const VideoProvider = ({ children }: any) => {
                 if (!newVideos.find((cv) => v.id === cv.video.id)) {
                   const videoToInsert = {
                     playlistItem:
-                      playlistItems.find(
-                        (i) => i.snippet?.resourceId?.videoId === v.id
-                      ) || {},
+                      playlistItems.find((i) => i.snippet?.resourceId?.videoId === v.id) || {},
                     video: v,
                   };
                   if (sortBy === "publishedAt") {
@@ -108,11 +90,7 @@ const VideoProvider = ({ children }: any) => {
                         ) || 0) < 0
                       );
                     });
-                    newVideos.splice(
-                      idx === -1 ? newVideos.length : idx,
-                      0,
-                      videoToInsert
-                    );
+                    newVideos.splice(idx === -1 ? newVideos.length : idx, 0, videoToInsert);
                   } else {
                     newVideos.push(videoToInsert);
                   }
@@ -142,18 +120,10 @@ const VideoProvider = ({ children }: any) => {
               const eightDaysAgo = new Date();
               eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
               const filter = (v: gapi.client.youtube.Video) => {
-                if (
-                  wlCache.find((cachedVideo) => cachedVideo.video.id === v.id)
-                )
-                  return false;
+                if (wlCache.find((cachedVideo) => cachedVideo.video.id === v.id)) return false;
                 return new Date(v.snippet?.publishedAt || "") > eightDaysAgo;
               };
-              fetchVideos(
-                setFeedVideos,
-                response.result.items,
-                filter,
-                "publishedAt"
-              );
+              fetchVideos(setFeedVideos, response.result.items, filter, "publishedAt");
             }
           }, handleError)
           .then(() => {
@@ -219,9 +189,7 @@ const VideoProvider = ({ children }: any) => {
             const result = response.result;
             if (result.items?.length)
               fetchChannels(
-                result.items
-                  .map((sub) => sub.snippet?.resourceId?.channelId)
-                  .join(",")
+                result.items.map((sub) => sub.snippet?.resourceId?.channelId).join(",")
               );
             if (result.nextPageToken) fetchSubscriptions(result.nextPageToken);
           }, handleError)
@@ -256,9 +224,7 @@ const VideoProvider = ({ children }: any) => {
 
   const playVideo = (video?: VideoItem) => {
     setVideoPlaying(video);
-    setHeaderComponents(
-      video ? playingHeaderComponents : defaultHeaderComponents
-    );
+    setHeaderComponents(video ? playingHeaderComponents : defaultHeaderComponents);
   };
 
   const updateWlCache = useCallback(() => {
@@ -288,8 +254,6 @@ const VideoProvider = ({ children }: any) => {
     updateWlCache,
   };
 
-  return (
-    <VideoContext.Provider value={values}> {children} </VideoContext.Provider>
-  );
+  return <VideoContext.Provider value={values}> {children} </VideoContext.Provider>;
 };
 export default VideoProvider;

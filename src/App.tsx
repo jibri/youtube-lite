@@ -1,9 +1,8 @@
-import React from "react"
-import { BrowserRouter } from 'react-router-dom'
-import LoginProvider from 'src/data/context/loginProvider'
-import MyThemeProvider from './data/context/ThemeProvider'
-import Home from './gui/modules/home/home'
-
+import React from "react";
+import { BrowserRouter } from "react-router-dom";
+import LoginProvider from "src/data/context/loginProvider";
+import MyThemeProvider from "./data/context/ThemeProvider";
+import Home from "./gui/modules/home/home";
 
 const App = () => (
   <BrowserRouter>
@@ -13,6 +12,6 @@ const App = () => (
       </MyThemeProvider>
     </LoginProvider>
   </BrowserRouter>
-)
+);
 
-export default App
+export default App;

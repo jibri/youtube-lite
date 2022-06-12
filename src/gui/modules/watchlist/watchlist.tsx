@@ -1,10 +1,6 @@
 import React, { useContext, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faTrash,
-  faThumbsUp,
-  faShare,
-} from "@fortawesome/free-solid-svg-icons";
+import { faTrash, faThumbsUp, faShare } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video from "src/gui/components/video";
 import { VideoWrapper } from "src/utils/styled";
@@ -96,10 +92,7 @@ function Watchlist() {
   return (
     <>
       {wlVideos.map((video) => (
-        <WlVideoWrapper
-          key={video.video.id}
-          removing={removing === video.video.id}
-        >
+        <WlVideoWrapper key={video.video.id} removing={removing === video.video.id}>
           <ActionsMask>
             <DeleteActionWrapper>
               <FontAwesomeIcon icon={faTrash} />
@@ -125,9 +118,7 @@ function Watchlist() {
             <div>
               <Video
                 video={video}
-                action={() =>
-                  share(`https://www.youtube.com/watch?v=${video.video.id}`)
-                }
+                action={() => share(`https://www.youtube.com/watch?v=${video.video.id}`)}
                 actionIcon={canShare ? faShare : undefined}
               />
             </div>

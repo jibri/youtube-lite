@@ -67,12 +67,8 @@ export const getTime = (duration?: string) => {
   if (!result || !result[0]) return "00:00";
   const hours = (result[2] && `${result[2]}:`) || "";
   const minutes =
-    (result[4] &&
-      (result[4].length === 1 ? `0${result[4]}:` : `${result[4]}:`)) ||
-    "00:";
-  const seconds =
-    (result[6] && (result[6].length === 1 ? `0${result[6]}` : result[6])) ||
-    "00";
+    (result[4] && (result[4].length === 1 ? `0${result[4]}:` : `${result[4]}:`)) || "00:";
+  const seconds = (result[6] && (result[6].length === 1 ? `0${result[6]}` : result[6])) || "00";
   return `${hours}${minutes}${seconds}`;
 };
 
@@ -87,10 +83,7 @@ const Video = ({
 }) => {
   const { playVideo } = useContext(VideoContext);
   return (
-    <VideoWrapper
-      key={video.video.id}
-      height={video.video.snippet?.thumbnails?.default?.height}
-    >
+    <VideoWrapper key={video.video.id} height={video.video.snippet?.thumbnails?.default?.height}>
       <ThumbnailContainer>
         <Image
           alt="youtube thumbnail"

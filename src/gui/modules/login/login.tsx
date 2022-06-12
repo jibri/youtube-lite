@@ -48,12 +48,8 @@ const PlaylistItem = styled(Link)`
 
 function Login() {
   const [nbWl, setNbWl] = useState<number>(0);
-  const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>(
-    []
-  );
-  const { loggedIn, googleAuth, handleError, incLoading } = useContext(
-    LoginContext
-  );
+  const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>([]);
+  const { loggedIn, googleAuth, handleError, incLoading } = useContext(LoginContext);
   const { setPlaylistId } = useContext(VideoContext);
   const { dark, light } = useMyTheme();
 
@@ -122,24 +118,14 @@ function Login() {
         <>
           <div>
             {loggedIn ? (
-              <Text>
-                You are currently signed in and have granted access to this app.
-              </Text>
+              <Text>You are currently signed in and have granted access to this app.</Text>
             ) : (
-              <Text>
-                You have not authorized this app or you are signed out.
-              </Text>
+              <Text>You have not authorized this app or you are signed out.</Text>
             )}
           </div>
-          <button onClick={handleAuthClick}>
-            {loggedIn ? "Sign out" : "Sign In/Authorize"}
-          </button>
+          <button onClick={handleAuthClick}>{loggedIn ? "Sign out" : "Sign In/Authorize"}</button>
           {loggedIn && <button onClick={revokeAccess}>Revoke access</button>}
-          <YoutubeButton
-            href="http://youtube.com"
-            target="_blank"
-            rel="noopener noreferer"
-          >
+          <YoutubeButton href="http://youtube.com" target="_blank" rel="noopener noreferer">
             <img
               src={`${process.env.PUBLIC_URL}/logo192.png`}
               width="100px"
