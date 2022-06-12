@@ -138,10 +138,10 @@ const VideoProvider = ({ children }: any) => {
           })
           .then((response) => {
             if (response.result.items) {
-              const fiveDaysAgo = new Date();
-              fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+              const eightDaysAgo = new Date();
+              eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
               const filter = (v: gapi.client.youtube.Video) => {
-                return new Date(v.snippet?.publishedAt || "") > fiveDaysAgo;
+                return new Date(v.snippet?.publishedAt || "") > eightDaysAgo;
               };
               fetchVideos(setAndSortFeedVideos, response.result.items, filter);
             }
