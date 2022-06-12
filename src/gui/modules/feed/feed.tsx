@@ -17,7 +17,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactSwipe from "react-swipe";
 
 function Feed() {
-  const [removing, setRemoving] = useState<string>();
+  const [removing, setRemoving] = useState<string[]>([]);
   const { feedVideos, updateWlCache } = useContext(VideoContext);
   const { handleError, incLoading } = useContext(LoginContext);
   let reactSwipeEl: ReactSwipe | null;
@@ -41,7 +41,7 @@ function Feed() {
   }
 
   const addVideoToWatchlistCache = (video: VideoItem) => {
-    setRemoving(video.video.id);
+    setRemoving((rem) => [...rem, video.video.id!]);
     setTimeout(() => {
       update<VideoItem[]>(WL_KEY, (currentWL) => {
         const newWL = [...(currentWL || [])];
@@ -49,7 +49,10 @@ function Feed() {
           newWL.push(video);
         }
         return newWL;
-      }).then(updateWlCache);
+      }).then(() => {
+        updateWlCache();
+        setRemoving((rem) => rem.filter((id) => id !== video.video.id!));
+      });
     }, 500);
   };
 
@@ -70,7 +73,7 @@ function Feed() {
   return (
     <>
       {feedVideos.map((video) => (
-        <WlVideoWrapper key={video.video.id} removing={removing === video.video.id}>
+        <WlVideoWrapper key={video.video.id} removing={removing.includes(video.video.id!)}>
           <ActionsMask>
             <DeleteActionWrapper>
               <FontAwesomeIcon icon={faTrash} />
