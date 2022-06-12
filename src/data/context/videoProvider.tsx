@@ -87,8 +87,7 @@ const VideoProvider = ({ children }: any) => {
   const fetchVideos = useCallback(
     (
       setter: React.Dispatch<React.SetStateAction<VideoItem[]>>,
-      playlistItems: gapi.client.youtube.PlaylistItem[],
-      filter?: (v: gapi.client.youtube.Video) => boolean
+      playlistItems: gapi.client.youtube.PlaylistItem[]
     ) => {
       incLoading(1);
       gapi.client.youtube.videos
@@ -100,9 +99,7 @@ const VideoProvider = ({ children }: any) => {
           maxResults: 50,
         })
         .then((response) => {
-          const keepVideos = filter
-            ? response.result.items?.filter(filter)
-            : response.result.items;
+          const keepVideos = response.result.items;
           if (keepVideos) {
             setter((currentVideos) => {
               const newVideos = [...currentVideos];
@@ -138,12 +135,7 @@ const VideoProvider = ({ children }: any) => {
           })
           .then((response) => {
             if (response.result.items) {
-              const fiveDaysAgo = new Date();
-              fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-              const filter = (v: gapi.client.youtube.Video) => {
-                return new Date(v.snippet?.publishedAt || "") > fiveDaysAgo;
-              };
-              fetchVideos(setAndSortFeedVideos, response.result.items, filter);
+              fetchVideos(setAndSortFeedVideos, response.result.items);
             }
           }, handleError)
           .then(() => {
