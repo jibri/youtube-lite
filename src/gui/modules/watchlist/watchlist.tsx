@@ -40,10 +40,23 @@ export const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
   overflow: hidden;
 `;
 
+const canShare = !!(navigator as any).share;
+const largeScreenMq = window.matchMedia("(min-width: 600px)");
+
+const useMq = (mq: MediaQueryList) => {
+  const [matches, setMatches] = useState(mq.matches);
+
+  mq.onchange = function () {
+    setMatches(this.matches);
+  };
+  return matches;
+};
+
 function Watchlist() {
   const { handleError, incLoading } = useContext(LoginContext);
   const { wlVideos, deleteFromWatchlist } = useContext(VideoContext);
   const [removing, setRemoving] = useState<string>();
+  const matches = useMq(largeScreenMq);
 
   const removeFromWatchlist = (video: VideoItem) => {
     setRemoving(video.video.id);
@@ -72,7 +85,7 @@ function Watchlist() {
         removeFromWatchlist(video);
       });
   };
-  const canShare = !!(navigator as any).share;
+
   const share = (url: string) => {
     if ((navigator as any).share) {
       (navigator as any)
@@ -87,6 +100,28 @@ function Watchlist() {
     } else {
       // fallback
     }
+  };
+
+  const getActions = (video: VideoItem) => {
+    const actions = [];
+    if (canShare) {
+      actions.push({
+        action: () => share(`https://www.youtube.com/watch?v=${video.video.id}`),
+        actionIcon: faShare,
+      });
+    }
+
+    if (matches) {
+      actions.push({
+        action: () => likeVideo(video),
+        actionIcon: faThumbsUp,
+      });
+      actions.push({
+        action: () => removeFromWatchlist(video),
+        actionIcon: faTrash,
+      });
+    }
+    return actions;
   };
 
   return (
@@ -116,11 +151,7 @@ function Watchlist() {
               <div style={{ height: "10px" }}></div>
             </div>
             <div>
-              <Video
-                video={video}
-                action={() => share(`https://www.youtube.com/watch?v=${video.video.id}`)}
-                actionIcon={canShare ? faShare : undefined}
-              />
+              <Video video={video} actions={getActions(video)} />
             </div>
             <div>
               <div style={{ height: "10px" }}></div>

@@ -5,6 +5,12 @@ import { VideoContext } from "src/data/context/videoProvider";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+const LinkWrapper = styled.a`
+  padding-left: 5px;
+  text-decoration: none;
+  width: 100%;
+  color: ${(props) => props.theme.text.main};
+`;
 const VideoWrapper = styled.div<{ height?: number }>`
   display: flex;
   width: 100%;
@@ -12,20 +18,13 @@ const VideoWrapper = styled.div<{ height?: number }>`
   background-color: ${(props) => props.theme.primary};
   &:hover {
     background-color: ${(props) => props.theme.secondary};
-    color: ${(props) => props.theme.active};
-    * {
+    ${LinkWrapper} {
       color: ${(props) => props.theme.active};
     }
   }
 `;
 const ThumbnailContainer = styled.div`
   position: relative; // in order to position Time at the bottom of it
-`;
-const LinkWrapper = styled.a`
-  padding-left: 5px;
-  text-decoration: none;
-  width: 100%;
-  color: ${(props) => props.theme.text.main};
 `;
 const Author = styled.h6`
   font-size: 0.8em;
@@ -50,11 +49,19 @@ const Image = styled.img`
   flex: 0 0 110px;
 `;
 const ActionWrapper = styled.div`
-  width: ${(props) => props.theme.video.height};
-  font-size: ${(props) => `calc(${props.theme.video.height} - 30px)`};
+  /* width: ${(props) => props.theme.video.height}; */
+  font-size: ${(props) => `calc(${props.theme.video.height} - 50px)`};
   display: flex;
   justify-content: center;
   align-items: center;
+
+  > * {
+    margin: 0 10px;
+    color: ${(props) => props.theme.text.main};
+    &:hover {
+      color: ${(props) => props.theme.active};
+    }
+  }
 `;
 
 /**
@@ -74,12 +81,13 @@ export const getTime = (duration?: string) => {
 
 const Video = ({
   video,
-  action,
-  actionIcon,
+  actions,
 }: {
   video: VideoItem;
-  action?: () => void;
-  actionIcon?: IconDefinition;
+  actions: {
+    action: () => void;
+    actionIcon: IconDefinition;
+  }[];
 }) => {
   const { playVideo } = useContext(VideoContext);
   return (
@@ -98,11 +106,11 @@ const Video = ({
         <Author>{video.video.snippet?.channelTitle}</Author>
         <Title>{video.video.snippet?.title}</Title>
       </LinkWrapper>
-      {action && actionIcon && (
-        <ActionWrapper onClick={action}>
-          <FontAwesomeIcon icon={actionIcon} />
-        </ActionWrapper>
-      )}
+      <ActionWrapper>
+        {actions.map((a) => (
+          <FontAwesomeIcon key={a.actionIcon.iconName} icon={a.actionIcon} onClick={a.action} />
+        ))}
+      </ActionWrapper>
     </VideoWrapper>
   );
 };

@@ -1,4 +1,6 @@
-export const defaultTheme = {
+import { DefaultTheme } from "styled-components";
+
+export const defaultTheme: DefaultTheme = {
   // Theme
   white: "#ffffff",
   black: "#333333",
@@ -23,7 +25,7 @@ export const defaultTheme = {
   headerHeigth: "3em",
   playerHeight: "270px",
 };
-export const darkTheme: typeof defaultTheme = {
+export const darkTheme: DefaultTheme = {
   ...defaultTheme,
 
   // Theme

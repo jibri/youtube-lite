@@ -98,7 +98,10 @@ function Feed() {
               <div style={{ height: "10px" }}></div>
             </div>
             <div>
-              <Video video={video} action={() => addToWatchlist(video)} actionIcon={faPlus} />
+              <Video
+                video={video}
+                actions={[{ action: () => addToWatchlist(video), actionIcon: faPlus }]}
+              />
             </div>
             <div>
               <div style={{ height: "10px" }}></div>
