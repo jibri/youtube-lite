@@ -4,6 +4,7 @@ import { DEFAULT_PLAYLIST_ID, WL_KEY } from "src/utils/constants";
 import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
 import { defaultHeaderComponents, playingHeaderComponents } from "src/router/path";
+import { getTimeSeconds } from "src/utils/utils";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -121,6 +122,7 @@ const VideoProvider = ({ children }: any) => {
               eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
               const filter = (v: gapi.client.youtube.Video) => {
                 if (wlCache.find((cachedVideo) => cachedVideo.video.id === v.id)) return false;
+                if (getTimeSeconds(v.contentDetails?.duration) < 60) return false;
                 return new Date(v.snippet?.publishedAt || "") > eightDaysAgo;
               };
               fetchVideos(setFeedVideos, response.result.items, filter, "publishedAt");

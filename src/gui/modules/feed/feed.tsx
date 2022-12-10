@@ -53,7 +53,7 @@ function Feed() {
         updateWlCache();
         setRemoving((rem) => rem.filter((id) => id !== video.video.id!));
       });
-    }, 500);
+    }, 1000);
   };
 
   const likeVideo = (video: VideoItem) => {

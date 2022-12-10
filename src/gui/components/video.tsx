@@ -4,6 +4,7 @@ import { VideoItem } from "src/utils/types";
 import { VideoContext } from "src/data/context/videoProvider";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { getTimeDisplay } from "src/utils/utils";
 
 const LinkWrapper = styled.a`
   padding-left: 5px;
@@ -64,21 +65,6 @@ const ActionWrapper = styled.div`
   }
 `;
 
-/**
- * Transforme a time string from 'PT123H45M67S' to '123:45:67'
- */
-export const getTime = (duration?: string) => {
-  if (!duration) return "00:00";
-  const regex = /PT((\d*)H)?((\d*)M)?((\d*)S)?/;
-  const result = duration.match(regex);
-  if (!result || !result[0]) return "00:00";
-  const hours = (result[2] && `${result[2]}:`) || "";
-  const minutes =
-    (result[4] && (result[4].length === 1 ? `0${result[4]}:` : `${result[4]}:`)) || "00:";
-  const seconds = (result[6] && (result[6].length === 1 ? `0${result[6]}` : result[6])) || "00";
-  return `${hours}${minutes}${seconds}`;
-};
-
 const Video = ({
   video,
   actions,
@@ -100,7 +86,7 @@ const Video = ({
           height={video.video.snippet?.thumbnails?.default?.height}
           onClick={() => playVideo(video)}
         />
-        <Time>{getTime(video.video.contentDetails?.duration)}</Time>
+        <Time>{getTimeDisplay(video.video.contentDetails?.duration)}</Time>
       </ThumbnailContainer>
       <LinkWrapper href={`https://www.youtube.com/watch?v=${video.video.id}`}>
         <Author>{video.video.snippet?.channelTitle}</Author>
