@@ -1,6 +1,6 @@
 {
   "name": "youtube-lite",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "private": true,
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.2.0",
@@ -39,7 +39,7 @@
     "eject": "react-scripts eject",
     "patch": "yarn version --patch",
     "up-bl": "npx browserslist@latest --update-db",
-    "deploy": "yarn up-bl && yarn patch && git push && yarn build && firebase deploy --only hosting"
+    "deploy": "yarn && yarn up-bl && yarn patch && git push && yarn build && firebase deploy --only hosting"
   },
   "eslintConfig": {
     "extends": "react-app"
