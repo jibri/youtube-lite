@@ -6,8 +6,9 @@ import { Link } from "react-router-dom";
 import { PATHS } from "src/router/path";
 import { ActionButton, Text } from "src/utils/styled";
 import { useMyTheme } from "src/data/context/ThemeProvider";
-import { clear, get } from "idb-keyval";
-import { WL_KEY } from "src/utils/constants";
+import { clear, get, update } from "idb-keyval";
+import { MIN_REQUIRED_DURATION_KEY, WL_KEY } from "src/utils/constants";
+import { isFinite } from "lodash";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -48,6 +49,7 @@ const PlaylistItem = styled(Link)`
 
 function Login() {
   const [nbWl, setNbWl] = useState<number>(0);
+  const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
   const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>([]);
   const { loggedIn, googleAuth, handleError, incLoading } = useContext(LoginContext);
   const { setPlaylistId } = useContext(VideoContext);
@@ -57,8 +59,14 @@ function Login() {
     get(WL_KEY).then((lst) => setNbWl(lst?.length || 0));
   }, []);
 
+  const updateIdbMinDuration = () => {
+    if (isFinite(+minDurationInputValue) && +minDurationInputValue > 0)
+      update(MIN_REQUIRED_DURATION_KEY, () => +minDurationInputValue);
+  };
+
   useEffect(() => {
     updateIdbInfos();
+    get(MIN_REQUIRED_DURATION_KEY).then(setMinDurationInputValue);
   }, [updateIdbInfos]);
 
   useEffect(() => {
@@ -163,6 +171,15 @@ function Login() {
               <ActionButton onClick={updateIdbInfos}>Update infos</ActionButton>
               <ActionButton onClick={cleatIdb}>Clear IndexedDb</ActionButton>
             </PlaylistItems>
+          </div>
+          <div>
+            <Text>Minimum duration in feed :</Text>
+            <input
+              onBlur={updateIdbMinDuration}
+              value={minDurationInputValue}
+              onChange={(e) => setMinDurationInputValue(e.target.value)}
+            />
+            <Text>seconds</Text>
           </div>
           <div>
             <Text>version v.{process.env.REACT_APP_VERSION}</Text>
