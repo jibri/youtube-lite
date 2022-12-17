@@ -68,7 +68,7 @@ function Watchlist() {
         })
         .then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
         .then(() => incLoading(-1));
-    }, 1000);
+    }, 500);
   };
 
   const likeVideo = (video: VideoItem) => {

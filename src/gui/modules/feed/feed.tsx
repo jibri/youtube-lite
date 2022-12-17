@@ -51,9 +51,8 @@ function Feed() {
         return newWL;
       }).then(() => {
         updateWlCache();
-        setRemoving((rem) => rem.filter((id) => id !== video.video.id!));
       });
-    }, 1000);
+    }, 500);
   };
 
   const likeVideo = (video: VideoItem) => {
