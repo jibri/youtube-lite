@@ -3,11 +3,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faThumbsUp, faShare } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video from "src/gui/components/video";
-import { VideoWrapper } from "src/utils/styled";
+import { VideoWrapper, ActionButton, Text } from "src/utils/styled";
 import { LoginContext } from "src/data/context/loginProvider";
 import { VideoItem } from "src/utils/types";
 import ReactSwipe from "react-swipe";
 import styled from "styled-components";
+import useDelayAction from "src/hooks/useDelayAction";
 
 export const ActionsMask = styled.div`
   position: absolute;
@@ -40,6 +41,27 @@ export const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
   overflow: hidden;
 `;
 
+// TODO déclaler dans un  comosant a part entiere
+const DelayedPanel = styled.div<{ in: boolean }>`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: calc(100% - 2em);
+  z-index: ${(props) => props.theme.zIndex.popup};
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background-color: ${(props) => props.theme.black};
+  color: ${(props) => props.theme.white};
+
+  transition: all 0.3s ease;
+  padding: ${(p) => (p.in ? "5px 1em" : 0)};
+  min-height: ${(p) => (p.in ? "2em" : 0)};
+  opacity: ${(p) => (p.in ? 1 : 0)};
+`;
+
 const canShare = !!(navigator as any).share;
 const largeScreenMq = window.matchMedia("(min-width: 600px)");
 
@@ -56,34 +78,39 @@ function Watchlist() {
   const { handleError, incLoading } = useContext(LoginContext);
   const { wlVideos, deleteFromWatchlist } = useContext(VideoContext);
   const [removing, setRemoving] = useState<string>();
+  const { delayedActions, delayAction, cancelAction } = useDelayAction();
   const matches = useMq(largeScreenMq);
 
   const removeFromWatchlist = (video: VideoItem) => {
     setRemoving(video.video.id);
-    incLoading(1);
-    setTimeout(() => {
-      gapi.client.youtube.playlistItems
-        .delete({
-          id: video.playlistItem.id || "",
-        })
-        .then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
-        .then(() => incLoading(-1));
-    }, 500);
+    delayAction("Deleted", () => {
+      incLoading(1);
+      setTimeout(() => {
+        gapi.client.youtube.playlistItems
+          .delete({
+            id: video.playlistItem.id || "",
+          })
+          .then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
+          .then(() => incLoading(-1));
+      }, 500);
+    });
   };
 
   const likeVideo = (video: VideoItem) => {
     setRemoving(video.video.id);
-    incLoading(1);
-    gapi.client.youtube.videos
-      .rate({
-        id: video.video.id || "",
-        rating: "like",
-      })
-      .then(undefined, handleError)
-      .then(() => {
-        incLoading(-1);
-        removeFromWatchlist(video);
-      });
+    delayAction("Liked", () => {
+      incLoading(1);
+      gapi.client.youtube.videos
+        .rate({
+          id: video.video.id || "",
+          rating: "like",
+        })
+        .then(undefined, handleError)
+        .then(() => {
+          incLoading(-1);
+          removeFromWatchlist(video);
+        });
+    });
   };
 
   const share = (url: string) => {
@@ -159,6 +186,10 @@ function Watchlist() {
           </ReactSwipe>
         </WlVideoWrapper>
       ))}
+      <DelayedPanel in={!!delayedActions.length}>
+        <Text>{delayedActions[delayedActions.length - 1]?.label}</Text>
+        <ActionButton onClick={() => cancelAction(setRemoving)}>Cancel</ActionButton>
+      </DelayedPanel>
     </>
   );
 }

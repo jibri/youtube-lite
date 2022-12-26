@@ -1,10 +1,11 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
 import { get } from "idb-keyval";
-import { DEFAULT_PLAYLIST_ID, MIN_REQUIRED_DURATION_KEY, WL_KEY } from "src/utils/constants";
+import { DEFAULT_PLAYLIST_ID, WL_KEY } from "src/utils/constants";
 import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
 import { defaultHeaderComponents, playingHeaderComponents } from "src/router/path";
 import { getTimeSeconds } from "src/utils/utils";
+import { ConfigContext } from "src/data/context/configProvider";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -51,10 +52,10 @@ const VideoProvider = ({ children }: any) => {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>([]);
   const [wlVideos, setWlVideos] = useState<VideoItem[]>([]);
   const [wlCache, setWlCache] = useState<VideoItem[]>([]);
-  const [minRequiredDuration, setMinRequiredDuration] = useState<number>(0);
   const [playlistId, setPlaylistId] = useState<string>(DEFAULT_PLAYLIST_ID || "");
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
   const { handleError, loading, incLoading, setHeaderComponents } = useContext(LoginContext);
+  const { minDuration, maxAge } = useContext(ConfigContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
 
   const fetchVideos = useCallback(
@@ -119,12 +120,12 @@ const VideoProvider = ({ children }: any) => {
           })
           .then((response) => {
             if (response.result.items) {
-              const eightDaysAgo = new Date();
-              eightDaysAgo.setDate(eightDaysAgo.getDate() - 8);
+              const oldestPublishedDate = new Date();
+              oldestPublishedDate.setDate(oldestPublishedDate.getDate() - maxAge);
               const filter = (v: gapi.client.youtube.Video) => {
                 if (wlCache.find((cachedVideo) => cachedVideo.video.id === v.id)) return false;
-                if (getTimeSeconds(v.contentDetails?.duration) < minRequiredDuration) return false;
-                return new Date(v.snippet?.publishedAt || "") > eightDaysAgo;
+                if (getTimeSeconds(v.contentDetails?.duration) < minDuration) return false;
+                return new Date(v.snippet?.publishedAt || "") > oldestPublishedDate;
               };
               fetchVideos(setFeedVideos, response.result.items, filter, "publishedAt");
             }
@@ -135,7 +136,7 @@ const VideoProvider = ({ children }: any) => {
           });
       });
     },
-    [incLoading, handleError, fetchVideos, wlCache, minRequiredDuration]
+    [incLoading, handleError, fetchVideos, wlCache, minDuration, maxAge]
   );
 
   const fetchPlaylistItemsCascade = useCallback(
@@ -239,17 +240,10 @@ const VideoProvider = ({ children }: any) => {
     });
   }, []);
 
-  const getMinRequiredDuration = useCallback(() => {
-    get<number>(MIN_REQUIRED_DURATION_KEY).then((duration) => {
-      setMinRequiredDuration(duration || 0);
-    });
-  }, []);
-
   useEffect(() => {
     updateWlCache();
     fetchWatchList();
-    getMinRequiredDuration();
-  }, [fetchWatchList, updateWlCache, getMinRequiredDuration]);
+  }, [fetchWatchList, updateWlCache]);
 
   const values: VideoData = {
     feedVideos,
