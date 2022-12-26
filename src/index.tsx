@@ -4,6 +4,9 @@ import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
+// init firestore
+import "./init/firestore";
+
 ReactDOM.render(
   <React.StrictMode>
     <App />

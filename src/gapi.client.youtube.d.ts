@@ -2613,6 +2613,9 @@ declare namespace gapi.client {
       thumbnails?: ThumbnailDetails;
       /** The item's title. */
       title?: string;
+
+      videoOwnerChannelTitle?: string;
+      videoOwnerChannelId?: string;
     }
     interface PlaylistItemStatus {
       /** This resource's privacy status. */

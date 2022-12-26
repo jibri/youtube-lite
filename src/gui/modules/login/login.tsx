@@ -6,9 +6,11 @@ import { Link } from "react-router-dom";
 import { PATHS } from "src/router/path";
 import { ActionButton, Text } from "src/utils/styled";
 import { useMyTheme } from "src/data/context/ThemeProvider";
-import { clear, get, update } from "idb-keyval";
-import { MIN_REQUIRED_DURATION_KEY, WL_KEY } from "src/utils/constants";
-import { isFinite } from "lodash";
+import { clear, get } from "idb-keyval";
+import { WL_KEY } from "src/utils/constants";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "src/init/firestore";
+import { ConfigContext } from "src/data/context/configProvider";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -50,8 +52,10 @@ const PlaylistItem = styled(Link)`
 function Login() {
   const [nbWl, setNbWl] = useState<number>(0);
   const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
+  const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
   const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>([]);
   const { loggedIn, googleAuth, handleError, incLoading } = useContext(LoginContext);
+  const { minDuration, maxAge } = useContext(ConfigContext);
   const { setPlaylistId } = useContext(VideoContext);
   const { dark, light } = useMyTheme();
 
@@ -59,15 +63,29 @@ function Login() {
     get(WL_KEY).then((lst) => setNbWl(lst?.length || 0));
   }, []);
 
-  const updateIdbMinDuration = () => {
-    if (isFinite(+minDurationInputValue) && +minDurationInputValue > 0)
-      update(MIN_REQUIRED_DURATION_KEY, () => +minDurationInputValue);
+  const updateMinDuration = (e: React.FocusEvent<HTMLInputElement>) => {
+    updateDoc(doc(db, "configuration", "local"), {
+      minDuration: e.target.value,
+    });
+  };
+
+  const updateMaxAge = (e: React.FocusEvent<HTMLInputElement>) => {
+    updateDoc(doc(db, "configuration", "local"), {
+      maxAge: e.target.value,
+    });
   };
 
   useEffect(() => {
     updateIdbInfos();
-    get(MIN_REQUIRED_DURATION_KEY).then(setMinDurationInputValue);
   }, [updateIdbInfos]);
+
+  useEffect(() => {
+    setMinDurationInputValue(`${minDuration}`);
+  }, [minDuration]);
+
+  useEffect(() => {
+    setMaxAgeInputValue(`${maxAge}`);
+  }, [maxAge]);
 
   useEffect(() => {
     const loadPlaylists = (pageToken?: string) => {
@@ -173,13 +191,22 @@ function Login() {
             </PlaylistItems>
           </div>
           <div>
-            <Text>Minimum duration in feed :</Text>
+            <Text>Min video duration in feed : </Text>
             <input
-              onBlur={updateIdbMinDuration}
+              onBlur={updateMinDuration}
               value={minDurationInputValue}
               onChange={(e) => setMinDurationInputValue(e.target.value)}
             />
             <Text>seconds</Text>
+          </div>
+          <div>
+            <Text>Max age video in feed : </Text>
+            <input
+              onBlur={updateMaxAge}
+              value={maxAgeInputValue}
+              onChange={(e) => setMaxAgeInputValue(e.target.value)}
+            />
+            <Text>days</Text>
           </div>
           <div>
             <Text>version v.{process.env.REACT_APP_VERSION}</Text>
