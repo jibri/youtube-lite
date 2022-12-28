@@ -9,6 +9,7 @@ import { VideoItem } from "src/utils/types";
 import ReactSwipe from "react-swipe";
 import styled from "styled-components";
 import useDelayAction from "src/hooks/useDelayAction";
+import Notification from "src/gui/components/notification";
 
 export const ActionsMask = styled.div`
   position: absolute;
@@ -41,27 +42,6 @@ export const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
   overflow: hidden;
 `;
 
-// TODO déclaler dans un  comosant a part entiere
-const DelayedPanel = styled.div<{ in: boolean }>`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: calc(100% - 2em);
-  z-index: ${(props) => props.theme.zIndex.popup};
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  background-color: ${(props) => props.theme.black};
-  color: ${(props) => props.theme.white};
-
-  transition: all 0.3s ease;
-  padding: ${(p) => (p.in ? "5px 1em" : 0)};
-  min-height: ${(p) => (p.in ? "2em" : 0)};
-  opacity: ${(p) => (p.in ? 1 : 0)};
-`;
-
 const canShare = !!(navigator as any).share;
 const largeScreenMq = window.matchMedia("(min-width: 600px)");
 
@@ -82,23 +62,21 @@ function Watchlist() {
   const matches = useMq(largeScreenMq);
 
   const removeFromWatchlist = (video: VideoItem) => {
-    setRemoving(video.video.id);
-    delayAction("Deleted", () => {
+    setTimeout(() => setRemoving(video.video.id), 100);
+    delayAction("Video supprimée", () => {
       incLoading(1);
-      setTimeout(() => {
-        gapi.client.youtube.playlistItems
-          .delete({
-            id: video.playlistItem.id || "",
-          })
-          .then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
-          .then(() => incLoading(-1));
-      }, 500);
+      gapi.client.youtube.playlistItems
+        .delete({
+          id: video.playlistItem.id || "",
+        })
+        .then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
+        .then(() => incLoading(-1));
     });
   };
 
   const likeVideo = (video: VideoItem) => {
-    setRemoving(video.video.id);
-    delayAction("Liked", () => {
+    setTimeout(() => setRemoving(video.video.id), 100);
+    delayAction("Like ajouté", () => {
       incLoading(1);
       gapi.client.youtube.videos
         .rate({
@@ -186,10 +164,10 @@ function Watchlist() {
           </ReactSwipe>
         </WlVideoWrapper>
       ))}
-      <DelayedPanel in={!!delayedActions.length}>
+      <Notification show={!!delayedActions.length}>
         <Text>{delayedActions[delayedActions.length - 1]?.label}</Text>
         <ActionButton onClick={() => cancelAction(setRemoving)}>Cancel</ActionButton>
-      </DelayedPanel>
+      </Notification>
     </>
   );
 }

@@ -15,15 +15,20 @@ import {
 } from "../watchlist/watchlist";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactSwipe from "react-swipe";
+import useDelayAction from "src/hooks/useDelayAction";
+import Notification from "src/gui/components/notification";
+import { ActionButton, Text } from "src/utils/styled";
 
 function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
   const { feedVideos, updateWlCache } = useContext(VideoContext);
   const { handleError, incLoading } = useContext(LoginContext);
+  const { delayedActions, delayAction, cancelAction } = useDelayAction();
   let reactSwipeEl: ReactSwipe | null;
 
   function addToWatchlist(video: VideoItem) {
     incLoading(1);
+    setTimeout(() => setRemoving((rem) => [...rem, video.video.id!]), 100);
     gapi.client.youtube.playlistItems
       .insert({
         part: "snippet",
@@ -41,18 +46,20 @@ function Feed() {
   }
 
   const addVideoToWatchlistCache = (video: VideoItem) => {
-    setRemoving((rem) => [...rem, video.video.id!]);
-    setTimeout(() => {
-      update<VideoItem[]>(WL_KEY, (currentWL) => {
-        const newWL = [...(currentWL || [])];
-        if (!newWL?.find((cv) => video.video.id === cv.video.id)) {
-          newWL.push(video);
-        }
-        return newWL;
-      }).then(() => {
-        updateWlCache();
-      });
-    }, 500);
+    update<VideoItem[]>(WL_KEY, (currentWL) => {
+      const newWL = [...(currentWL || [])];
+      if (!newWL?.find((cv) => video.video.id === cv.video.id)) {
+        newWL.push(video);
+      }
+      return newWL;
+    }).then(() => {
+      updateWlCache();
+    });
+  };
+
+  const deleteFromFeed = (video: VideoItem) => {
+    setTimeout(() => setRemoving((rem) => [...rem, video.video.id!]), 100);
+    delayAction("Video supprimée", addVideoToWatchlistCache, [video]);
   };
 
   const likeVideo = (video: VideoItem) => {
@@ -88,7 +95,7 @@ function Feed() {
               startSlide: 1,
               continuous: false,
               callback: (idx) => {
-                if (idx === 0) addVideoToWatchlistCache(video);
+                if (idx === 0) deleteFromFeed(video);
                 if (idx === 2) likeVideo(video);
               },
             }}
@@ -108,6 +115,12 @@ function Feed() {
           </ReactSwipe>
         </WlVideoWrapper>
       ))}
+      <Notification show={!!delayedActions.length}>
+        <Text>{delayedActions[delayedActions.length - 1]?.label}</Text>
+        <ActionButton onClick={() => cancelAction(() => setRemoving((ids) => ids.slice(0, -1)))}>
+          Cancel
+        </ActionButton>
+      </Notification>
     </>
   );
 }

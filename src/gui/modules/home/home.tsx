@@ -5,7 +5,7 @@ import Login from "src/gui/modules/login/login";
 import { LoginContext } from "src/data/context/loginProvider";
 import VideoProvider, { VideoContext } from "src/data/context/videoProvider";
 import styled from "styled-components";
-import Error from "src/gui/components/error";
+import Notification from "src/gui/components/notification";
 import Loader from "src/gui/components/loader";
 import Player from "src/gui/components/player";
 import Header from "../layout/header";
@@ -48,7 +48,7 @@ const Home = () => {
       ) : (
         <Login />
       )}
-      <Error error={error} />
+      <Notification show={!!error}>{error}</Notification>
     </MainScreeen>
   );
 };
