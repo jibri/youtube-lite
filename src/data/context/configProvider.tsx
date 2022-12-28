@@ -2,7 +2,6 @@ import {
   doc,
   DocumentData,
   onSnapshot,
-  PartialWithFieldValue,
   QueryDocumentSnapshot,
   SnapshotOptions,
 } from "firebase/firestore";

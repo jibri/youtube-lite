@@ -17,7 +17,7 @@ const Container = styled.div<{ show: boolean }>`
 
   transition: all 0.3s ease;
   padding: ${(p) => (p.show ? "5px 1em" : 0)};
-  min-height: ${(p) => (p.show ? "2em" : 0)};
+  height: ${(p) => (p.show ? "2em" : 0)};
   opacity: ${(p) => (p.show ? 1 : 0)};
 `;
 
