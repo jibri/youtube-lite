@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const useDelayAction = (delay: number = 5000) => {
+const useDelayAction = (delay: number = 3000) => {
   const [delayedActions, setDelayedActions] = useState<{ label: string; id: NodeJS.Timeout }[]>([]);
 
   const delayAction = (label: string, action: (...args: any) => unknown, params?: any[]) => {
