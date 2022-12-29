@@ -3,23 +3,25 @@ import styled from "styled-components";
 
 const Container = styled.div<{ show: boolean }>`
   position: fixed;
-  left: 0;
+  bottom: 3.5em;
   padding: 5px 1em;
-  width: calc(100% - 2 * 1em);
-  height: calc(2em - 2 * 5px);
+  min-width: min(35vw, 15em);
+  max-width: calc(100vw - 2 * 1em);
+  min-height: 2em;
+  max-height: 5em;
   z-index: ${(props) => props.theme.zIndex.popup};
   overflow: hidden;
+  border-radius: 0 10px 10px 0;
 
   display: flex;
   align-items: center;
   justify-content: space-between;
 
-  background-color: ${(props) => props.theme.black};
-  color: ${(props) => props.theme.white};
+  background-color: ${(props) => props.theme.notification.background};
 
-  transition: all 0.3s ease;
+  transition: all 0.3s ease-in-out;
+  left: ${(p) => (p.show ? 0 : "-100%")};
   opacity: ${(p) => (p.show ? 1 : 0)};
-  bottom: ${(p) => (p.show ? 0 : "-2em")};
 `;
 
 const Notification = ({ show, children }: { show: boolean; children: React.ReactNode }) => (

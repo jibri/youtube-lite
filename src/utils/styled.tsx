@@ -59,16 +59,20 @@ export const ButtonLink = styled(NavLink).attrs({ activeClassName: "active" })`
   }
 `;
 
-export const ActionButton = styled(Flex).attrs(() => ({ ai: "center" }))<{
+export const ActionButton = styled.button<{
   height?: string;
 }>`
-  background-color: ${(props) => props.theme.primary};
+  background-color: transparent;
   padding: 0 10px;
   height: ${(p) => p.height};
-  color: ${(props) => props.theme.text.main};
+  color: ${(props) => props.theme.active};
+  border: none;
+  font-size: inherit;
   cursor: pointer;
   &:hover {
-    background-color: ${(props) => props.theme.secondary};
+    color: ${(props) => props.theme.text.main};
+  }
+  &:active {
     color: ${(props) => props.theme.active};
   }
 `;
