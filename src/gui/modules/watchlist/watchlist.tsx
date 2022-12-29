@@ -63,15 +63,17 @@ function Watchlist() {
 
   const removeFromWatchlist = (video: VideoItem) => {
     setTimeout(() => setRemoving(video.video.id), 100);
-    delayAction("Video supprimée", () => {
-      incLoading(1);
-      gapi.client.youtube.playlistItems
-        .delete({
-          id: video.playlistItem.id || "",
-        })
-        .then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
-        .then(() => incLoading(-1));
-    });
+    delayAction("Video supprimée", () => deletePlaylistItem(video));
+  };
+
+  const deletePlaylistItem = (video: VideoItem) => {
+    incLoading(1);
+    gapi.client.youtube.playlistItems
+      .delete({
+        id: video.playlistItem.id || "",
+      })
+      .then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
+      .then(() => incLoading(-1));
   };
 
   const likeVideo = (video: VideoItem) => {
@@ -86,7 +88,7 @@ function Watchlist() {
         .then(undefined, handleError)
         .then(() => {
           incLoading(-1);
-          removeFromWatchlist(video);
+          deletePlaylistItem(video);
         });
     });
   };
