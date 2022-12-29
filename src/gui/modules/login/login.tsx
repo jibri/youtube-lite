@@ -194,6 +194,7 @@ function Login() {
           </div>
           <div>
             <Text>Min video duration in feed : </Text>
+            <br />
             <input
               onBlur={updateMinDuration}
               value={minDurationInputValue}
@@ -203,6 +204,7 @@ function Login() {
           </div>
           <div>
             <Text>Max age video in feed : </Text>
+            <br />
             <input
               onBlur={updateMaxAge}
               value={maxAgeInputValue}
@@ -211,10 +213,11 @@ function Login() {
             <Text>days</Text>
           </div>
           <div>
-            <Text>version v.{process.env.REACT_APP_VERSION}</Text>
+            <Text>version v{process.env.REACT_APP_VERSION}</Text>
           </div>
           <Notification show={not}>
-            <Text>salut</Text> <ActionButton>Cancel</ActionButton>
+            <Text>salut</Text>
+            <ActionButton onClick={() => setNot((n) => !n)}>Cancel</ActionButton>
           </Notification>
           <button onClick={() => setNot((n) => !n)}>not</button>
         </>
