@@ -12,6 +12,7 @@ const Container = styled.div<{ show: boolean }>`
   z-index: ${(props) => props.theme.zIndex.popup};
   overflow: hidden;
   border-radius: 0 10px 10px 0;
+  box-shadow: 2px 2px 5px #00000055;
 
   display: flex;
   align-items: center;

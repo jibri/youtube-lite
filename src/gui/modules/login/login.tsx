@@ -11,6 +11,7 @@ import { WL_KEY } from "src/utils/constants";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "src/init/firestore";
 import { ConfigContext } from "src/data/context/configProvider";
+import Notification from "src/gui/components/notification";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -58,6 +59,7 @@ function Login() {
   const { minDuration, maxAge } = useContext(ConfigContext);
   const { setPlaylistId } = useContext(VideoContext);
   const { dark, light } = useMyTheme();
+  const [not, setNot] = useState(false);
 
   const updateIdbInfos = useCallback(() => {
     get(WL_KEY).then((lst) => setNbWl(lst?.length || 0));
@@ -211,6 +213,10 @@ function Login() {
           <div>
             <Text>version v.{process.env.REACT_APP_VERSION}</Text>
           </div>
+          <Notification show={not}>
+            <Text>salut</Text> <ActionButton>Cancel</ActionButton>
+          </Notification>
+          <button onClick={() => setNot((n) => !n)}>not</button>
         </>
       )}
     </div>
