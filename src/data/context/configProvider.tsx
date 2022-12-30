@@ -13,11 +13,14 @@ interface ConfigData {
   minDuration: number;
   /** Age max en jour des video à remonter dans le feed */
   maxAge: number;
+  /** id de la playlist que l'on souhaite afficher, et remplir à partir de feed */
+  playlistId: string;
 }
 
-const defaultData = {
+const defaultData: ConfigData = {
   minDuration: 0,
   maxAge: 0,
+  playlistId: "",
 };
 
 export const ConfigContext = createContext<ConfigData>(defaultData);

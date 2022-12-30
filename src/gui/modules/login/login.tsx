@@ -1,13 +1,10 @@
-import React, { useContext, useState, useEffect, useCallback } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import styled from "styled-components";
 import { LoginContext } from "src/data/context/loginProvider";
-import { VideoContext } from "src/data/context/videoProvider";
 import { Link } from "react-router-dom";
 import { PATHS } from "src/router/path";
 import { ActionButton, Text } from "src/utils/styled";
 import { useMyTheme } from "src/data/context/ThemeProvider";
-import { clear, get } from "idb-keyval";
-import { WL_KEY } from "src/utils/constants";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "src/init/firestore";
 import { ConfigContext } from "src/data/context/configProvider";
@@ -39,7 +36,7 @@ const PlaylistItems = styled.div`
   flex-wrap: wrap;
   margin: 0.5em;
 `;
-const PlaylistItem = styled(Link)`
+const PlaylistItem = styled(Link)<{ $active: boolean }>`
   box-shadow: 1px 1px 5px 0 #00000055;
   border-radius: 5px;
   margin-left: 0.5em;
@@ -47,23 +44,17 @@ const PlaylistItem = styled(Link)`
   background-color: ${(props) => props.theme.primary};
 
   text-decoration: none;
-  color: inherit;
+  color: ${(props) => (props.$active ? props.theme.active : props.theme.text.main)};
 `;
 
 function Login() {
-  const [nbWl, setNbWl] = useState<number>(0);
   const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
   const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
   const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>([]);
   const { loggedIn, googleAuth, handleError, incLoading } = useContext(LoginContext);
-  const { minDuration, maxAge } = useContext(ConfigContext);
-  const { setPlaylistId } = useContext(VideoContext);
+  const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const { dark, light } = useMyTheme();
   const [not, setNot] = useState(false);
-
-  const updateIdbInfos = useCallback(() => {
-    get(WL_KEY).then((lst) => setNbWl(lst?.length || 0));
-  }, []);
 
   const updateMinDuration = (e: React.FocusEvent<HTMLInputElement>) => {
     updateDoc(doc(db, "configuration", "local"), {
@@ -77,9 +68,13 @@ function Login() {
     });
   };
 
-  useEffect(() => {
-    updateIdbInfos();
-  }, [updateIdbInfos]);
+  const updatePlaylistId = (id?: string) => {
+    if (id) {
+      updateDoc(doc(db, "configuration", "local"), {
+        playlistId: id,
+      });
+    }
+  };
 
   useEffect(() => {
     setMinDurationInputValue(`${minDuration}`);
@@ -130,14 +125,6 @@ function Login() {
     googleAuth?.disconnect();
   }
 
-  const updatePlaylist = (playlistId?: string) => {
-    if (playlistId) setPlaylistId(playlistId);
-  };
-
-  const cleatIdb = () => {
-    clear();
-  };
-
   return (
     <div>
       {!googleAuth ? (
@@ -167,10 +154,11 @@ function Login() {
               {playlists.map((pl) => (
                 <PlaylistItem
                   to={PATHS.WATCHLIST}
-                  onClick={() => updatePlaylist(pl.id)}
+                  onClick={() => updatePlaylistId(pl.id)}
+                  $active={pl.id === playlistId}
                   key={pl.id}
                 >
-                  <Text>{pl.snippet?.title}</Text>
+                  {pl.snippet?.title}
                 </PlaylistItem>
               ))}
             </PlaylistItems>
@@ -180,16 +168,6 @@ function Login() {
             <PlaylistItems>
               <ActionButton onClick={dark}>Dark Theme</ActionButton>
               <ActionButton onClick={light}>Light Theme</ActionButton>
-            </PlaylistItems>
-          </div>
-          <div>
-            <Text>Idb :</Text>
-            <p>
-              <Text>feed update date : {nbWl}</Text>
-            </p>
-            <PlaylistItems>
-              <ActionButton onClick={updateIdbInfos}>Update infos</ActionButton>
-              <ActionButton onClick={cleatIdb}>Clear IndexedDb</ActionButton>
             </PlaylistItems>
           </div>
           <div>
@@ -212,14 +190,14 @@ function Login() {
             />
             <Text>days</Text>
           </div>
+          <Notification show={not}>
+            <Text>Mon message</Text>
+            <ActionButton onClick={() => setNot((n) => !n)}>Fermer</ActionButton>
+          </Notification>
+          <button onClick={() => setNot((n) => !n)}>Show notif</button>
           <div>
             <Text>version v{process.env.REACT_APP_VERSION}</Text>
           </div>
-          <Notification show={not}>
-            <Text>salut</Text>
-            <ActionButton onClick={() => setNot((n) => !n)}>Cancel</ActionButton>
-          </Notification>
-          <button onClick={() => setNot((n) => !n)}>not</button>
         </>
       )}
     </div>

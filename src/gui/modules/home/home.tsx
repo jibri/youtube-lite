@@ -9,6 +9,7 @@ import Notification from "src/gui/components/notification";
 import Loader from "src/gui/components/loader";
 import Player from "src/gui/components/player";
 import Header from "../layout/header";
+import { Text } from "src/utils/styled";
 
 const MainScreeen = styled.div`
   min-height: 100vh;
@@ -48,7 +49,9 @@ const Home = () => {
       ) : (
         <Login />
       )}
-      <Notification show={!!error}>{error}</Notification>
+      <Notification show={!!error}>
+        <Text>{error}</Text>
+      </Notification>
     </MainScreeen>
   );
 };

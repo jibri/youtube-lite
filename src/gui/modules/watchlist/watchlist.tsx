@@ -3,13 +3,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash, faThumbsUp, faShare } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video from "src/gui/components/video";
-import { VideoWrapper, ActionButton, Text } from "src/utils/styled";
+import { VideoWrapper, ActionButton, Text, Flex } from "src/utils/styled";
 import { LoginContext } from "src/data/context/loginProvider";
 import { VideoItem } from "src/utils/types";
 import ReactSwipe from "react-swipe";
 import styled from "styled-components";
 import useDelayAction from "src/hooks/useDelayAction";
 import Notification from "src/gui/components/notification";
+import { ConfigContext } from "src/data/context/configProvider";
 
 export const ActionsMask = styled.div`
   position: absolute;
@@ -57,6 +58,7 @@ const useMq = (mq: MediaQueryList) => {
 function Watchlist() {
   const { handleError, incLoading } = useContext(LoginContext);
   const { wlVideos, deleteFromWatchlist } = useContext(VideoContext);
+  const { playlistId } = useContext(ConfigContext);
   const [removing, setRemoving] = useState<string>();
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
   const matches = useMq(largeScreenMq);
@@ -133,6 +135,14 @@ function Watchlist() {
 
   return (
     <>
+      {wlVideos.length === 0 && (
+        <Flex jc="center">
+          <Text>
+            {!playlistId && "Veuillez sélectionner une playlist à afficher depuis l'écran profil"}
+            {!!playlistId && "Aucune vidéo dans votre playlist"}
+          </Text>
+        </Flex>
+      )}
       {wlVideos.map((video) => (
         <WlVideoWrapper key={video.video.id} removing={removing === video.video.id}>
           <ActionsMask>

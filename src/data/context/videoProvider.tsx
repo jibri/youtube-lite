@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
 import { get } from "idb-keyval";
-import { DEFAULT_PLAYLIST_ID, WL_KEY } from "src/utils/constants";
+import { WL_KEY } from "src/utils/constants";
 import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
 import { defaultHeaderComponents, playingHeaderComponents } from "src/router/path";
@@ -28,7 +28,6 @@ interface VideoData {
   fetchSubscriptions: () => void;
   deleteFromWatchlist: (playlistItemId?: string) => void;
   playVideo: (video?: VideoItem) => void;
-  setPlaylistId: React.Dispatch<React.SetStateAction<string>>;
   updateWlCache: () => void;
 }
 const defaultData: VideoData = {
@@ -42,7 +41,6 @@ const defaultData: VideoData = {
   fetchSubscriptions: () => null,
   deleteFromWatchlist: (e) => e,
   playVideo: () => null,
-  setPlaylistId: (e) => e,
   updateWlCache: () => null,
 };
 
@@ -52,10 +50,9 @@ const VideoProvider = ({ children }: any) => {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>([]);
   const [wlVideos, setWlVideos] = useState<VideoItem[]>([]);
   const [wlCache, setWlCache] = useState<VideoItem[]>([]);
-  const [playlistId, setPlaylistId] = useState<string>(DEFAULT_PLAYLIST_ID || "");
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
   const { handleError, loading, incLoading, setHeaderComponents } = useContext(LoginContext);
-  const { minDuration, maxAge } = useContext(ConfigContext);
+  const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
 
   const fetchVideos = useCallback(
@@ -205,12 +202,16 @@ const VideoProvider = ({ children }: any) => {
 
   const fetchWatchList = useCallback(
     (pageToken?: string) => {
+      if (!playlistId) {
+        setWlVideos([]);
+        return;
+      }
       if (!pageToken) setWlVideos([]);
       incLoading(1);
       gapi.client.youtube.playlistItems
         .list({
           part: "snippet",
-          playlistId: playlistId,
+          playlistId,
           maxResults: 50,
           pageToken,
         })
@@ -256,7 +257,6 @@ const VideoProvider = ({ children }: any) => {
     fetchWatchList,
     fetchSubscriptions,
     deleteFromWatchlist,
-    setPlaylistId,
     setDescriptionOpened,
     updateWlCache,
   };
