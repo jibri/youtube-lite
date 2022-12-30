@@ -56,21 +56,27 @@ function Login() {
   const { dark, light } = useMyTheme();
   const [not, setNot] = useState(false);
 
+  const userId = googleAuth?.currentUser.get().getId();
+
   const updateMinDuration = (e: React.FocusEvent<HTMLInputElement>) => {
-    updateDoc(doc(db, "configuration", "local"), {
-      minDuration: e.target.value,
-    });
+    if (loggedIn && userId) {
+      updateDoc(doc(db, "configuration", userId), {
+        minDuration: e.target.value,
+      });
+    }
   };
 
   const updateMaxAge = (e: React.FocusEvent<HTMLInputElement>) => {
-    updateDoc(doc(db, "configuration", "local"), {
-      maxAge: e.target.value,
-    });
+    if (loggedIn && userId) {
+      updateDoc(doc(db, "configuration", userId), {
+        maxAge: e.target.value,
+      });
+    }
   };
 
   const updatePlaylistId = (id?: string) => {
-    if (id) {
-      updateDoc(doc(db, "configuration", "local"), {
+    if (loggedIn && userId && id) {
+      updateDoc(doc(db, "configuration", userId), {
         playlistId: id,
       });
     }
@@ -148,56 +154,60 @@ function Login() {
             />
             <Text>Go to Youtube</Text>
           </YoutubeButton>
-          <div>
-            <Text>My playlists :</Text>
-            <PlaylistItems>
-              {playlists.map((pl) => (
-                <PlaylistItem
-                  to={PATHS.WATCHLIST}
-                  onClick={() => updatePlaylistId(pl.id)}
-                  $active={pl.id === playlistId}
-                  key={pl.id}
-                >
-                  {pl.snippet?.title}
-                </PlaylistItem>
-              ))}
-            </PlaylistItems>
-          </div>
-          <div>
-            <Text>Theme :</Text>
-            <PlaylistItems>
-              <ActionButton onClick={dark}>Dark Theme</ActionButton>
-              <ActionButton onClick={light}>Light Theme</ActionButton>
-            </PlaylistItems>
-          </div>
-          <div>
-            <Text>Min video duration in feed : </Text>
-            <br />
-            <input
-              onBlur={updateMinDuration}
-              value={minDurationInputValue}
-              onChange={(e) => setMinDurationInputValue(e.target.value)}
-            />
-            <Text>seconds</Text>
-          </div>
-          <div>
-            <Text>Max age video in feed : </Text>
-            <br />
-            <input
-              onBlur={updateMaxAge}
-              value={maxAgeInputValue}
-              onChange={(e) => setMaxAgeInputValue(e.target.value)}
-            />
-            <Text>days</Text>
-          </div>
-          <Notification show={not}>
-            <Text>Mon message</Text>
-            <ActionButton onClick={() => setNot((n) => !n)}>Fermer</ActionButton>
-          </Notification>
-          <button onClick={() => setNot((n) => !n)}>Show notif</button>
-          <div>
-            <Text>version v{process.env.REACT_APP_VERSION}</Text>
-          </div>
+          {loggedIn && (
+            <>
+              <div>
+                <Text>My playlists :</Text>
+                <PlaylistItems>
+                  {playlists.map((pl) => (
+                    <PlaylistItem
+                      to={PATHS.WATCHLIST}
+                      onClick={() => updatePlaylistId(pl.id)}
+                      $active={pl.id === playlistId}
+                      key={pl.id}
+                    >
+                      {pl.snippet?.title}
+                    </PlaylistItem>
+                  ))}
+                </PlaylistItems>
+              </div>
+              <div>
+                <Text>Theme :</Text>
+                <PlaylistItems>
+                  <ActionButton onClick={dark}>Dark Theme</ActionButton>
+                  <ActionButton onClick={light}>Light Theme</ActionButton>
+                </PlaylistItems>
+              </div>
+              <div>
+                <Text>Min video duration in feed : </Text>
+                <br />
+                <input
+                  onBlur={updateMinDuration}
+                  value={minDurationInputValue}
+                  onChange={(e) => setMinDurationInputValue(e.target.value)}
+                />
+                <Text>seconds</Text>
+              </div>
+              <div>
+                <Text>Max age video in feed : </Text>
+                <br />
+                <input
+                  onBlur={updateMaxAge}
+                  value={maxAgeInputValue}
+                  onChange={(e) => setMaxAgeInputValue(e.target.value)}
+                />
+                <Text>days</Text>
+              </div>
+              <Notification show={not}>
+                <Text>Mon message</Text>
+                <ActionButton onClick={() => setNot((n) => !n)}>Fermer</ActionButton>
+              </Notification>
+              <button onClick={() => setNot((n) => !n)}>Show notif</button>
+              <div>
+                <Text>version v{process.env.REACT_APP_VERSION}</Text>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>

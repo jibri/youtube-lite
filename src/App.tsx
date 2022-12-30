@@ -7,13 +7,13 @@ import Home from "./gui/modules/home/home";
 
 const App = () => (
   <BrowserRouter>
-    <ConfigProvider>
-      <LoginProvider>
+    <LoginProvider>
+      <ConfigProvider>
         <MyThemeProvider>
           <Home />
         </MyThemeProvider>
-      </LoginProvider>
-    </ConfigProvider>
+      </ConfigProvider>
+    </LoginProvider>
   </BrowserRouter>
 );
 
