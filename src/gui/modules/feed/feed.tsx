@@ -2,10 +2,8 @@ import React, { useContext, useState } from "react";
 import { faPlus, faThumbsUp, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video from "src/gui/components/video";
-import { WL_KEY } from "src/utils/constants";
 import { LoginContext } from "src/data/context/loginProvider";
 import { VideoItem } from "src/utils/types";
-import { update } from "idb-keyval";
 import {
   WlVideoWrapper,
   ActionsMask,
@@ -19,13 +17,17 @@ import useDelayAction from "src/hooks/useDelayAction";
 import Notification from "src/gui/components/notification";
 import { ActionButton, Text } from "src/utils/styled";
 import { ConfigContext } from "src/data/context/configProvider";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "src/init/firestore";
 
 function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
   const { playlistId } = useContext(ConfigContext);
-  const { feedVideos, updateWlCache } = useContext(VideoContext);
-  const { handleError, incLoading } = useContext(LoginContext);
+  const { feedVideos } = useContext(VideoContext);
+  const { googleAuth, handleError, incLoading } = useContext(LoginContext);
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
+
+  const userId = googleAuth?.currentUser?.get()?.getId();
   let reactSwipeEl: ReactSwipe | null;
 
   function addToWatchlist(video: VideoItem) {
@@ -48,15 +50,9 @@ function Feed() {
   }
 
   const addVideoToWatchlistCache = (video: VideoItem) => {
-    update<VideoItem[]>(WL_KEY, (currentWL) => {
-      const newWL = [...(currentWL || [])];
-      if (!newWL?.find((cv) => video.video.id === cv.video.id)) {
-        newWL.push(video);
-      }
-      return newWL;
-    }).then(() => {
-      updateWlCache();
-    });
+    if (userId) {
+      addDoc(collection(db, "feedCache", userId, "videos"), video);
+    }
   };
 
   const deleteFromFeed = (video: VideoItem) => {

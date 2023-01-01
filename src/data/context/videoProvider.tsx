@@ -1,11 +1,17 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
-import { get } from "idb-keyval";
-import { WL_KEY } from "src/utils/constants";
 import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
 import { defaultHeaderComponents, playingHeaderComponents } from "src/router/path";
 import { getTimeSeconds } from "src/utils/utils";
 import { ConfigContext } from "src/data/context/configProvider";
+import {
+  collection,
+  DocumentData,
+  onSnapshot,
+  QueryDocumentSnapshot,
+  SnapshotOptions,
+} from "firebase/firestore";
+import { db } from "src/init/firestore";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -19,7 +25,6 @@ import { ConfigContext } from "src/data/context/configProvider";
 interface VideoData {
   feedVideos: VideoItem[];
   wlVideos: VideoItem[];
-  wlCache: VideoItem[];
   loading: number;
   videoPlaying?: VideoItem;
   descriptionOpened: boolean;
@@ -28,12 +33,10 @@ interface VideoData {
   fetchSubscriptions: () => void;
   deleteFromWatchlist: (playlistItemId?: string) => void;
   playVideo: (video?: VideoItem) => void;
-  updateWlCache: () => void;
 }
 const defaultData: VideoData = {
   feedVideos: [],
   wlVideos: [],
-  wlCache: [],
   loading: 0,
   descriptionOpened: false,
   setDescriptionOpened: (e) => e,
@@ -41,7 +44,6 @@ const defaultData: VideoData = {
   fetchSubscriptions: () => null,
   deleteFromWatchlist: (e) => e,
   playVideo: () => null,
-  updateWlCache: () => null,
 };
 
 export const VideoContext = createContext<VideoData>(defaultData);
@@ -49,11 +51,14 @@ export const VideoContext = createContext<VideoData>(defaultData);
 const VideoProvider = ({ children }: any) => {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>([]);
   const [wlVideos, setWlVideos] = useState<VideoItem[]>([]);
-  const [wlCache, setWlCache] = useState<VideoItem[]>([]);
+  const [feedCache, setFeedCache] = useState<VideoItem[]>([]);
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
-  const { handleError, loading, incLoading, setHeaderComponents } = useContext(LoginContext);
+  const { googleAuth, handleError, loading, incLoading, setHeaderComponents } =
+    useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
+
+  const userId = googleAuth?.currentUser.get()?.getId();
 
   const fetchVideos = useCallback(
     (
@@ -120,7 +125,7 @@ const VideoProvider = ({ children }: any) => {
               const oldestPublishedDate = new Date();
               oldestPublishedDate.setDate(oldestPublishedDate.getDate() - maxAge);
               const filter = (v: gapi.client.youtube.Video) => {
-                if (wlCache.find((cachedVideo) => cachedVideo.video.id === v.id)) return false;
+                if (feedCache.find((cachedVideo) => cachedVideo.video.id === v.id)) return false;
                 if (getTimeSeconds(v.contentDetails?.duration) < minDuration) return false;
                 return new Date(v.snippet?.publishedAt || "") > oldestPublishedDate;
               };
@@ -133,7 +138,7 @@ const VideoProvider = ({ children }: any) => {
           });
       });
     },
-    [incLoading, handleError, fetchVideos, wlCache, minDuration, maxAge]
+    [incLoading, handleError, fetchVideos, feedCache, minDuration, maxAge]
   );
 
   const fetchPlaylistItemsCascade = useCallback(
@@ -232,24 +237,40 @@ const VideoProvider = ({ children }: any) => {
     setHeaderComponents(video ? playingHeaderComponents : defaultHeaderComponents);
   };
 
-  const updateWlCache = useCallback(() => {
-    get<VideoItem[]>(WL_KEY).then((wl) => {
-      setWlCache(wl || []);
-      setFeedVideos((feeds) =>
-        feeds.filter((v) => !wl?.find((cached) => cached.video.id === v.video.id))
+  useEffect(() => {
+    if (userId) {
+      return onSnapshot(
+        // FIXME ajouter une query sur la date pour pas tout remonter inutilement
+        collection(db, "feedCache", userId, "videos").withConverter({
+          toFirestore(video: VideoItem): DocumentData {
+            return video;
+          },
+          fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): VideoItem {
+            return snapshot.data(options) as VideoItem;
+          },
+        }),
+        (querySnapshot) => {
+          querySnapshot.docChanges().forEach((videoDoc) => {
+            setFeedCache((oldCache) => {
+              let newCache = [...oldCache];
+              if (videoDoc.type === "added") newCache.push(videoDoc.doc.data());
+              if (videoDoc.type === "removed")
+                newCache = newCache.filter((v) => v.video.id !== videoDoc.doc.data().video.id);
+              return newCache;
+            });
+          });
+        }
       );
-    });
-  }, []);
+    }
+  }, [userId]);
 
   useEffect(() => {
-    updateWlCache();
     fetchWatchList();
-  }, [fetchWatchList, updateWlCache]);
+  }, [fetchWatchList]);
 
   const values: VideoData = {
     feedVideos,
     wlVideos,
-    wlCache,
     loading,
     videoPlaying,
     descriptionOpened,
@@ -258,7 +279,6 @@ const VideoProvider = ({ children }: any) => {
     fetchSubscriptions,
     deleteFromWatchlist,
     setDescriptionOpened,
-    updateWlCache,
   };
 
   return <VideoContext.Provider value={values}> {children} </VideoContext.Provider>;
