@@ -258,6 +258,12 @@ const VideoProvider = ({ children }: any) => {
                 newCache = newCache.filter((v) => v.video.id !== videoDoc.doc.data().video.id);
               return newCache;
             });
+            setFeedVideos((oldFeed) => {
+              let newFeed = [...oldFeed];
+              if (videoDoc.type === "added")
+                newFeed = newFeed.filter((v) => v.video.id !== videoDoc.doc.data().video.id);
+              return newFeed;
+            });
           });
         }
       );
