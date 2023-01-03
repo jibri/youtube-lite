@@ -43,8 +43,8 @@ const Time = styled.div`
   position: absolute;
   bottom: 2px;
   right: 2px;
-  color: ${(props) => props.theme.text.main};
-  background-color: ${(props) => props.theme.background};
+  color: ${(props) => props.theme.white};
+  background-color: ${(props) => props.theme.black};
 `;
 const Image = styled.img`
   flex: 0 0 110px;

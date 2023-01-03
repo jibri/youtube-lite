@@ -19,7 +19,7 @@ export const getTimeDisplay = (duration?: string) => {
   const [hours, minutes, seconds] = getTimeArray(duration);
   const hoursDisplay = hours ? `${hours}:` : "";
   const minutesDisplay = minutes < 10 ? `0${minutes}:` : `${minutes}:`;
-  const secondsDisplay = seconds < 10 ? `0${seconds}:` : `${seconds}:`;
+  const secondsDisplay = seconds < 10 ? `0${seconds}` : `${seconds}`;
   return `${hoursDisplay}${minutesDisplay}${secondsDisplay}`;
 };
 
