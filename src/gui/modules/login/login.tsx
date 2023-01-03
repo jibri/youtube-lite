@@ -47,6 +47,10 @@ const PlaylistItem = styled(Link)<{ $active: boolean }>`
   color: ${(props) => (props.$active ? props.theme.active : props.theme.text.main)};
 `;
 
+const Container = styled.div<{ sx: any }>`
+  ${(props) => props.sx}
+`;
+
 function Login() {
   const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
   const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
@@ -132,31 +136,22 @@ function Login() {
   }
 
   return (
-    <div>
+    <Container
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        width: "min(100%, 800px)",
+        margin: "auto",
+      }}
+    >
       {!googleAuth ? (
         <Text>Waiting for auth initialization...</Text>
       ) : (
         <>
-          <div>
-            {loggedIn ? (
-              <Text>You are currently signed in and have granted access to this app.</Text>
-            ) : (
-              <Text>You have not authorized this app or you are signed out.</Text>
-            )}
-          </div>
-          <button onClick={handleAuthClick}>{loggedIn ? "Sign out" : "Sign In/Authorize"}</button>
-          {loggedIn && <button onClick={revokeAccess}>Revoke access</button>}
-          <YoutubeButton href="http://youtube.com" target="_blank" rel="noopener noreferer">
-            <img
-              src={`${process.env.PUBLIC_URL}/logo192.png`}
-              width="100px"
-              alt="Logo Youtube-lite"
-            />
-            <Text>Go to Youtube</Text>
-          </YoutubeButton>
           {loggedIn && (
             <>
-              <div>
+              <Container sx={{ alignSelf: "start" }}>
                 <Text>My playlists :</Text>
                 <PlaylistItems>
                   {playlists.map((pl) => (
@@ -170,47 +165,55 @@ function Login() {
                     </PlaylistItem>
                   ))}
                 </PlaylistItems>
-              </div>
-              <div>
+              </Container>
+              <Container sx={{ alignSelf: "start" }}>
                 <Text>Theme :</Text>
                 <PlaylistItems>
                   <ActionButton onClick={dark}>Dark Theme</ActionButton>
                   <ActionButton onClick={light}>Light Theme</ActionButton>
                 </PlaylistItems>
-              </div>
-              <div>
-                <Text>Min video duration in feed : </Text>
-                <br />
+              </Container>
+              <Container sx={{ alignSelf: "start" }}>
+                <Text>Min video duration in feed (seconds) : </Text>
                 <input
                   onBlur={updateMinDuration}
                   value={minDurationInputValue}
                   onChange={(e) => setMinDurationInputValue(e.target.value)}
                 />
-                <Text>seconds</Text>
-              </div>
-              <div>
-                <Text>Max age video in feed : </Text>
-                <br />
+              </Container>
+              <Container sx={{ alignSelf: "start" }}>
+                <Text>Max age video in feed (days) : </Text>
                 <input
                   onBlur={updateMaxAge}
                   value={maxAgeInputValue}
                   onChange={(e) => setMaxAgeInputValue(e.target.value)}
                 />
-                <Text>days</Text>
-              </div>
-              <Notification show={not}>
-                <Text>Mon message</Text>
-                <ActionButton onClick={() => setNot((n) => !n)}>Fermer</ActionButton>
-              </Notification>
-              <button onClick={() => setNot((n) => !n)}>Show notif</button>
-              <div>
-                <Text>version v{process.env.REACT_APP_VERSION}</Text>
-              </div>
+              </Container>
             </>
           )}
+          <ActionButton onClick={handleAuthClick}>
+            {loggedIn ? "Sign out" : "Sign In/Authorize"}
+          </ActionButton>
+          {loggedIn && <ActionButton onClick={revokeAccess}>Revoke access</ActionButton>}
+          <YoutubeButton href="http://youtube.com" target="_blank" rel="noopener noreferer">
+            <img
+              src={`${process.env.PUBLIC_URL}/logo192.png`}
+              width="100px"
+              alt="Logo Youtube-lite"
+            />
+            <Text>Go to Youtube</Text>
+          </YoutubeButton>
+          <ActionButton onClick={() => setNot((n) => !n)}>Notif</ActionButton>
+          <Notification show={not}>
+            <Text>Ma notif</Text>
+            <ActionButton onClick={() => setNot((n) => !n)}>Fermer</ActionButton>
+          </Notification>
+          <Container sx={{ alignSelf: "end" }}>
+            <Text>version v{process.env.REACT_APP_VERSION}</Text>
+          </Container>
         </>
       )}
-    </div>
+    </Container>
   );
 }
 

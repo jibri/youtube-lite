@@ -1,5 +1,4 @@
 import React, { createContext, useState, useEffect, useCallback } from "react";
-import { defaultHeaderComponents, HeaderComponentsType } from "src/router/path";
 import { API_KEY } from "src/utils/constants";
 
 interface LoginData {
@@ -7,24 +6,18 @@ interface LoginData {
   googleAuth?: gapi.auth2.GoogleAuth;
   error?: string;
   loading: number;
-  headerComponents: HeaderComponentsType;
 
   handleError: (reason: gapi.client.HttpRequestRejected) => void;
   incLoading: (inc: number) => void;
-  setHeaderComponents: React.Dispatch<React.SetStateAction<HeaderComponentsType>>;
 }
 
-const defaultData = {
+const defaultData: LoginData = {
   loggedIn: false,
   loading: 0,
-  headerComponents: defaultHeaderComponents,
   handleError: () => {
     /** */
   },
   incLoading: () => {
-    /** */
-  },
-  setHeaderComponents: () => {
     /** */
   },
 };
@@ -37,8 +30,6 @@ const LoginProvider = ({ children }: any) => {
   const [googleAuth, setGoogleAuth] = useState<gapi.auth2.GoogleAuth>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(0);
-  const [headerComponents, setHeaderComponents] =
-    useState<HeaderComponentsType>(defaultHeaderComponents);
 
   useEffect(() => {
     function initClient() {
@@ -60,6 +51,7 @@ const LoginProvider = ({ children }: any) => {
         });
     }
 
+    // FIXME will be deprecated in march 2023
     gapi.load("client:auth2", initClient);
   }, []);
 
@@ -93,10 +85,8 @@ const LoginProvider = ({ children }: any) => {
     googleAuth,
     error,
     loading,
-    headerComponents,
     handleError,
     incLoading,
-    setHeaderComponents,
   };
 
   return <LoginContext.Provider value={values}>{children}</LoginContext.Provider>;

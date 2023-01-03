@@ -57,7 +57,7 @@ const useMq = (mq: MediaQueryList) => {
 
 function Watchlist() {
   const { handleError, incLoading } = useContext(LoginContext);
-  const { wlVideos, deleteFromWatchlist } = useContext(VideoContext);
+  const { playlistVideos, deleteFromWatchlist } = useContext(VideoContext);
   const { playlistId } = useContext(ConfigContext);
   const [removing, setRemoving] = useState<string>();
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
@@ -135,7 +135,7 @@ function Watchlist() {
 
   return (
     <>
-      {wlVideos.length === 0 && (
+      {playlistVideos.length === 0 && (
         <Flex jc="center">
           <Text>
             {!playlistId && "Veuillez sélectionner une playlist à afficher depuis l'écran profil"}
@@ -143,7 +143,7 @@ function Watchlist() {
           </Text>
         </Flex>
       )}
-      {wlVideos.map((video) => (
+      {playlistVideos.map((video) => (
         <WlVideoWrapper key={video.video.id} removing={removing === video.video.id}>
           <ActionsMask>
             <DeleteActionWrapper>

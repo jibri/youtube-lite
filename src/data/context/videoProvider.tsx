@@ -1,7 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
 import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
-import { defaultHeaderComponents, playingHeaderComponents } from "src/router/path";
 import { getTimeSeconds } from "src/utils/utils";
 import { ConfigContext } from "src/data/context/configProvider";
 import {
@@ -24,7 +23,7 @@ import { db } from "src/init/firestore";
 
 interface VideoData {
   feedVideos: VideoItem[];
-  wlVideos: VideoItem[];
+  playlistVideos: VideoItem[];
   loading: number;
   videoPlaying?: VideoItem;
   descriptionOpened: boolean;
@@ -36,7 +35,7 @@ interface VideoData {
 }
 const defaultData: VideoData = {
   feedVideos: [],
-  wlVideos: [],
+  playlistVideos: [],
   loading: 0,
   descriptionOpened: false,
   setDescriptionOpened: (e) => e,
@@ -50,11 +49,10 @@ export const VideoContext = createContext<VideoData>(defaultData);
 
 const VideoProvider = ({ children }: any) => {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>([]);
-  const [wlVideos, setWlVideos] = useState<VideoItem[]>([]);
+  const [playlistVideos, setPlaylistVideos] = useState<VideoItem[]>([]);
   const [feedCache, setFeedCache] = useState<VideoItem[]>([]);
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
-  const { googleAuth, handleError, loading, incLoading, setHeaderComponents } =
-    useContext(LoginContext);
+  const { googleAuth, handleError, loading, incLoading } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
 
@@ -208,10 +206,10 @@ const VideoProvider = ({ children }: any) => {
   const fetchWatchList = useCallback(
     (pageToken?: string) => {
       if (!playlistId) {
-        setWlVideos([]);
+        setPlaylistVideos([]);
         return;
       }
-      if (!pageToken) setWlVideos([]);
+      if (!pageToken) setPlaylistVideos([]);
       incLoading(1);
       gapi.client.youtube.playlistItems
         .list({
@@ -221,7 +219,7 @@ const VideoProvider = ({ children }: any) => {
           pageToken,
         })
         .then((response) => {
-          fetchVideos(setWlVideos, response.result.items || []);
+          fetchVideos(setPlaylistVideos, response.result.items || []);
         }, handleError)
         .then(() => incLoading(-1));
     },
@@ -229,12 +227,11 @@ const VideoProvider = ({ children }: any) => {
   );
 
   const deleteFromWatchlist = (playlistItemId?: string) => {
-    setWlVideos((wl) => wl.filter((v) => v.playlistItem.id !== playlistItemId));
+    setPlaylistVideos((playlist) => playlist.filter((v) => v.playlistItem.id !== playlistItemId));
   };
 
   const playVideo = (video?: VideoItem) => {
     setVideoPlaying(video);
-    setHeaderComponents(video ? playingHeaderComponents : defaultHeaderComponents);
   };
 
   useEffect(() => {
@@ -250,20 +247,29 @@ const VideoProvider = ({ children }: any) => {
           },
         }),
         (querySnapshot) => {
+          const addedVideos: VideoItem[] = [];
           querySnapshot.docChanges().forEach((videoDoc) => {
-            setFeedCache((oldCache) => {
-              let newCache = [...oldCache];
-              if (videoDoc.type === "added") newCache.push(videoDoc.doc.data());
-              if (videoDoc.type === "removed")
-                newCache = newCache.filter((v) => v.video.id !== videoDoc.doc.data().video.id);
-              return newCache;
-            });
-            setFeedVideos((oldFeed) => {
-              let newFeed = [...oldFeed];
-              if (videoDoc.type === "added")
-                newFeed = newFeed.filter((v) => v.video.id !== videoDoc.doc.data().video.id);
-              return newFeed;
-            });
+            // We deal only with added videos
+            if (videoDoc.type === "added") addedVideos.push(videoDoc.doc.data());
+          });
+          // add new videos to the local cache liste
+          setFeedCache((oldCache) => {
+            let newCache = [...oldCache];
+            newCache.push(...addedVideos);
+            return newCache;
+          });
+          // Add also to the current active playlist
+          setPlaylistVideos((oldPlaylist) => {
+            let newPlaylist = [...oldPlaylist];
+            newPlaylist.push(...addedVideos);
+            return newPlaylist;
+          });
+          // filter the new videos from the local feed list
+          setFeedVideos((oldFeed) => {
+            let newFeed = [...oldFeed];
+            const addedVideoIds = addedVideos.map((addedVideo) => addedVideo.video.id);
+            newFeed = newFeed.filter((feedVideo) => addedVideoIds.includes(feedVideo.video.id));
+            return newFeed;
           });
         }
       );
@@ -276,7 +282,7 @@ const VideoProvider = ({ children }: any) => {
 
   const values: VideoData = {
     feedVideos,
-    wlVideos,
+    playlistVideos,
     loading,
     videoPlaying,
     descriptionOpened,

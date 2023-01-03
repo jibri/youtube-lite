@@ -1,15 +1,20 @@
 import React, { useContext } from "react";
 import { useLocation } from "react-router-dom";
-import { LoginContext } from "src/data/context/loginProvider";
 import { VideoContext } from "src/data/context/videoProvider";
-import { HeaderComponents, PATHS } from "src/router/path";
+import {
+  defaultHeaderComponents,
+  HeaderComponents,
+  PATHS,
+  playingHeaderComponents,
+} from "src/router/path";
 import { HeaderWrapper, TopButton } from "src/utils/styled";
 
 const Header = () => {
-  const { headerComponents } = useContext(LoginContext);
-  const { fetchSubscriptions, fetchWatchList, setDescriptionOpened, playVideo } =
+  const { fetchSubscriptions, fetchWatchList, setDescriptionOpened, playVideo, videoPlaying } =
     useContext(VideoContext);
   const location = useLocation();
+
+  const headerComponents = !!videoPlaying ? playingHeaderComponents : defaultHeaderComponents;
 
   return (
     <HeaderWrapper>
