@@ -1,26 +1,13 @@
-import React, { createContext, useState, useContext } from "react";
-import { DefaultTheme, ThemeProvider } from "styled-components";
-import { defaultTheme, darkTheme } from "src/utils/theme";
-
-export const LIGHT_THEME = "LT";
-export const DARK_THEME = "DT";
-export const ThemeContext = createContext((n: DefaultTheme) => {});
+import React, { useContext } from "react";
+import { ThemeProvider } from "styled-components";
+import { darkTheme, defaultTheme } from "src/utils/theme";
+import { ConfigContext } from "src/data/context/configProvider";
 
 const MyThemeProvider = ({ children }: any) => {
-  const [theme, setTheme] = useState(darkTheme);
+  const { theme } = useContext(ConfigContext);
 
   return (
-    <ThemeContext.Provider value={setTheme}>
-      <ThemeProvider theme={theme}>{children}</ThemeProvider>
-    </ThemeContext.Provider>
+    <ThemeProvider theme={theme === "dark" ? darkTheme : defaultTheme}>{children}</ThemeProvider>
   );
 };
 export default MyThemeProvider;
-
-export const useMyTheme = () => {
-  const setTheme = useContext(ThemeContext);
-  return {
-    dark: () => setTheme(darkTheme),
-    light: () => setTheme(defaultTheme),
-  };
-};

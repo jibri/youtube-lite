@@ -8,9 +8,6 @@ export const defaultTheme: DefaultTheme = {
   primary: "#ffffff",
   secondary: "#ffffff",
   background: "#ffffff",
-  notification: {
-    background: "#aaaaaa",
-  },
   text: {
     light: "#666666",
     main: "#333333",
@@ -35,12 +32,9 @@ export const darkTheme: DefaultTheme = {
   white: "#ffffff",
   black: "#333333",
   active: "#ff55ff",
-  primary: "#222222",
-  secondary: "#333333",
+  primary: "#333333",
+  secondary: "#444444",
   background: "#222222",
-  notification: {
-    background: "#333333",
-  },
   text: {
     light: "#ffffff",
     main: "#dddddd",

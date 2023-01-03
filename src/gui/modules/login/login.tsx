@@ -4,7 +4,6 @@ import { LoginContext } from "src/data/context/loginProvider";
 import { Link } from "react-router-dom";
 import { PATHS } from "src/router/path";
 import { ActionButton, Text } from "src/utils/styled";
-import { useMyTheme } from "src/data/context/ThemeProvider";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "src/init/firestore";
 import { ConfigContext } from "src/data/context/configProvider";
@@ -20,7 +19,6 @@ const YoutubeButton = styled.a`
   border-radius: 5px;
   margin: 1em;
   padding: 1em;
-  background-color: ${(props) => props.theme.primary};
   max-width: 300px;
 
   text-decoration: none;
@@ -51,13 +49,17 @@ const Container = styled.div<{ sx: any }>`
   ${(props) => props.sx}
 `;
 
+const Input = styled.input`
+  border: unset;
+  background-color: ;
+`;
+
 function Login() {
   const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
   const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
   const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>([]);
   const { loggedIn, googleAuth, handleError, incLoading } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
-  const { dark, light } = useMyTheme();
   const [not, setNot] = useState(false);
 
   const userId = googleAuth?.currentUser.get().getId();
@@ -82,6 +84,14 @@ function Login() {
     if (loggedIn && userId && id) {
       updateDoc(doc(db, "configuration", userId), {
         playlistId: id,
+      });
+    }
+  };
+
+  const updateTheme = (theme: "dark" | "light") => {
+    if (loggedIn && userId && theme) {
+      updateDoc(doc(db, "configuration", userId), {
+        theme,
       });
     }
   };
@@ -169,13 +179,13 @@ function Login() {
               <Container sx={{ alignSelf: "start" }}>
                 <Text>Theme :</Text>
                 <PlaylistItems>
-                  <ActionButton onClick={dark}>Dark Theme</ActionButton>
-                  <ActionButton onClick={light}>Light Theme</ActionButton>
+                  <ActionButton onClick={() => updateTheme("dark")}>Dark Theme</ActionButton>
+                  <ActionButton onClick={() => updateTheme("light")}>Light Theme</ActionButton>
                 </PlaylistItems>
               </Container>
               <Container sx={{ alignSelf: "start" }}>
                 <Text>Min video duration in feed (seconds) : </Text>
-                <input
+                <Input
                   onBlur={updateMinDuration}
                   value={minDurationInputValue}
                   onChange={(e) => setMinDurationInputValue(e.target.value)}
@@ -183,7 +193,7 @@ function Login() {
               </Container>
               <Container sx={{ alignSelf: "start" }}>
                 <Text>Max age video in feed (days) : </Text>
-                <input
+                <Input
                   onBlur={updateMaxAge}
                   value={maxAgeInputValue}
                   onChange={(e) => setMaxAgeInputValue(e.target.value)}

@@ -16,9 +16,9 @@ const VideoWrapper = styled.div<{ height?: number }>`
   display: flex;
   width: 100%;
   height: ${(props) => `${props.height}px`};
-  background-color: ${(props) => props.theme.primary};
+  background-color: ${(props) => props.theme.background};
   &:hover {
-    background-color: ${(props) => props.theme.secondary};
+    /* background-color: ${(props) => props.theme.secondary}; */
     ${LinkWrapper} {
       color: ${(props) => props.theme.active};
     }

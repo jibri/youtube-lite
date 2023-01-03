@@ -77,7 +77,6 @@ export const ActionButton = styled.button<{
   }
 `;
 export const VideoWrapper = styled.div`
-  margin-bottom: 1px;
   position: relative;
   cursor: pointer;
 `;

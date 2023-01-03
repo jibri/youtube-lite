@@ -18,7 +18,7 @@ const Container = styled.div<{ show: boolean }>`
   align-items: center;
   justify-content: space-between;
 
-  background-color: ${(props) => props.theme.notification.background};
+  background-color: ${(props) => props.theme.primary};
 
   transition: all 0.3s ease-in-out;
   left: ${(p) => (p.show ? 0 : "-100%")};

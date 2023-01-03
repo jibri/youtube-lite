@@ -11,9 +11,6 @@ declare module "styled-components" {
     primary: string;
     secondary: string;
     background: string;
-    notification: {
-      background: string;
-    };
     text: {
       light: string;
       main: string;

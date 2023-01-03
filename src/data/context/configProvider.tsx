@@ -17,12 +17,15 @@ interface ConfigData {
   maxAge: number;
   /** id de la playlist que l'on souhaite afficher, et remplir à partir de feed */
   playlistId: string;
+  /** le dernier theme selectionné */
+  theme: "light" | "dark";
 }
 
 const defaultData: ConfigData = {
   minDuration: 0,
   maxAge: 0,
   playlistId: "",
+  theme: "light",
 };
 
 export const ConfigContext = createContext<ConfigData>(defaultData);
