@@ -258,23 +258,20 @@ const VideoProvider = ({ children }: any) => {
             newCache.push(...addedVideos);
             return newCache;
           });
-          // Add also to the current active playlist
-          setPlaylistVideos((oldPlaylist) => {
-            let newPlaylist = [...oldPlaylist];
-            newPlaylist.push(...addedVideos);
-            return newPlaylist;
-          });
-          // filter the new videos from the local feed list
-          setFeedVideos((oldFeed) => {
-            let newFeed = [...oldFeed];
-            const addedVideoIds = addedVideos.map((addedVideo) => addedVideo.video.id);
-            newFeed = newFeed.filter((feedVideo) => addedVideoIds.includes(feedVideo.video.id));
-            return newFeed;
-          });
         }
       );
     }
   }, [userId]);
+
+  useEffect(() => {
+    // filter the cachedVideo from the local feed list
+    setFeedVideos((oldFeed) => {
+      let newFeed = [...oldFeed];
+      const cachedVideoIds = feedCache.map((cachedVideo) => cachedVideo.video.id);
+      newFeed = newFeed.filter((feedVideo) => !cachedVideoIds.includes(feedVideo.video.id));
+      return newFeed;
+    });
+  }, [feedCache]);
 
   useEffect(() => {
     fetchWatchList();
