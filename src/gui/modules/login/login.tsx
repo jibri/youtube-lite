@@ -44,14 +44,36 @@ const PlaylistItem = styled(Link)<{ $active: boolean }>`
   text-decoration: none;
   color: ${(props) => (props.$active ? props.theme.active : props.theme.text.main)};
 `;
+const MainContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 800px);
+  margin: auto;
+
+  > * {
+    margin-bottom: 0.5em;
+  }
+`;
+
+const Separator = styled.div`
+  width: 50%;
+  border-top: 1px solid ${(props) => props.theme.primary};
+`;
 
 const Container = styled.div<{ sx: any }>`
   ${(props) => props.sx}
 `;
 
 const Input = styled.input`
-  border: unset;
-  background-color: ;
+  border: 1px solid;
+  border-color: ${(props) => props.theme.black};
+  background-color: ${(props) => props.theme.secondary};
+  border-radius: 5px;
+  padding: 0.5em;
+  color: ${(props) => props.theme.text.main};
+  font-size: 1em;
+  width: 2em;
 `;
 
 function Login() {
@@ -146,15 +168,7 @@ function Login() {
   }
 
   return (
-    <Container
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        width: "min(100%, 800px)",
-        margin: "auto",
-      }}
-    >
+    <MainContainer>
       {!googleAuth ? (
         <Text>Waiting for auth initialization...</Text>
       ) : (
@@ -176,6 +190,7 @@ function Login() {
                   ))}
                 </PlaylistItems>
               </Container>
+              <Separator />
               <Container sx={{ alignSelf: "start" }}>
                 <Text>Theme :</Text>
                 <PlaylistItems>
@@ -199,6 +214,7 @@ function Login() {
                   onChange={(e) => setMaxAgeInputValue(e.target.value)}
                 />
               </Container>
+              <Separator />
             </>
           )}
           <ActionButton onClick={handleAuthClick}>
@@ -213,6 +229,7 @@ function Login() {
             />
             <Text>Go to Youtube</Text>
           </YoutubeButton>
+          <Separator />
           <ActionButton onClick={() => setNot((n) => !n)}>Notif</ActionButton>
           <Notification show={not}>
             <Text>Ma notif</Text>
@@ -223,7 +240,7 @@ function Login() {
           </Container>
         </>
       )}
-    </Container>
+    </MainContainer>
   );
 }
 

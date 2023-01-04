@@ -25,7 +25,7 @@ const defaultData: ConfigData = {
   minDuration: 0,
   maxAge: 0,
   playlistId: "",
-  theme: "light",
+  theme: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
 };
 
 export const ConfigContext = createContext<ConfigData>(defaultData);
