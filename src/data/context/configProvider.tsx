@@ -10,7 +10,7 @@ import React, { createContext, useState, useEffect, useContext } from "react";
 import { LoginContext } from "src/data/context/loginProvider";
 import { db } from "src/init/firestore";
 
-interface ConfigData {
+export interface ConfigData {
   /** Durée mini en seconde des videos à remonter dans le feed (permet d'eviter les #short) */
   minDuration: number;
   /** Age max en jour des video à remonter dans le feed */
@@ -32,8 +32,7 @@ export const ConfigContext = createContext<ConfigData>(defaultData);
 
 const ConfigProvider = ({ children }: any) => {
   const [config, setConfig] = useState<ConfigData>(defaultData);
-  const { googleAuth } = useContext(LoginContext);
-  const userId = googleAuth?.currentUser.get().getId();
+  const { userId } = useContext(LoginContext);
 
   useEffect(() => {
     if (userId) {

@@ -6,8 +6,9 @@ import { PATHS } from "src/router/path";
 import { ActionButton, Text } from "src/utils/styled";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "src/init/firestore";
-import { ConfigContext } from "src/data/context/configProvider";
+import { ConfigContext, ConfigData } from "src/data/context/configProvider";
 import Notification from "src/gui/components/notification";
+import { listMyPlaylists } from "src/utils/youtubeApi";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -80,40 +81,14 @@ function Login() {
   const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
   const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
   const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>([]);
-  const { loggedIn, googleAuth, handleError, incLoading } = useContext(LoginContext);
+  const { userId, token, handleError, incLoading, login, logout } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [not, setNot] = useState(false);
 
-  const userId = googleAuth?.currentUser.get().getId();
-
-  const updateMinDuration = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (loggedIn && userId) {
+  const updateConfig = <K extends keyof ConfigData>(key: K, value?: ConfigData[K]) => {
+    if (userId && key) {
       updateDoc(doc(db, "configuration", userId), {
-        minDuration: e.target.value,
-      });
-    }
-  };
-
-  const updateMaxAge = (e: React.FocusEvent<HTMLInputElement>) => {
-    if (loggedIn && userId) {
-      updateDoc(doc(db, "configuration", userId), {
-        maxAge: e.target.value,
-      });
-    }
-  };
-
-  const updatePlaylistId = (id?: string) => {
-    if (loggedIn && userId && id) {
-      updateDoc(doc(db, "configuration", userId), {
-        playlistId: id,
-      });
-    }
-  };
-
-  const updateTheme = (theme: "dark" | "light") => {
-    if (loggedIn && userId && theme) {
-      updateDoc(doc(db, "configuration", userId), {
-        theme,
+        [key]: value,
       });
     }
   };
@@ -127,119 +102,109 @@ function Login() {
   }, [maxAge]);
 
   useEffect(() => {
-    const loadPlaylists = (pageToken?: string) => {
-      incLoading(1);
-      gapi.client.youtube.playlists
-        .list({
-          part: "snippet,contentDetails",
-          mine: true,
-          pageToken,
-        })
-        .then((response) => {
-          const result = response.result;
-          if (result.items?.length) {
-            if (pageToken) {
-              setPlaylists((pl) => pl.concat(result.items || []));
-            } else {
-              setPlaylists(result.items);
-            }
+    const loadPlaylists = async () => {
+      if (token) {
+        let nextToken: string | undefined;
+        const myPlaylists: gapi.client.youtube.Playlist[] = [];
+
+        do {
+          incLoading(1);
+          try {
+            const { items, nextPageToken } = await listMyPlaylists(token.access_token, nextToken);
+            myPlaylists.push(...items);
+            nextToken = nextPageToken;
+          } catch (e) {
+            handleError(e as Error);
           }
-          if (result.nextPageToken) {
-            loadPlaylists(result.nextPageToken);
-          }
-        }, handleError)
-        .then(() => incLoading(-1));
+          incLoading(-1);
+        } while (nextToken);
+        setPlaylists(myPlaylists);
+      }
     };
-    if (loggedIn) loadPlaylists();
-  }, [loggedIn, handleError, incLoading]);
+    loadPlaylists();
+  }, [handleError, incLoading, token]);
 
   function handleAuthClick() {
-    if (googleAuth?.isSignedIn.get()) {
+    if (userId) {
       // User is authorized and has clicked "Sign out" button.
-      googleAuth?.signOut();
+      logout();
     } else {
       // User is not signed in. Start Google auth flow.
-      googleAuth?.signIn();
+      login();
     }
-  }
-
-  function revokeAccess() {
-    googleAuth?.disconnect();
   }
 
   return (
     <MainContainer>
-      {!googleAuth ? (
-        <Text>Waiting for auth initialization...</Text>
-      ) : (
+      {token && (
         <>
-          {loggedIn && (
-            <>
-              <Container sx={{ alignSelf: "start" }}>
-                <Text>My playlists :</Text>
-                <PlaylistItems>
-                  {playlists.map((pl) => (
-                    <PlaylistItem
-                      to={PATHS.WATCHLIST}
-                      onClick={() => updatePlaylistId(pl.id)}
-                      $active={pl.id === playlistId}
-                      key={pl.id}
-                    >
-                      {pl.snippet?.title}
-                    </PlaylistItem>
-                  ))}
-                </PlaylistItems>
-              </Container>
-              <Separator />
-              <Container sx={{ alignSelf: "start" }}>
-                <Text>Theme :</Text>
-                <PlaylistItems>
-                  <ActionButton onClick={() => updateTheme("dark")}>Dark Theme</ActionButton>
-                  <ActionButton onClick={() => updateTheme("light")}>Light Theme</ActionButton>
-                </PlaylistItems>
-              </Container>
-              <Container sx={{ alignSelf: "start" }}>
-                <Text>Min video duration in feed (seconds) : </Text>
-                <Input
-                  onBlur={updateMinDuration}
-                  value={minDurationInputValue}
-                  onChange={(e) => setMinDurationInputValue(e.target.value)}
-                />
-              </Container>
-              <Container sx={{ alignSelf: "start" }}>
-                <Text>Max age video in feed (days) : </Text>
-                <Input
-                  onBlur={updateMaxAge}
-                  value={maxAgeInputValue}
-                  onChange={(e) => setMaxAgeInputValue(e.target.value)}
-                />
-              </Container>
-              <Separator />
-            </>
-          )}
-          <ActionButton onClick={handleAuthClick}>
-            {loggedIn ? "Sign out" : "Sign In/Authorize"}
-          </ActionButton>
-          {loggedIn && <ActionButton onClick={revokeAccess}>Revoke access</ActionButton>}
-          <YoutubeButton href="http://youtube.com" target="_blank" rel="noopener noreferer">
-            <img
-              src={`${process.env.PUBLIC_URL}/logo192.png`}
-              width="100px"
-              alt="Logo Youtube-lite"
-            />
-            <Text>Go to Youtube</Text>
-          </YoutubeButton>
-          <Separator />
-          <ActionButton onClick={() => setNot((n) => !n)}>Notif</ActionButton>
-          <Notification show={not}>
-            <Text>Ma notif</Text>
-            <ActionButton onClick={() => setNot((n) => !n)}>Fermer</ActionButton>
-          </Notification>
-          <Container sx={{ alignSelf: "end" }}>
-            <Text>version v{process.env.REACT_APP_VERSION}</Text>
+          <Container sx={{ alignSelf: "start" }}>
+            <Text>My playlists :</Text>
+            <PlaylistItems>
+              {playlists.map((pl) => (
+                <PlaylistItem
+                  to={PATHS.WATCHLIST}
+                  onClick={() => updateConfig("playlistId", pl.id)}
+                  $active={pl.id === playlistId}
+                  key={pl.id}
+                >
+                  {pl.snippet?.title}
+                </PlaylistItem>
+              ))}
+            </PlaylistItems>
           </Container>
+          <Separator />
         </>
       )}
+      {userId && (
+        <>
+          <Container sx={{ alignSelf: "start" }}>
+            <Text>Theme :</Text>
+            <PlaylistItems>
+              <ActionButton onClick={() => updateConfig("theme", "dark")}>Dark Theme</ActionButton>
+              <ActionButton onClick={() => updateConfig("theme", "light")}>
+                Light Theme
+              </ActionButton>
+            </PlaylistItems>
+          </Container>
+          <Container sx={{ alignSelf: "start" }}>
+            <Text>Min video duration in feed (seconds) : </Text>
+            <Input
+              onBlur={(e) => updateConfig("minDuration", +e.target.value)}
+              value={minDurationInputValue}
+              onChange={(e) => setMinDurationInputValue(e.target.value)}
+            />
+          </Container>
+          <Container sx={{ alignSelf: "start" }}>
+            <Text>Max age video in feed (days) : </Text>
+            <Input
+              onBlur={(e) => updateConfig("maxAge", +e.target.value)}
+              value={maxAgeInputValue}
+              onChange={(e) => setMaxAgeInputValue(e.target.value)}
+            />
+          </Container>
+          <Separator />
+        </>
+      )}
+      <ActionButton onClick={handleAuthClick}>
+        {userId ? "Sign out" : "Sign In/Authorize"}
+      </ActionButton>
+      <YoutubeButton href="http://youtube.com" target="_blank" rel="noopener noreferer">
+        <img src={`${process.env.PUBLIC_URL}/logo192.png`} width="100px" alt="Logo Youtube-lite" />
+        <Text>Go to Youtube</Text>
+      </YoutubeButton>
+      <Separator />
+      <ActionButton onClick={() => setNot((n) => !n)}>Notif</ActionButton>
+      <Notification show={not}>
+        <Text>
+          Ma notif mega long parce que je veux faire un test sur la fluidité d'apparition de la
+          notif depuis la gauche de l'ecran.
+        </Text>
+        <ActionButton onClick={() => setNot((n) => !n)}>Fermer</ActionButton>
+      </Notification>
+      <Container sx={{ alignSelf: "end" }}>
+        <Text>version v{process.env.REACT_APP_VERSION}</Text>
+      </Container>
     </MainContainer>
   );
 }

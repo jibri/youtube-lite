@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
-const Container = styled.div<{ show: boolean }>`
+const Container = styled.div<{ show: boolean; animationDuration: number }>`
   position: fixed;
   bottom: 3.5em;
   padding: 5px 1em;
@@ -20,12 +20,29 @@ const Container = styled.div<{ show: boolean }>`
 
   background-color: ${(props) => props.theme.primary};
 
-  transition: all 0.3s ease-in-out;
+  transition: all ${(props) => props.animationDuration}ms ease-in-out;
   left: ${(p) => (p.show ? 0 : "-100%")};
   opacity: ${(p) => (p.show ? 1 : 0)};
 `;
 
-const Notification = ({ show, children }: { show: boolean; children: React.ReactNode }) => (
-  <Container show={show}>{children}</Container>
-);
+const Notification = ({ show, children }: { show: boolean; children: React.ReactNode }) => {
+  const [showChildren, setShowChildren] = useState(false);
+  const animationDuration = 300;
+
+  useEffect(() => {
+    if (show) {
+      setShowChildren(true);
+    } else {
+      // Children sont retirés à la fin de l'animation pour eviter de voir la notif se réduire juste avant d'etre retirée
+      setTimeout(() => setShowChildren(false), animationDuration);
+    }
+  }, [show]);
+
+  return (
+    <Container show={show} animationDuration={animationDuration}>
+      {/* on cache les enfant lorsque la notif n'est pas affichée pour éviter que ses element ne puissent prendre le focus */}
+      {showChildren && children}
+    </Container>
+  );
+};
 export default Notification;

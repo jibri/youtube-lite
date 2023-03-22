@@ -38,11 +38,11 @@ const VideoModule = () => {
 };
 
 const Home = () => {
-  const { loggedIn, error } = useContext(LoginContext);
+  const { token, error } = useContext(LoginContext);
 
   return (
     <MainScreeen>
-      {loggedIn ? (
+      {token ? (
         <VideoProvider>
           <VideoModule />
         </VideoProvider>

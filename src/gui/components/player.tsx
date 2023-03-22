@@ -23,12 +23,13 @@ const Player = ({ video }: { video: VideoItem }) => {
   const readyPlayerOne = useRef<boolean>(false);
   const { descriptionOpened } = useContext(VideoContext);
   const theme = useTheme();
+  const playerHeight = theme.playerHeight;
 
   useEffect(() => {
     if (readyPlayerOne.current && video.video.id) player.current?.loadVideoById(video.video.id);
     else {
       player.current = new window.YT.Player(`video_player`, {
-        height: (theme as any).playerHeight,
+        height: playerHeight,
         width: "100%",
         videoId: video.video.id,
         playerVars: {
@@ -43,7 +44,7 @@ const Player = ({ video }: { video: VideoItem }) => {
         },
       });
     }
-  }, [video, theme]);
+  }, [video, playerHeight]);
 
   return (
     <IFrameWrapper>

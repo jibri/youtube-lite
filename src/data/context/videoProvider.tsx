@@ -11,6 +11,12 @@ import {
   SnapshotOptions,
 } from "firebase/firestore";
 import { db } from "src/init/firestore";
+import {
+  listChannels,
+  listPlaylistItems,
+  listSubscriptions,
+  listVideos,
+} from "src/utils/youtubeApi";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -52,91 +58,87 @@ const VideoProvider = ({ children }: any) => {
   const [playlistVideos, setPlaylistVideos] = useState<VideoItem[]>([]);
   const [feedCache, setFeedCache] = useState<VideoItem[]>([]);
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
-  const { googleAuth, handleError, loading, incLoading } = useContext(LoginContext);
+  const { userId, token, handleError, loading, incLoading } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
 
-  const userId = googleAuth?.currentUser.get()?.getId();
-
   const fetchVideos = useCallback(
-    (
+    async (
       setter: React.Dispatch<React.SetStateAction<VideoItem[]>>,
       playlistItems: gapi.client.youtube.PlaylistItem[],
       filter?: (v: gapi.client.youtube.Video) => boolean,
       sortBy?: "publishedAt"
     ) => {
+      if (!token) return;
       incLoading(1);
-      gapi.client.youtube.videos
-        .list({
-          part: "snippet,contentDetails,player",
-          id: playlistItems.map((i) => i.snippet?.resourceId?.videoId).join(","),
-          maxResults: 50,
-        })
-        .then((response) => {
-          const keepVideos = filter ? response.result.items?.filter(filter) : response.result.items;
-          if (keepVideos) {
-            setter((currentVideos) => {
-              const newVideos = [...currentVideos];
-              keepVideos.forEach((v) => {
-                if (!newVideos.find((cv) => v.id === cv.video.id)) {
-                  const videoToInsert = {
-                    playlistItem:
-                      playlistItems.find((i) => i.snippet?.resourceId?.videoId === v.id) || {},
-                    video: v,
-                  };
-                  if (sortBy === "publishedAt") {
-                    // idx pour lequel v est plus récente que oldV
-                    const idx = newVideos.findIndex((oldV) => {
-                      return (
-                        (oldV.video?.snippet?.publishedAt?.localeCompare(
-                          v.snippet?.publishedAt || ""
-                        ) || 0) < 0
-                      );
-                    });
-                    newVideos.splice(idx === -1 ? newVideos.length : idx, 0, videoToInsert);
-                  } else {
-                    newVideos.push(videoToInsert);
-                  }
+      try {
+        const videos = await listVideos(playlistItems, token.access_token);
+
+        const keepVideos = filter ? videos.items?.filter(filter) : videos.items;
+        if (keepVideos) {
+          setter((currentVideos) => {
+            const newVideos = [...currentVideos];
+            keepVideos.forEach((v) => {
+              if (!newVideos.find((cv) => v.id === cv.video.id)) {
+                const videoToInsert = {
+                  playlistItem:
+                    playlistItems.find((i) => i.snippet?.resourceId?.videoId === v.id) || {},
+                  video: v,
+                };
+                if (sortBy === "publishedAt") {
+                  // idx pour lequel v est plus récente que oldV
+                  const idx = newVideos.findIndex((oldV) => {
+                    return (
+                      (oldV.video?.snippet?.publishedAt?.localeCompare(
+                        v.snippet?.publishedAt || ""
+                      ) || 0) < 0
+                    );
+                  });
+                  newVideos.splice(idx === -1 ? newVideos.length : idx, 0, videoToInsert);
+                } else {
+                  newVideos.push(videoToInsert);
                 }
-              });
-              return newVideos;
+              }
             });
-          }
-        }, handleError)
-        .then(() => incLoading(-1));
+            return newVideos;
+          });
+        }
+      } catch (e) {
+        handleError(e as Error);
+      } finally {
+        incLoading(-1);
+      }
     },
-    [handleError, incLoading]
+    [handleError, incLoading, token]
   );
 
   const fetchPlaylistItems = useCallback(
-    (playlistId: string) => {
-      return new Promise((resolve, reject) => {
-        incLoading(1);
-        gapi.client.youtube.playlistItems
-          .list({
-            part: "snippet",
-            playlistId,
-            maxResults: 10,
-          })
-          .then((response) => {
-            if (response.result.items) {
-              const oldestPublishedDate = new Date();
-              oldestPublishedDate.setDate(oldestPublishedDate.getDate() - maxAge);
-              const filter = (v: gapi.client.youtube.Video) => {
-                if (feedCache.find((cachedVideo) => cachedVideo.video.id === v.id)) return false;
-                if (getTimeSeconds(v.contentDetails?.duration) < minDuration) return false;
-                return new Date(v.snippet?.publishedAt || "") > oldestPublishedDate;
-              };
-              fetchVideos(setFeedVideos, response.result.items, filter, "publishedAt");
+    async (idPlaylist: string) => {
+      if (!token) return;
+      incLoading(1);
+      try {
+        const playlistItems = await listPlaylistItems(idPlaylist, 10, token.access_token);
+        if (playlistItems.items) {
+          const oldestPublishedDate = new Date();
+          oldestPublishedDate.setDate(oldestPublishedDate.getDate() - maxAge);
+          const filter = (v: gapi.client.youtube.Video) => {
+            if (feedCache.find((cachedVideo) => cachedVideo.video.id === v.id)) {
+              return false;
             }
-          }, handleError)
-          .then(() => {
-            incLoading(-1);
-            resolve(true);
-          });
-      });
+            if (getTimeSeconds(v.contentDetails?.duration) < minDuration) {
+              return false;
+            }
+            return new Date(v.snippet?.publishedAt || "") > oldestPublishedDate;
+          };
+          fetchVideos(setFeedVideos, playlistItems.items, filter, "publishedAt");
+        }
+      } catch (e) {
+        handleError(e as Error);
+      } finally {
+        incLoading(-1);
+      }
     },
-    [incLoading, handleError, fetchVideos, feedCache, minDuration, maxAge]
+    [incLoading, handleError, fetchVideos, feedCache, minDuration, maxAge, token]
   );
 
   const fetchPlaylistItemsCascade = useCallback(
@@ -151,23 +153,23 @@ const VideoProvider = ({ children }: any) => {
   );
 
   const fetchChannels = useCallback(
-    (chanIds: string) => {
+    async (chanIds: string) => {
+      if (!token) return;
       incLoading(1);
-      gapi.client.youtube.channels
-        .list({
-          part: "contentDetails",
-          id: chanIds,
-          maxResults: 50,
-        })
-        .then((response) => {
-          const playlistIds = response.result.items?.map(
-            (chan) => chan.contentDetails?.relatedPlaylists?.uploads
-          );
-          if (playlistIds) fetchPlaylistItemsCascade(playlistIds, 0);
-        }, handleError)
-        .then(() => incLoading(-1));
+      try {
+        const channels = await listChannels(chanIds, token.access_token);
+        const playlistIds = channels.items?.map(
+          (chan) => chan.contentDetails?.relatedPlaylists?.uploads
+        );
+        // FIXME pourquoi pas un foreach ici ?
+        if (playlistIds) fetchPlaylistItemsCascade(playlistIds, 0);
+      } catch (e) {
+        handleError(e as Error);
+      } finally {
+        incLoading(-1);
+      }
     },
-    [handleError, incLoading, fetchPlaylistItemsCascade]
+    [handleError, incLoading, fetchPlaylistItemsCascade, token]
   );
 
   const fetchSubscriptions = useCallback(
@@ -180,50 +182,44 @@ const VideoProvider = ({ children }: any) => {
           setFeedVideos(FEED_VIDEOS);
         }, 200);
       } else {
+        if (!token) return;
         if (!pageToken) setFeedVideos([]);
         incLoading(1);
-        gapi.client.youtube.subscriptions
-          .list({
-            part: "snippet",
-            mine: true,
-            maxResults: 50,
-            pageToken: pageToken,
-          })
-          .then((response) => {
-            const result = response.result;
-            if (result.items?.length)
-              fetchChannels(
-                result.items.map((sub) => sub.snippet?.resourceId?.channelId).join(",")
-              );
-            if (result.nextPageToken) fetchSubscriptions(result.nextPageToken);
-          }, handleError)
-          .then(() => incLoading(-1));
+        try {
+          const subs = await listSubscriptions(token.access_token, pageToken);
+          if (subs.items?.length) {
+            fetchChannels(subs.items.map((sub) => sub.snippet?.resourceId?.channelId).join(","));
+          }
+          if (subs.nextPageToken) fetchSubscriptions(subs.nextPageToken);
+        } catch (e) {
+          handleError(e as Error);
+        } finally {
+          incLoading(-1);
+        }
       }
     },
-    [incLoading, handleError, fetchChannels]
+    [incLoading, handleError, fetchChannels, token]
   );
 
   const fetchWatchList = useCallback(
-    (pageToken?: string) => {
-      if (!playlistId) {
+    async (pageToken?: string) => {
+      if (!playlistId || !token) {
         setPlaylistVideos([]);
         return;
       }
       if (!pageToken) setPlaylistVideos([]);
       incLoading(1);
-      gapi.client.youtube.playlistItems
-        .list({
-          part: "snippet",
-          playlistId,
-          maxResults: 50,
-          pageToken,
-        })
-        .then((response) => {
-          fetchVideos(setPlaylistVideos, response.result.items || []);
-        }, handleError)
-        .then(() => incLoading(-1));
+      try {
+        const videos = await listPlaylistItems(playlistId, 50, token.access_token, pageToken);
+        fetchVideos(setPlaylistVideos, videos.items || []);
+        if (videos.nextPageToken) fetchWatchList(videos.nextPageToken);
+      } catch (e) {
+        handleError(e as Error);
+      } finally {
+        incLoading(-1);
+      }
     },
-    [fetchVideos, handleError, incLoading, playlistId]
+    [fetchVideos, handleError, incLoading, playlistId, token]
   );
 
   const deleteFromWatchlist = (playlistItemId?: string) => {

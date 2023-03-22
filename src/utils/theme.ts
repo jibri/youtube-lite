@@ -4,9 +4,9 @@ export const defaultTheme: DefaultTheme = {
   // Theme
   white: "#ffffff",
   black: "#333333",
-  active: "#3388ff",
-  primary: "#ffffff",
-  secondary: "#ffffff",
+  active: "#0050c8",
+  primary: "#aad5ff",
+  secondary: "#ddeeff",
   background: "#ffffff",
   text: {
     light: "#666666",

@@ -1,78 +1,82 @@
+import { decodeJwt } from "jose";
 import React, { createContext, useState, useEffect, useCallback } from "react";
 import { API_KEY } from "src/utils/constants";
 
 interface LoginData {
-  loggedIn: boolean;
-  googleAuth?: gapi.auth2.GoogleAuth;
+  // id google de l'utilisateur connecté
+  userId?: string;
+  // OAuth access token
+  token?: google.accounts.oauth2.TokenResponse;
   error?: string;
   loading: number;
 
-  handleError: (reason: gapi.client.HttpRequestRejected) => void;
+  handleError: (reason: Error) => void;
   incLoading: (inc: number) => void;
+  login: () => void;
+  logout: () => void;
 }
-
 const defaultData: LoginData = {
-  loggedIn: false,
   loading: 0,
-  handleError: () => {
-    /** */
-  },
-  incLoading: () => {
-    /** */
-  },
+  handleError: () => null,
+  incLoading: () => null,
+  login: () => null,
+  logout: () => null,
 };
 
-const SCOPE = "https://www.googleapis.com/auth/youtube";
+const SCOPE =
+  "https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtube.readonly";
 export const LoginContext = createContext<LoginData>(defaultData);
 
 const LoginProvider = ({ children }: any) => {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [googleAuth, setGoogleAuth] = useState<gapi.auth2.GoogleAuth>();
+  const [userId, setUserId] = useState<string>();
+  const [token, setToken] = useState<google.accounts.oauth2.TokenResponse>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(0);
 
   useEffect(() => {
-    function initClient() {
-      // Retrieve the discovery document for version 3 of YouTube Data API.
-      // In practice, your app can retrieve one or more discovery documents.
-      var discoveryUrl = "https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest";
+    // on crée le client d'accès à l'api youtube
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: API_KEY,
+      scope: SCOPE,
+      prompt: "",
+      callback: (tokenResponse) => {
+        // Réception des accès aux API youtube, après client.requestAccessToken();
+        console.log("token response", tokenResponse);
+        setToken(tokenResponse);
+      },
+    });
 
-      // Initialize the gapi.client object, which app uses to make API requests.
-      // Get API key and client ID from API Console.
-      // 'scope' field specifies space-delimited list of access scopes.
-      gapi.client
-        .init({
-          clientId: API_KEY,
-          discoveryDocs: [discoveryUrl],
-          scope: SCOPE,
-        })
-        .then(function () {
-          setGoogleAuth(gapi.auth2.getAuthInstance());
-        });
-    }
+    // On initialise le service de compte google
+    google.accounts.id.initialize({
+      client_id: API_KEY,
+      auto_select: true,
+      callback: (credentials) => {
+        // Utilisateur google connecté
+        console.log("one tap done", credentials, decodeJwt(credentials.credential));
+        setUserId(decodeJwt(credentials.credential).sub);
+      },
+    });
 
-    // FIXME will be deprecated in march 2023
-    gapi.load("client:auth2", initClient);
+    // google login
+    google.accounts.id.prompt();
+    // youtube api authorisation
+    client.requestAccessToken();
   }, []);
 
-  useEffect(() => {
-    function setSigninStatus() {
-      if (googleAuth) {
-        var user = googleAuth.currentUser.get();
-        setLoggedIn(user.hasGrantedScopes(SCOPE));
-      } else {
-        setLoggedIn(false);
-      }
+  const login = google.accounts.id.prompt;
+  const logout = () => {
+    if (userId) {
+      google.accounts.id.revoke(userId, (response) => {
+        if (response.successful) {
+          setUserId(undefined);
+          setToken(undefined);
+        }
+      });
     }
+  };
 
-    // Listen for sign-in state changes.
-    googleAuth?.isSignedIn.listen(setSigninStatus);
-    // Handle initial sign-in state. (Determine if user is already signed in.)
-    setSigninStatus();
-  }, [googleAuth]);
-
-  const handleError = useCallback((reason: gapi.client.HttpRequestRejected) => {
-    setError(`Error : ${reason.result.error.message}`);
+  const handleError = useCallback((error: Error) => {
+    setError(`Error : ${error.message}`);
     setTimeout(() => setError(undefined), 5000);
   }, []);
 
@@ -81,12 +85,14 @@ const LoginProvider = ({ children }: any) => {
   }, []);
 
   const values: LoginData = {
-    loggedIn,
-    googleAuth,
+    userId,
+    token,
     error,
     loading,
     handleError,
     incLoading,
+    login,
+    logout,
   };
 
   return <LoginContext.Provider value={values}>{children}</LoginContext.Provider>;

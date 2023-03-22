@@ -11,6 +11,7 @@ import styled from "styled-components";
 import useDelayAction from "src/hooks/useDelayAction";
 import Notification from "src/gui/components/notification";
 import { ConfigContext } from "src/data/context/configProvider";
+import { deletePlaylistItems, rateVideos } from "src/utils/youtubeApi";
 
 export const ActionsMask = styled.div`
   position: absolute;
@@ -56,7 +57,7 @@ const useMq = (mq: MediaQueryList) => {
 };
 
 function Watchlist() {
-  const { handleError, incLoading } = useContext(LoginContext);
+  const { token, handleError, incLoading } = useContext(LoginContext);
   const { playlistVideos, deleteFromWatchlist } = useContext(VideoContext);
   const { playlistId } = useContext(ConfigContext);
   const [removing, setRemoving] = useState<string>();
@@ -68,30 +69,34 @@ function Watchlist() {
     delayAction("Video supprimée", () => deletePlaylistItem(video));
   };
 
-  const deletePlaylistItem = (video: VideoItem) => {
-    incLoading(1);
-    gapi.client.youtube.playlistItems
-      .delete({
-        id: video.playlistItem.id || "",
-      })
-      .then(() => deleteFromWatchlist(video.playlistItem.id), handleError)
-      .then(() => incLoading(-1));
+  const deletePlaylistItem = async (video: VideoItem) => {
+    if (token && video.playlistItem.id) {
+      try {
+        incLoading(1);
+        await deletePlaylistItems(video.playlistItem.id, token.access_token);
+        deleteFromWatchlist(video.playlistItem.id);
+      } catch (e) {
+        handleError(e as Error);
+      } finally {
+        incLoading(-1);
+      }
+    }
   };
 
   const likeVideo = (video: VideoItem) => {
     setTimeout(() => setRemoving(video.video.id), 100);
-    delayAction("Like ajouté", () => {
-      incLoading(1);
-      gapi.client.youtube.videos
-        .rate({
-          id: video.video.id || "",
-          rating: "like",
-        })
-        .then(undefined, handleError)
-        .then(() => {
+    delayAction("Like ajouté", async () => {
+      if (token && video.video.id) {
+        try {
+          incLoading(1);
+          await rateVideos(video.video.id, token.access_token);
+        } catch (e) {
+          handleError(e as Error);
+        } finally {
           incLoading(-1);
           deletePlaylistItem(video);
-        });
+        }
+      }
     });
   };
 
@@ -145,35 +150,40 @@ function Watchlist() {
       )}
       {playlistVideos.map((video) => (
         <WlVideoWrapper key={video.video.id} removing={removing === video.video.id}>
-          <ActionsMask>
-            <DeleteActionWrapper>
-              <FontAwesomeIcon icon={faTrash} />
-            </DeleteActionWrapper>
-            <MiddleActionWrapper />
-            <LikeActionWrapper>
-              <FontAwesomeIcon icon={faThumbsUp} />
-            </LikeActionWrapper>
-          </ActionsMask>
-          <ReactSwipe
-            swipeOptions={{
-              startSlide: 1,
-              continuous: false,
-              callback: (idx) => {
-                if (idx === 0) removeFromWatchlist(video);
-                if (idx === 2) likeVideo(video);
-              },
-            }}
-          >
-            <div>
-              <div style={{ height: "10px" }}></div>
-            </div>
-            <div>
-              <Video video={video} actions={getActions(video)} />
-            </div>
-            <div>
-              <div style={{ height: "10px" }}></div>
-            </div>
-          </ReactSwipe>
+          {!matches && (
+            <>
+              <ActionsMask>
+                <DeleteActionWrapper>
+                  <FontAwesomeIcon icon={faTrash} />
+                </DeleteActionWrapper>
+                <MiddleActionWrapper />
+                <LikeActionWrapper>
+                  <FontAwesomeIcon icon={faThumbsUp} />
+                </LikeActionWrapper>
+              </ActionsMask>
+              <ReactSwipe
+                swipeOptions={{
+                  startSlide: 1,
+                  continuous: false,
+                  callback: (idx) => {
+                    if (idx === 0) removeFromWatchlist(video);
+                    if (idx === 2) likeVideo(video);
+                  },
+                }}
+              >
+                <div>
+                  <div style={{ height: "10px" }}></div>
+                </div>
+                <div>
+                  <Video video={video} actions={getActions(video)} />
+                </div>
+                <div>
+                  <div style={{ height: "10px" }}></div>
+                </div>
+              </ReactSwipe>
+            </>
+          )}
+          {matches && <Video video={video} actions={getActions(video)} />}
         </WlVideoWrapper>
       ))}
       <Notification show={!!delayedActions.length}>

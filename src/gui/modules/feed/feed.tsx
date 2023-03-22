@@ -19,34 +19,34 @@ import { ActionButton, Text } from "src/utils/styled";
 import { ConfigContext } from "src/data/context/configProvider";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "src/init/firestore";
+import { insertPlaylistItem, rateVideos } from "src/utils/youtubeApi";
 
 function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
   const { playlistId } = useContext(ConfigContext);
   const { feedVideos } = useContext(VideoContext);
-  const { googleAuth, handleError, incLoading } = useContext(LoginContext);
+  const { userId, token, handleError, incLoading } = useContext(LoginContext);
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
 
-  const userId = googleAuth?.currentUser?.get()?.getId();
   let reactSwipeEl: ReactSwipe | null;
 
-  function addToWatchlist(video: VideoItem) {
-    incLoading(1);
-    setTimeout(() => setRemoving((rem) => [...rem, video.video.id!]), 100);
-    gapi.client.youtube.playlistItems
-      .insert({
-        part: "snippet",
-        resource: {
-          snippet: {
-            resourceId: video.playlistItem.snippet?.resourceId,
-            playlistId: playlistId,
-          },
-        },
-      })
-      .then(() => {
+  async function addToWatchlist(video: VideoItem) {
+    if (token && video.playlistItem.snippet?.resourceId) {
+      incLoading(1);
+      setTimeout(() => setRemoving((rem) => [...rem, video.video.id!]), 100);
+      try {
+        await insertPlaylistItem(
+          video.playlistItem.snippet?.resourceId,
+          playlistId,
+          token.access_token
+        );
         addVideoToWatchlistCache(video);
-      }, handleError)
-      .then(() => incLoading(-1));
+      } catch (e) {
+        handleError(e as Error);
+      } finally {
+        incLoading(-1);
+      }
+    }
   }
 
   const addVideoToWatchlistCache = (video: VideoItem) => {
@@ -60,18 +60,19 @@ function Feed() {
     delayAction("Video supprimée", addVideoToWatchlistCache, [video]);
   };
 
-  const likeVideo = (video: VideoItem) => {
+  const likeVideo = async (video: VideoItem) => {
     incLoading(1);
-    gapi.client.youtube.videos
-      .rate({
-        id: video.video.id || "",
-        rating: "like",
-      })
-      .then(undefined, handleError)
-      .then(() => {
+    if (token && video.video.id) {
+      try {
+        incLoading(1);
+        await rateVideos(video.video.id, token.access_token);
+      } catch (e) {
+        handleError(e as Error);
+      } finally {
         incLoading(-1);
         reactSwipeEl?.prev();
-      });
+      }
+    }
   };
 
   return (

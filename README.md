@@ -1,5 +1,10 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## TODO
+
+- Migration react native
+- création d'une playlist privée à partir d'un ID de playlist (pour permet de la liste avec https://youtube.googleapis.com/youtube/v3/playlists?mine=true&key=[YOUR_API_KEY])
+
 ## Available Scripts
 
 In the project directory, you can run:
