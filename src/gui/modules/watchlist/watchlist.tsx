@@ -57,7 +57,7 @@ const useMq = (mq: MediaQueryList) => {
 };
 
 function Watchlist() {
-  const { token, handleError, incLoading } = useContext(LoginContext);
+  const { token, handleError, incLoading, callYoutube } = useContext(LoginContext);
   const { playlistVideos, deleteFromWatchlist } = useContext(VideoContext);
   const { playlistId } = useContext(ConfigContext);
   const [removing, setRemoving] = useState<string>();
@@ -71,15 +71,18 @@ function Watchlist() {
 
   const deletePlaylistItem = async (video: VideoItem) => {
     if (token && video.playlistItem.id) {
-      try {
-        incLoading(1);
-        await deletePlaylistItems(video.playlistItem.id, token.access_token);
+      incLoading(1);
+      const response = await callYoutube(
+        deletePlaylistItems,
+        video.playlistItem.id,
+        token.access_token
+      );
+      if (!response.ok) {
+        handleError(response.error);
+      } else {
         deleteFromWatchlist(video.playlistItem.id);
-      } catch (e) {
-        handleError(e as Error);
-      } finally {
-        incLoading(-1);
       }
+      incLoading(-1);
     }
   };
 
@@ -87,15 +90,11 @@ function Watchlist() {
     setTimeout(() => setRemoving(video.video.id), 100);
     delayAction("Like ajouté", async () => {
       if (token && video.video.id) {
-        try {
-          incLoading(1);
-          await rateVideos(video.video.id, token.access_token);
-        } catch (e) {
-          handleError(e as Error);
-        } finally {
-          incLoading(-1);
-          deletePlaylistItem(video);
-        }
+        incLoading(1);
+        const response = await callYoutube(rateVideos, video.video.id, token.access_token);
+        if (!response.ok) handleError(response.error);
+        incLoading(-1);
+        deletePlaylistItem(video);
       }
     });
   };

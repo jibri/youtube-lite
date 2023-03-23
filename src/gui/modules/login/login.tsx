@@ -81,7 +81,8 @@ function Login() {
   const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
   const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
   const [playlists, setPlaylists] = useState<gapi.client.youtube.Playlist[]>([]);
-  const { userId, token, handleError, incLoading, login, logout } = useContext(LoginContext);
+  const { userId, token, handleError, incLoading, login, logout, callYoutube } =
+    useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [not, setNot] = useState(false);
 
@@ -109,12 +110,13 @@ function Login() {
 
         do {
           incLoading(1);
-          try {
-            const { items, nextPageToken } = await listMyPlaylists(token.access_token, nextToken);
+          const response = await callYoutube(listMyPlaylists, token.access_token, nextToken);
+          if (!response.ok) {
+            handleError(response.error);
+          } else {
+            const { items, nextPageToken } = response.data;
             myPlaylists.push(...items);
             nextToken = nextPageToken;
-          } catch (e) {
-            handleError(e as Error);
           }
           incLoading(-1);
         } while (nextToken);
@@ -122,12 +124,14 @@ function Login() {
       }
     };
     loadPlaylists();
-  }, [handleError, incLoading, token]);
+  }, [callYoutube, handleError, incLoading, token]);
 
   function handleAuthClick() {
-    if (userId) {
+    if (token) {
       // User is authorized and has clicked "Sign out" button.
-      logout();
+      // FIXME redemander un token apres 30 minutes
+      // revoir les @types, youtube, google/one-tape
+      logout(token);
     } else {
       // User is not signed in. Start Google auth flow.
       login();

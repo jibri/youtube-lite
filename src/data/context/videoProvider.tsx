@@ -58,7 +58,7 @@ const VideoProvider = ({ children }: any) => {
   const [playlistVideos, setPlaylistVideos] = useState<VideoItem[]>([]);
   const [feedCache, setFeedCache] = useState<VideoItem[]>([]);
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
-  const { userId, token, handleError, loading, incLoading } = useContext(LoginContext);
+  const { userId, token, handleError, loading, incLoading, callYoutube } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
 
@@ -71,9 +71,12 @@ const VideoProvider = ({ children }: any) => {
     ) => {
       if (!token) return;
       incLoading(1);
-      try {
-        const videos = await listVideos(playlistItems, token.access_token);
-
+      const response = await callYoutube(listVideos, playlistItems, token.access_token);
+      incLoading(-1);
+      if (!response.ok) {
+        handleError(response.error);
+      } else {
+        const videos = response.data;
         const keepVideos = filter ? videos.items?.filter(filter) : videos.items;
         if (keepVideos) {
           setter((currentVideos) => {
@@ -103,21 +106,21 @@ const VideoProvider = ({ children }: any) => {
             return newVideos;
           });
         }
-      } catch (e) {
-        handleError(e as Error);
-      } finally {
-        incLoading(-1);
       }
     },
-    [handleError, incLoading, token]
+    [callYoutube, handleError, incLoading, token]
   );
 
   const fetchPlaylistItems = useCallback(
     async (idPlaylist: string) => {
       if (!token) return;
       incLoading(1);
-      try {
-        const playlistItems = await listPlaylistItems(idPlaylist, 10, token.access_token);
+      const response = await callYoutube(listPlaylistItems, idPlaylist, 10, token.access_token);
+      incLoading(-1);
+      if (!response.ok) {
+        handleError(response.error);
+      } else {
+        const playlistItems = response.data;
         if (playlistItems.items) {
           const oldestPublishedDate = new Date();
           oldestPublishedDate.setDate(oldestPublishedDate.getDate() - maxAge);
@@ -132,13 +135,9 @@ const VideoProvider = ({ children }: any) => {
           };
           fetchVideos(setFeedVideos, playlistItems.items, filter, "publishedAt");
         }
-      } catch (e) {
-        handleError(e as Error);
-      } finally {
-        incLoading(-1);
       }
     },
-    [incLoading, handleError, fetchVideos, feedCache, minDuration, maxAge, token]
+    [token, incLoading, callYoutube, handleError, maxAge, fetchVideos, feedCache, minDuration]
   );
 
   const fetchPlaylistItemsCascade = useCallback(
@@ -156,20 +155,20 @@ const VideoProvider = ({ children }: any) => {
     async (chanIds: string) => {
       if (!token) return;
       incLoading(1);
-      try {
-        const channels = await listChannels(chanIds, token.access_token);
+      const response = await callYoutube(listChannels, chanIds, token.access_token);
+      incLoading(-1);
+      if (!response.ok) {
+        handleError(response.error);
+      } else {
+        const channels = response.data;
         const playlistIds = channels.items?.map(
           (chan) => chan.contentDetails?.relatedPlaylists?.uploads
         );
         // FIXME pourquoi pas un foreach ici ?
         if (playlistIds) fetchPlaylistItemsCascade(playlistIds, 0);
-      } catch (e) {
-        handleError(e as Error);
-      } finally {
-        incLoading(-1);
       }
     },
-    [handleError, incLoading, fetchPlaylistItemsCascade, token]
+    [token, incLoading, callYoutube, handleError, fetchPlaylistItemsCascade]
   );
 
   const fetchSubscriptions = useCallback(
@@ -185,16 +184,16 @@ const VideoProvider = ({ children }: any) => {
         if (!token) return;
         if (!pageToken) setFeedVideos([]);
         incLoading(1);
-        try {
-          const subs = await listSubscriptions(token.access_token, pageToken);
+        const response = await listSubscriptions(token.access_token, pageToken);
+        incLoading(-1);
+        if (!response.ok) {
+          handleError(response.error);
+        } else {
+          const subs = response.data;
           if (subs.items?.length) {
             fetchChannels(subs.items.map((sub) => sub.snippet?.resourceId?.channelId).join(","));
           }
           if (subs.nextPageToken) fetchSubscriptions(subs.nextPageToken);
-        } catch (e) {
-          handleError(e as Error);
-        } finally {
-          incLoading(-1);
         }
       }
     },
@@ -209,17 +208,23 @@ const VideoProvider = ({ children }: any) => {
       }
       if (!pageToken) setPlaylistVideos([]);
       incLoading(1);
-      try {
-        const videos = await listPlaylistItems(playlistId, 50, token.access_token, pageToken);
+      const response = await callYoutube(
+        listPlaylistItems,
+        playlistId,
+        50,
+        token.access_token,
+        pageToken
+      );
+      incLoading(-1);
+      if (!response.ok) {
+        handleError(response.error);
+      } else {
+        const videos = response.data;
         fetchVideos(setPlaylistVideos, videos.items || []);
         if (videos.nextPageToken) fetchWatchList(videos.nextPageToken);
-      } catch (e) {
-        handleError(e as Error);
-      } finally {
-        incLoading(-1);
       }
     },
-    [fetchVideos, handleError, incLoading, playlistId, token]
+    [callYoutube, fetchVideos, handleError, incLoading, playlistId, token]
   );
 
   const deleteFromWatchlist = (playlistItemId?: string) => {

@@ -10,14 +10,29 @@ export const buildQueryString = (params: Record<string, unknown>) => {
   }, "");
 };
 
-const ytbFetch = async (
+type Success<T> = {
+  ok: true;
+  data: T;
+};
+type Error = {
+  ok: false;
+  error: string;
+};
+export type ResponseYoutube<T> = (Success<T> | Error) & {
+  status: number;
+  // ok: boolean;
+  // data?: T;
+  // error?: string;
+};
+
+const ytbFetch = async <T>(
   service: string,
   params: Record<string, unknown>,
   body: Record<string, unknown> | undefined,
   accessToken: string,
   pageToken?: string,
   method: "GET" | "POST" | "DELETE" = "GET"
-) => {
+): Promise<ResponseYoutube<T>> => {
   const response = await fetch(
     `${YOUTUBE_API}${service}${buildQueryString({
       ...params,
@@ -33,24 +48,35 @@ const ytbFetch = async (
       body: JSON.stringify(body),
     }
   );
-  if (response.ok) return response.status === 204 ? undefined : await response.json();
+  if (response.ok)
+    return {
+      status: response.status,
+      ok: true,
+      data: response.status === 204 ? undefined : await response.json(),
+    };
   const error = await response.json();
   console.log("Erreur sur l'appel api : ", service, params, error.error.message);
-  throw new Error(error.error.message);
+  return {
+    status: response.status,
+    ok: false,
+    error,
+  };
 };
 
 export const listSubscriptions = async (
   accessToken: string,
   pageToken?: string
-): Promise<{
-  items: gapi.client.youtube.Subscription[];
-  nextPageToken?: string;
-}> => {
+): Promise<
+  ResponseYoutube<{
+    items: gapi.client.youtube.Subscription[];
+    nextPageToken?: string;
+  }>
+> => {
   return await ytbFetch(
     "subscriptions",
     {
       part: "snippet",
-      maxResult: 50,
+      maxResults: 50,
       mine: true,
     },
     undefined,
@@ -62,15 +88,17 @@ export const listSubscriptions = async (
 export const listMyPlaylists = async (
   accessToken: string,
   pageToken?: string
-): Promise<{
-  items: gapi.client.youtube.Playlist[];
-  nextPageToken?: string;
-}> => {
+): Promise<
+  ResponseYoutube<{
+    items: gapi.client.youtube.Playlist[];
+    nextPageToken?: string;
+  }>
+> => {
   return await ytbFetch(
     "playlists",
     {
       part: ["snippet", "contentDetails"],
-      maxResult: 50,
+      maxResults: 50,
       mine: true,
     },
     undefined,
@@ -81,19 +109,21 @@ export const listMyPlaylists = async (
 
 export const listPlaylistItems = async (
   idPlaylist: string,
-  maxResult: number,
+  maxResults: number,
   accessToken: string,
   pageToken?: string
-): Promise<{
-  items: gapi.client.youtube.PlaylistItem[];
-  nextPageToken?: string;
-}> => {
+): Promise<
+  ResponseYoutube<{
+    items: gapi.client.youtube.PlaylistItem[];
+    nextPageToken?: string;
+  }>
+> => {
   return await ytbFetch(
     "playlistItems",
     {
       part: ["snippet"],
       playlistId: idPlaylist,
-      maxResult,
+      maxResults,
     },
     undefined,
     accessToken,
@@ -101,7 +131,10 @@ export const listPlaylistItems = async (
   );
 };
 
-export const deletePlaylistItems = async (id: string, accessToken: string): Promise<void> => {
+export const deletePlaylistItems = async (
+  id: string,
+  accessToken: string
+): Promise<ResponseYoutube<void>> => {
   return await ytbFetch("playlistItems", { id }, undefined, accessToken, undefined, "DELETE");
 };
 
@@ -109,10 +142,12 @@ export const listVideos = async (
   playlistItems: gapi.client.youtube.PlaylistItem[],
   accessToken: string,
   pageToken?: string
-): Promise<{
-  items: gapi.client.youtube.Video[];
-  nextPageToken?: string;
-}> => {
+): Promise<
+  ResponseYoutube<{
+    items: gapi.client.youtube.Video[];
+    nextPageToken?: string;
+  }>
+> => {
   return await ytbFetch(
     "videos",
     {
@@ -126,7 +161,10 @@ export const listVideos = async (
   );
 };
 
-export const rateVideos = async (id: string, accessToken: string): Promise<void> => {
+export const rateVideos = async (
+  id: string,
+  accessToken: string
+): Promise<ResponseYoutube<void>> => {
   return await ytbFetch(
     "videos/rate",
     { id, rating: "like" },
@@ -141,10 +179,12 @@ export const listChannels = async (
   chanIds: string,
   accessToken: string,
   pageToken?: string
-): Promise<{
-  items: gapi.client.youtube.Channel[];
-  nextPageToken?: string;
-}> => {
+): Promise<
+  ResponseYoutube<{
+    items: gapi.client.youtube.Channel[];
+    nextPageToken?: string;
+  }>
+> => {
   return await ytbFetch(
     "channels",
     {
@@ -162,7 +202,7 @@ export const insertPlaylistItem = async (
   resourceId: gapi.client.youtube.ResourceId,
   playlistId: string,
   accessToken: string
-): Promise<void> => {
+): Promise<ResponseYoutube<void>> => {
   return await ytbFetch(
     "playlistItems",
     { part: ["snippet"] },

@@ -25,7 +25,7 @@ function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
   const { playlistId } = useContext(ConfigContext);
   const { feedVideos } = useContext(VideoContext);
-  const { userId, token, handleError, incLoading } = useContext(LoginContext);
+  const { userId, token, handleError, incLoading, callYoutube } = useContext(LoginContext);
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
 
   let reactSwipeEl: ReactSwipe | null;
@@ -34,18 +34,18 @@ function Feed() {
     if (token && video.playlistItem.snippet?.resourceId) {
       incLoading(1);
       setTimeout(() => setRemoving((rem) => [...rem, video.video.id!]), 100);
-      try {
-        await insertPlaylistItem(
-          video.playlistItem.snippet?.resourceId,
-          playlistId,
-          token.access_token
-        );
+      const response = await callYoutube(
+        insertPlaylistItem,
+        video.playlistItem.snippet?.resourceId,
+        playlistId,
+        token.access_token
+      );
+      if (!response.ok) {
+        handleError(response.error);
+      } else {
         addVideoToWatchlistCache(video);
-      } catch (e) {
-        handleError(e as Error);
-      } finally {
-        incLoading(-1);
       }
+      incLoading(-1);
     }
   }
 
@@ -63,15 +63,11 @@ function Feed() {
   const likeVideo = async (video: VideoItem) => {
     incLoading(1);
     if (token && video.video.id) {
-      try {
-        incLoading(1);
-        await rateVideos(video.video.id, token.access_token);
-      } catch (e) {
-        handleError(e as Error);
-      } finally {
-        incLoading(-1);
-        reactSwipeEl?.prev();
-      }
+      incLoading(1);
+      const response = await rateVideos(video.video.id, token.access_token);
+      if (!response.ok) handleError(response.error);
+      incLoading(-1);
+      reactSwipeEl?.prev();
     }
   };
 

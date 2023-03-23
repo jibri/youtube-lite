@@ -1,6 +1,6 @@
-import { decodeJwt } from "jose";
-import React, { createContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useState, useEffect, useCallback, useRef } from "react";
 import { API_KEY } from "src/utils/constants";
+import { ResponseYoutube } from "src/utils/youtubeApi";
 
 interface LoginData {
   // id google de l'utilisateur connecté
@@ -10,10 +10,14 @@ interface LoginData {
   error?: string;
   loading: number;
 
-  handleError: (reason: Error) => void;
+  handleError: (error?: string) => void;
   incLoading: (inc: number) => void;
   login: () => void;
-  logout: () => void;
+  logout: (revokeToken: google.accounts.oauth2.TokenResponse) => void;
+  callYoutube: <T extends unknown[], D>(
+    service: (...args: T) => Promise<ResponseYoutube<D>>,
+    ...args: T
+  ) => Promise<ResponseYoutube<D>>;
 }
 const defaultData: LoginData = {
   loading: 0,
@@ -21,10 +25,11 @@ const defaultData: LoginData = {
   incLoading: () => null,
   login: () => null,
   logout: () => null,
+  callYoutube: () => new Promise((r) => null),
 };
 
 const SCOPE =
-  "https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtube.readonly";
+  "https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";
 export const LoginContext = createContext<LoginData>(defaultData);
 
 const LoginProvider = ({ children }: any) => {
@@ -32,57 +37,93 @@ const LoginProvider = ({ children }: any) => {
   const [token, setToken] = useState<google.accounts.oauth2.TokenResponse>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(0);
+  const oAuthClient = useRef<google.accounts.oauth2.TokenClient>();
 
-  useEffect(() => {
-    // on crée le client d'accès à l'api youtube
-    const client = google.accounts.oauth2.initTokenClient({
-      client_id: API_KEY,
-      scope: SCOPE,
-      prompt: "",
-      callback: (tokenResponse) => {
-        // Réception des accès aux API youtube, après client.requestAccessToken();
-        console.log("token response", tokenResponse);
-        setToken(tokenResponse);
-      },
-    });
-
-    // On initialise le service de compte google
-    google.accounts.id.initialize({
-      client_id: API_KEY,
-      auto_select: true,
-      callback: (credentials) => {
-        // Utilisateur google connecté
-        console.log("one tap done", credentials, decodeJwt(credentials.credential));
-        setUserId(decodeJwt(credentials.credential).sub);
-      },
-    });
-
-    // google login
-    google.accounts.id.prompt();
-    // youtube api authorisation
-    client.requestAccessToken();
+  const login = useCallback(() => {
+    if (oAuthClient.current) oAuthClient.current.requestAccessToken();
   }, []);
 
-  const login = google.accounts.id.prompt;
-  const logout = () => {
-    if (userId) {
-      google.accounts.id.revoke(userId, (response) => {
-        if (response.successful) {
-          setUserId(undefined);
-          setToken(undefined);
-        }
-      });
-    }
-  };
+  const logout = useCallback((revokeToken: google.accounts.oauth2.TokenResponse) => {
+    google.accounts.oauth2.revoke(revokeToken.access_token, () => {
+      setUserId(undefined);
+      setToken(undefined);
+    });
+  }, []);
 
-  const handleError = useCallback((error: Error) => {
-    setError(`Error : ${error.message}`);
+  const handleError = useCallback((error?: string) => {
+    setError(`Error : ${error || "erreur inconnue"}`);
     setTimeout(() => setError(undefined), 5000);
   }, []);
 
   const incLoading = useCallback((inc: number) => {
     setLoading((l) => l + inc);
   }, []);
+
+  const fetchUserInfos = useCallback(
+    async (token: google.accounts.oauth2.TokenResponse) => {
+      const userInfoResponse = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token.access_token}`,
+          Accept: "application/json",
+        },
+      });
+      const errMsg = "Impossible de récupérer les infos de l'utilisateur";
+      let userInfos;
+      try {
+        userInfos = await userInfoResponse.json();
+        if (userInfoResponse.ok) {
+          setUserId((userInfos as { sub: string }).sub);
+        } else {
+          console.log(errMsg, userInfos);
+          handleError(errMsg);
+        }
+      } catch (e) {
+        console.log(errMsg, userInfos);
+        handleError(errMsg);
+      }
+    },
+    [handleError]
+  );
+
+  const initClient = useCallback(() => {
+    // on crée le client d'accès à l'api youtube
+    oAuthClient.current = google.accounts.oauth2.initTokenClient({
+      client_id: API_KEY,
+      scope: SCOPE,
+      prompt: "",
+      callback: async (tokenResponse) => {
+        // Réception des accès aux API youtube, après client.requestAccessToken();
+        console.log("token response", tokenResponse);
+        setToken(tokenResponse);
+        await fetchUserInfos(tokenResponse);
+      },
+    });
+  }, [fetchUserInfos]);
+
+  useEffect(() => {
+    // on crée le client d'accès à l'api youtube
+    initClient();
+    // Connexion auto
+    login();
+  }, [initClient, login]);
+
+  /** Appel le service youtube donné, et tente de récupérer un access_token en cas d'erreur 4** */
+  const callYoutube = useCallback(
+    async <T extends unknown[], D>(
+      service: (...args: T) => Promise<ResponseYoutube<D>>,
+      ...args: T
+    ) => {
+      const response = await service(...args);
+      // Unauthorize => try to get another accessToken
+      if (response.status >= 400 && response.status < 500) login();
+
+      // Ok => return data
+      // autre erreurs => return data
+      return response;
+    },
+    [login]
+  );
 
   const values: LoginData = {
     userId,
@@ -93,6 +134,7 @@ const LoginProvider = ({ children }: any) => {
     incLoading,
     login,
     logout,
+    callYoutube,
   };
 
   return <LoginContext.Provider value={values}>{children}</LoginContext.Provider>;
