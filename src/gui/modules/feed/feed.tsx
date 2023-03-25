@@ -75,8 +75,8 @@ function Feed() {
 
   const swipeActions: [VisualAction, VisualAction] = useMemo(
     () => [
-      { action: (video) => likeVideo(video), actionIcon: faThumbsUp },
       { action: (video) => deleteFromFeed(video), actionIcon: faTrash },
+      { action: (video) => likeVideo(video), actionIcon: faThumbsUp },
     ],
     [deleteFromFeed, likeVideo]
   );

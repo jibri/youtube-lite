@@ -72,8 +72,8 @@ function Watchlist() {
 
   const swipeActions: [VisualAction, VisualAction] = useMemo(
     () => [
-      { action: (video) => likeVideo(video), actionIcon: faThumbsUp },
       { action: (video) => removeFromWatchlist(video), actionIcon: faTrash },
+      { action: (video) => likeVideo(video), actionIcon: faThumbsUp },
     ],
     [likeVideo, removeFromWatchlist]
   );
