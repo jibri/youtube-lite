@@ -19,7 +19,7 @@ import SwipableVideo from "src/gui/components/SwipableVideo";
 function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
   const { playlistId } = useContext(ConfigContext);
-  const { feedVideos } = useContext(VideoContext);
+  const { feedVideos, playlistVideos } = useContext(VideoContext);
   const { userId, token, handleError, callYoutube } = useContext(LoginContext);
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
   const matches = useLargeScreenMq();
@@ -38,20 +38,22 @@ function Feed() {
     async (video: VideoItem) => {
       if (token && video.playlistItem.snippet?.resourceId) {
         setTimeout(() => setRemoving((rem) => [...rem, video.video.id!]), 100);
-        const response = await callYoutube(
-          insertPlaylistItem,
-          video.playlistItem.snippet?.resourceId,
-          playlistId,
-          token.access_token
-        );
-        if (!response.ok) {
-          handleError(response.error);
-        } else {
-          addVideoToWatchlistCache(video);
+        if (!playlistVideos.find((plv) => plv.video.id === video.video.id)) {
+          const response = await callYoutube(
+            insertPlaylistItem,
+            video.playlistItem.snippet?.resourceId,
+            playlistId,
+            token.access_token
+          );
+          if (!response.ok) {
+            handleError(response.error);
+            return;
+          }
         }
+        addVideoToWatchlistCache(video);
       }
     },
-    [addVideoToWatchlistCache, callYoutube, handleError, playlistId, token]
+    [addVideoToWatchlistCache, callYoutube, handleError, playlistId, playlistVideos, token]
   );
 
   const deleteFromFeed = useCallback(

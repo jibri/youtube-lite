@@ -73,7 +73,7 @@ const ActionWrapper = styled.div`
 const Video = ({ video, actions }: { video: VideoItem; actions: VisualAction[] }) => {
   const { playVideo } = useContext(VideoContext);
   return (
-    <VideoWrapper key={video.video.id} height={video.video.snippet?.thumbnails?.default?.height}>
+    <VideoWrapper height={video.video.snippet?.thumbnails?.default?.height}>
       <ThumbnailContainer>
         <Image
           alt="youtube thumbnail"

@@ -2,7 +2,8 @@ import { API_KEY } from "src/utils/constants";
 
 const YOUTUBE_API = "https://youtube.googleapis.com/youtube/v3/";
 
-export const buildQueryString = (params: Record<string, unknown>) => {
+type primitive = undefined | null | string | boolean | number;
+export const buildQueryString = (params: Record<string, primitive | primitive[]>) => {
   return Object.keys(params).reduce((queryString, key) => {
     const start = queryString ? `${queryString}&` : "?";
     const value = params[key] === undefined || params[key] === null ? "" : params[key];
@@ -20,9 +21,6 @@ type Error = {
 };
 export type ResponseYoutube<T> = (Success<T> | Error) & {
   status: number;
-  // ok: boolean;
-  // data?: T;
-  // error?: string;
 };
 
 const ytbFetch = async <T>(
@@ -55,12 +53,30 @@ const ytbFetch = async <T>(
       data: response.status === 204 ? undefined : await response.json(),
     };
   const error = await response.json();
-  console.log("Erreur sur l'appel api : ", service, params, error.error.message);
+  console.log("Erreur sur l'appel api : ", service, params, response, error);
   return {
     status: response.status,
     ok: false,
-    error,
+    error: isYoutubeError(error)
+      ? `${error.error.code} - ${error.error.status} : ${error.error.errors
+          .map((e) => e.message)
+          .join(" ; ")} / ${error.error.message}`
+      : error,
   };
+};
+
+type YoutubeError = {
+  error: {
+    message: string;
+    code: number;
+    status: string;
+    errors: {
+      message: string;
+    }[];
+  };
+};
+const isYoutubeError = (error: any): error is YoutubeError => {
+  return error?.error?.errors;
 };
 
 export const listSubscriptions = async (
