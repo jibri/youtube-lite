@@ -68,7 +68,7 @@ export const listSubscriptions = async (
   pageToken?: string
 ): Promise<
   ResponseYoutube<{
-    items: gapi.client.youtube.Subscription[];
+    items: youtube.Subscription[];
     nextPageToken?: string;
   }>
 > => {
@@ -90,7 +90,7 @@ export const listMyPlaylists = async (
   pageToken?: string
 ): Promise<
   ResponseYoutube<{
-    items: gapi.client.youtube.Playlist[];
+    items: youtube.Playlist[];
     nextPageToken?: string;
   }>
 > => {
@@ -114,7 +114,7 @@ export const listPlaylistItems = async (
   pageToken?: string
 ): Promise<
   ResponseYoutube<{
-    items: gapi.client.youtube.PlaylistItem[];
+    items: youtube.PlaylistItem[];
     nextPageToken?: string;
   }>
 > => {
@@ -139,12 +139,12 @@ export const deletePlaylistItems = async (
 };
 
 export const listVideos = async (
-  playlistItems: gapi.client.youtube.PlaylistItem[],
+  playlistItems: youtube.PlaylistItem[],
   accessToken: string,
   pageToken?: string
 ): Promise<
   ResponseYoutube<{
-    items: gapi.client.youtube.Video[];
+    items: youtube.Video[];
     nextPageToken?: string;
   }>
 > => {
@@ -181,7 +181,7 @@ export const listChannels = async (
   pageToken?: string
 ): Promise<
   ResponseYoutube<{
-    items: gapi.client.youtube.Channel[];
+    items: youtube.Channel[];
     nextPageToken?: string;
   }>
 > => {
@@ -199,7 +199,7 @@ export const listChannels = async (
 };
 
 export const insertPlaylistItem = async (
-  resourceId: gapi.client.youtube.ResourceId,
+  resourceId: youtube.ResourceId,
   playlistId: string,
   accessToken: string
 ): Promise<ResponseYoutube<void>> => {

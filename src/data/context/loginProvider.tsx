@@ -11,7 +11,6 @@ interface LoginData {
   loading: number;
 
   handleError: (error?: string) => void;
-  incLoading: (inc: number) => void;
   login: () => void;
   logout: (revokeToken: google.accounts.oauth2.TokenResponse) => void;
   callYoutube: <T extends unknown[], D>(
@@ -22,14 +21,21 @@ interface LoginData {
 const defaultData: LoginData = {
   loading: 0,
   handleError: () => null,
-  incLoading: () => null,
   login: () => null,
   logout: () => null,
   callYoutube: () => new Promise((r) => null),
 };
 
-const SCOPE =
-  "https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email";
+const SCOPES = [
+  // Accès en écriture à son compte youtube (like, supprimer les videos des playlists)
+  "https://www.googleapis.com/auth/youtube.force-ssl",
+  // Accès en lecture à son compte youtube (afficher les playlists et leur contenu, accéder aux abonnements)
+  "https://www.googleapis.com/auth/youtube.readonly",
+  // Accès aux info du user (no, prénom, id google ...)
+  "https://www.googleapis.com/auth/userinfo.profile",
+  // Accès au mail du user
+  "https://www.googleapis.com/auth/userinfo.email",
+];
 export const LoginContext = createContext<LoginData>(defaultData);
 
 const LoginProvider = ({ children }: any) => {
@@ -56,7 +62,9 @@ const LoginProvider = ({ children }: any) => {
   }, []);
 
   const incLoading = useCallback((inc: number) => {
-    setLoading((l) => l + inc);
+    // Petit délai sur le décrément pour permettre un chevauchement en cas d'appels chainés
+    if (inc < 0) setTimeout(() => setLoading((l) => l + inc), 200);
+    else setLoading((l) => l + inc);
   }, []);
 
   const fetchUserInfos = useCallback(
@@ -75,11 +83,9 @@ const LoginProvider = ({ children }: any) => {
         if (userInfoResponse.ok) {
           setUserId((userInfos as { sub: string }).sub);
         } else {
-          console.log(errMsg, userInfos);
           handleError(errMsg);
         }
       } catch (e) {
-        console.log(errMsg, userInfos);
         handleError(errMsg);
       }
     },
@@ -90,11 +96,10 @@ const LoginProvider = ({ children }: any) => {
     // on crée le client d'accès à l'api youtube
     oAuthClient.current = google.accounts.oauth2.initTokenClient({
       client_id: API_KEY,
-      scope: SCOPE,
+      scope: SCOPES.join(" "),
       prompt: "",
       callback: async (tokenResponse) => {
         // Réception des accès aux API youtube, après client.requestAccessToken();
-        console.log("token response", tokenResponse);
         setToken(tokenResponse);
         await fetchUserInfos(tokenResponse);
       },
@@ -114,7 +119,9 @@ const LoginProvider = ({ children }: any) => {
       service: (...args: T) => Promise<ResponseYoutube<D>>,
       ...args: T
     ) => {
+      incLoading(1);
       const response = await service(...args);
+      incLoading(-1);
       // Unauthorize => try to get another accessToken
       if (response.status >= 400 && response.status < 500) login();
 
@@ -122,7 +129,7 @@ const LoginProvider = ({ children }: any) => {
       // autre erreurs => return data
       return response;
     },
-    [login]
+    [login, incLoading]
   );
 
   const values: LoginData = {
@@ -131,7 +138,6 @@ const LoginProvider = ({ children }: any) => {
     error,
     loading,
     handleError,
-    incLoading,
     login,
     logout,
     callYoutube,

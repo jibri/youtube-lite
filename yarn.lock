@@ -2434,28 +2434,6 @@
     "@types/qs" "*"
     "@types/serve-static" "*"
 
-"@types/gapi.auth2@^0.0.52":
-  version "0.0.52"
-  resolved "https://registry.yarnpkg.com/@types/gapi.auth2/-/gapi.auth2-0.0.52.tgz#da859ac501e48f97f212ee4782840e8c9adc5082"
-  integrity sha512-Q9OEsiLXQ3fWv93voIDr4tXpiO0zNFx2RPK+9wj21LY3ydyx/CtoXQgbf+6iNSTuyHUDF4J/c74maKghtPbbaA==
-  dependencies:
-    "@types/gapi" "*"
-
-"@types/gapi@*":
-  version "0.0.42"
-  resolved "https://registry.yarnpkg.com/@types/gapi/-/gapi-0.0.42.tgz#772aa461660de09e7a78258064e075818373493c"
-  integrity sha512-kskWpouTGqutaIVRo/swiGnMVoRxOYdRwvaDrh0yavfR9vQoHvJJ7Enp4KE9MEGS8qF7F5KiP6bRNOYcCgRXCA==
-
-"@types/gapi@^0.0.39":
-  version "0.0.39"
-  resolved "https://registry.yarnpkg.com/@types/gapi/-/gapi-0.0.39.tgz#bc7fa8cd0cb175b36e3609790fb2ed73a33f6881"
-  integrity sha512-R1TZeZbvvbIC60DBJMhuOEivQHzOQtzl3uMDOOENTYQTSSDB6oEMpJo8HVPOTWivdUTbyEcB5qQOVr/JCKRlCQ==
-
-"@types/google-one-tap@^1.2.2":
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/@types/google-one-tap/-/google-one-tap-1.2.2.tgz#366d7252e867fbbac440eefd7482ab547d6f99be"
-  integrity sha512-7uAOjukbJnzJ5P8fKPSy7QDrbLbCEyUrSH/M4K+8wnk+cbSxE3t2MmrLPX7ejUl8rDZv3oUl0/uwQRlIIrLMBA==
-
 "@types/google.accounts@^0.0.7":
   version "0.0.7"
   resolved "https://registry.yarnpkg.com/@types/google.accounts/-/google.accounts-0.0.7.tgz#d9f20f29f3d14336967c905bddb2d89dc2bfc709"

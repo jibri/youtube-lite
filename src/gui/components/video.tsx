@@ -6,6 +6,11 @@ import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getTimeDisplay } from "src/utils/utils";
 
+export type VisualAction = {
+  action: (video: VideoItem) => void;
+  actionIcon: IconDefinition;
+};
+
 const LinkWrapper = styled.a`
   padding-left: 5px;
   text-decoration: none;
@@ -65,16 +70,7 @@ const ActionWrapper = styled.div`
   }
 `;
 
-const Video = ({
-  video,
-  actions,
-}: {
-  video: VideoItem;
-  actions: {
-    action: () => void;
-    actionIcon: IconDefinition;
-  }[];
-}) => {
+const Video = ({ video, actions }: { video: VideoItem; actions: VisualAction[] }) => {
   const { playVideo } = useContext(VideoContext);
   return (
     <VideoWrapper key={video.video.id} height={video.video.snippet?.thumbnails?.default?.height}>
@@ -94,10 +90,15 @@ const Video = ({
       </LinkWrapper>
       <ActionWrapper>
         {actions.map((a) => (
-          <FontAwesomeIcon key={a.actionIcon.iconName} icon={a.actionIcon} onClick={a.action} />
+          <FontAwesomeIcon
+            key={a.actionIcon.iconName}
+            icon={a.actionIcon}
+            onClick={() => a.action(video)}
+          />
         ))}
       </ActionWrapper>
     </VideoWrapper>
   );
 };
+
 export default Video;

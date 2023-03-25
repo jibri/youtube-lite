@@ -1,4 +1,4 @@
 export interface VideoItem {
-  playlistItem: gapi.client.youtube.PlaylistItem;
-  video: gapi.client.youtube.Video;
+  playlistItem: youtube.PlaylistItem;
+  video: youtube.Video;
 }
