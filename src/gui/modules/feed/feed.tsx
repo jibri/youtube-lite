@@ -59,7 +59,7 @@ function Feed() {
   const deleteFromFeed = useCallback(
     (video: VideoItem) => {
       setTimeout(() => setRemoving((rem) => [...rem, video.video.id!]), 100);
-      delayAction("Video supprimée", addVideoToWatchlistCache, [video]);
+      delayAction("Video supprimée", () => addVideoToWatchlistCache(video));
     },
     [addVideoToWatchlistCache, delayAction]
   );

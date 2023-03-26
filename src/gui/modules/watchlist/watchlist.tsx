@@ -99,7 +99,9 @@ function Watchlist() {
       ))}
       <Notification show={!!delayedActions.length}>
         <Text>{delayedActions[delayedActions.length - 1]?.label}</Text>
-        <ActionButton onClick={() => cancelAction(setRemoving)}>Cancel</ActionButton>
+        <ActionButton onClick={() => cancelAction(() => setRemoving(undefined))}>
+          Cancel
+        </ActionButton>
       </Notification>
     </>
   );

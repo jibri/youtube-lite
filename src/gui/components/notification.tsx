@@ -8,7 +8,7 @@ const Container = styled.div<{ show: boolean; animationDuration: number }>`
   min-width: min(35vw, 15em);
   max-width: calc(100vw - 2 * 1em);
   min-height: 2em;
-  max-height: 5em;
+  max-height: 80vh;
   z-index: ${(props) => props.theme.zIndex.popup};
   overflow: hidden;
   border-radius: 0 10px 10px 0;
