@@ -123,7 +123,7 @@ const LoginProvider = ({ children }: any) => {
       const response = await service(...args);
       incLoading(-1);
       // Unauthorize => try to get another accessToken
-      if (response.status >= 400 && response.status < 500) login();
+      if (response.status === 401) login();
 
       // Ok => return data
       // autre erreurs => return data

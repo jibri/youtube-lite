@@ -37,6 +37,7 @@ function Watchlist() {
         );
         if (!response.ok) {
           handleError(response.error);
+          setRemoving(undefined);
         } else {
           deleteFromWatchlist(video.playlistItem.id);
         }
@@ -61,6 +62,7 @@ function Watchlist() {
           const response = await callYoutube(rateVideos, video.video.id, token.access_token);
           if (!response.ok) {
             handleError(response.error);
+            setRemoving(undefined);
           } else {
             deletePlaylistItem(video);
           }

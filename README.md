@@ -2,6 +2,8 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## TODO
 
+- gestion de cache avec les etag retournés par youtube api
+- personnalisation de la popup de connexion youtube api
 - Migration react native
 - création d'une playlist privée à partir d'un ID de playlist (pour permet de la liste avec https://youtube.googleapis.com/youtube/v3/playlists?mine=true&key=[YOUR_API_KEY])
 
