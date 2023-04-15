@@ -23,7 +23,7 @@ function Watchlist() {
   const { token, handleError, callYoutube } = useContext(LoginContext);
   const { playlistVideos, deleteFromWatchlist } = useContext(VideoContext);
   const { playlistId } = useContext(ConfigContext);
-  const [removing, setRemoving] = useState<string>();
+  const [removing, setRemoving] = useState<string[]>([]);
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
   const matches = useLargeScreenMq();
 
@@ -37,7 +37,8 @@ function Watchlist() {
         );
         if (!response.ok) {
           handleError(response.error);
-          setRemoving(undefined);
+          // On retire l'id en erreur des removed video pour réafficher la video dans la playlist
+          setRemoving((removedIds) => removedIds.filter((id) => id !== video.video.id));
         } else {
           deleteFromWatchlist(video.playlistItem.id);
         }
@@ -48,26 +49,33 @@ function Watchlist() {
 
   const removeFromWatchlist = useCallback(
     (video: VideoItem) => {
-      setTimeout(() => setRemoving(video.video.id), 100);
-      delayAction("Video supprimée", () => deletePlaylistItem(video));
+      if (video.video.id) {
+        const idToRemove = video.video.id;
+        setTimeout(() => setRemoving((videoIds) => [...videoIds, idToRemove]), 100);
+        delayAction("Video supprimée", () => deletePlaylistItem(video));
+      }
     },
     [delayAction, deletePlaylistItem]
   );
 
   const likeVideo = useCallback(
     (video: VideoItem) => {
-      setTimeout(() => setRemoving(video.video.id), 100);
-      delayAction("Like ajouté", async () => {
-        if (token && video.video.id) {
-          const response = await callYoutube(rateVideos, video.video.id, token.access_token);
-          if (!response.ok) {
-            handleError(response.error);
-            setRemoving(undefined);
-          } else {
-            deletePlaylistItem(video);
+      if (video.video.id) {
+        const idToRemove = video.video.id;
+        setTimeout(() => setRemoving((videoIds) => [...videoIds, idToRemove]), 100);
+        delayAction("Like ajouté", async () => {
+          if (token && video.video.id) {
+            const response = await callYoutube(rateVideos, video.video.id, token.access_token);
+            if (!response.ok) {
+              handleError(response.error);
+              // On retire l'id en erreur des removed video pour réafficher la video dans la playlist
+              setRemoving((removedIds) => removedIds.filter((id) => id !== video.video.id));
+            } else {
+              deletePlaylistItem(video);
+            }
           }
-        }
-      });
+        });
+      }
     },
     [callYoutube, delayAction, deletePlaylistItem, handleError, token]
   );
@@ -91,7 +99,7 @@ function Watchlist() {
         </Flex>
       )}
       {playlistVideos.map((video) => (
-        <WlVideoWrapper key={video.video.id} removing={removing === video.video.id}>
+        <WlVideoWrapper key={video.video.id} removing={removing.includes(video.video.id || "")}>
           {matches ? (
             <Video video={video} actions={swipeActions} />
           ) : (
@@ -101,7 +109,7 @@ function Watchlist() {
       ))}
       <Notification show={!!delayedActions.length}>
         <Text>{delayedActions[delayedActions.length - 1]?.label}</Text>
-        <ActionButton onClick={() => cancelAction(() => setRemoving(undefined))}>
+        <ActionButton onClick={() => cancelAction(() => setRemoving((ids) => ids.slice(0, -1)))}>
           Cancel
         </ActionButton>
       </Notification>
