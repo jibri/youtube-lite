@@ -16,6 +16,13 @@ const MainScreeen = styled.div`
   width: 100%;
   background-color: ${(props) => props.theme.background};
 `;
+
+const MainContainer = styled.div`
+  min-height: 100vh;
+  max-width: ${(props) => props.theme.appMaxWidth};
+  margin: auto;
+  background-color: ${(props) => props.theme.background};
+`;
 const ContentWrapper = styled.div`
   padding: ${(props) => props.theme.headerHeigth} 0;
 `;
@@ -42,16 +49,18 @@ const Home = () => {
 
   return (
     <MainScreeen>
-      {token ? (
-        <VideoProvider>
-          <VideoModule />
-        </VideoProvider>
-      ) : (
-        <Login />
-      )}
-      <Notification show={!!error}>
-        <Text>{error}</Text>
-      </Notification>
+      <MainContainer>
+        {token ? (
+          <VideoProvider>
+            <VideoModule />
+          </VideoProvider>
+        ) : (
+          <Login />
+        )}
+        <Notification show={!!error}>
+          <Text>{error}</Text>
+        </Notification>
+      </MainContainer>
     </MainScreeen>
   );
 };

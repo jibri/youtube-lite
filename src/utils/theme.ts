@@ -24,6 +24,7 @@ export const defaultTheme: DefaultTheme = {
   // Misc
   headerHeigth: "3em",
   playerHeight: "270px",
+  appMaxWidth: "1000px",
 };
 export const darkTheme: DefaultTheme = {
   ...defaultTheme,

@@ -27,6 +27,7 @@ declare module "styled-components" {
     // Misc
     headerHeigth: string;
     playerHeight: string;
+    appMaxWidth: string;
   }
 }
 /*

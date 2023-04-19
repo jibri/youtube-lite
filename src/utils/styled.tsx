@@ -20,6 +20,7 @@ const FixedLayout = styled.div<{ bottom?: boolean }>`
   width: 100%;
   box-shadow: 0 0 5px #00000055;
   z-index: ${(props) => props.theme.zIndex.header};
+  max-width: ${(props) => props.theme.appMaxWidth};
 
   ${(props) =>
     props.bottom &&
