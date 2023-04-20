@@ -92,6 +92,7 @@ export const listSubscriptions = async (
     "subscriptions",
     {
       part: "snippet",
+      fields: "items(snippet(resourceId(channelId)))",
       maxResults: 50,
       mine: true,
     },
@@ -113,7 +114,8 @@ export const listMyPlaylists = async (
   return await ytbFetch(
     "playlists",
     {
-      part: ["snippet", "contentDetails"],
+      part: ["snippet"],
+      fields: "items(id,snippet(title))",
       maxResults: 50,
       mine: true,
     },
@@ -138,6 +140,7 @@ export const listPlaylistItems = async (
     "playlistItems",
     {
       part: ["snippet"],
+      fields: "items(id,snippet(resourceId,publishedAt))",
       playlistId: idPlaylist,
       maxResults,
     },
@@ -167,7 +170,9 @@ export const listVideos = async (
   return await ytbFetch(
     "videos",
     {
-      part: ["snippet", "contentDetails", "player"],
+      part: ["snippet", "contentDetails"],
+      fields:
+        "items(id, snippet(description, thumbnails(default), channelTitle, title), contentDetails(duration))",
       maxResult: 50,
       id: playlistItems.map((i) => i.snippet?.resourceId?.videoId).join(","),
     },
@@ -205,6 +210,7 @@ export const listChannels = async (
     "channels",
     {
       part: ["contentDetails"],
+      fields: "items(contentDetails(relatedPlaylists(uploads)))",
       id: chanIds,
       maxResult: 50,
     },
