@@ -157,11 +157,12 @@ const VideoProvider = ({ children }: any) => {
 
   const fetchWatchList = useCallback(async () => {
     if (!playlistId || !token) {
-      setPlaylistVideos([]);
       return;
     }
+    // Token de la page suivante. on va récupérer les videos tant qu'il n'est pas vide
     let pageToken: string | undefined;
-    setPlaylistVideos([]);
+    // Va contenir toutes les videos récupérées (pages par pages), et sera ajouté au state en une fois
+    const allVideosToAdd: VideoItem[] = [];
     do {
       const response = await callYoutube(
         listPlaylistItems,
@@ -179,14 +180,12 @@ const VideoProvider = ({ children }: any) => {
           playlistItem: items.find((i) => i.snippet?.resourceId?.videoId === v.id) || {},
           video: v,
         }));
-        setPlaylistVideos((currentVideos) => {
-          const newVideos = [...currentVideos];
-          newVideos.push(...videosToAdd);
-          return newVideos;
-        });
+        allVideosToAdd.push(...videosToAdd);
       }
       pageToken = nextPageToken;
     } while (pageToken);
+    // Le plus important, mise à jour du state
+    setPlaylistVideos(allVideosToAdd);
   }, [callYoutube, fetchVideos, handleError, playlistId, token]);
 
   const deleteFromWatchlist = (playlistItemId?: string) => {
@@ -241,8 +240,8 @@ const VideoProvider = ({ children }: any) => {
   }, [feedCache]);
 
   useEffect(() => {
-    fetchWatchList();
-  }, [fetchWatchList]);
+    if (playlistVideos.length === 0) fetchWatchList();
+  }, [fetchWatchList, playlistVideos]);
 
   const values: VideoData = {
     feedVideos,

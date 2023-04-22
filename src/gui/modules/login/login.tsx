@@ -103,7 +103,8 @@ function Login() {
 
   useEffect(() => {
     const loadPlaylists = async () => {
-      if (token) {
+      // on charge les playlists seulement si on a token et si on ne les à pas déjà chargé.
+      if (token && !playlists.length) {
         let nextToken: string | undefined;
         const myPlaylists: youtube.Playlist[] = [];
 
@@ -121,7 +122,7 @@ function Login() {
       }
     };
     loadPlaylists();
-  }, [callYoutube, handleError, token]);
+  }, [callYoutube, handleError, token, playlists]);
 
   function handleAuthClick() {
     if (token) {
