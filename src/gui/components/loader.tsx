@@ -1,32 +1,32 @@
 import React from "react";
 import styled from "styled-components";
 
-export const LoadingBar = styled.div`
+const LoadingContainer = styled.div`
   position: fixed;
   top: 0;
   z-index: ${(props) => props.theme.zIndex.loader};
+  width: ${(props) => props.theme.appMaxWidth};
+  overflow: hidden;
+`;
+
+const LoadingBar = styled.div`
   height: 3px;
-  width: 15%;
   background-color: ${(props) => props.theme.active};
   animation: run 1s infinite linear;
+  width: 35%;
   @keyframes run {
     0% {
-      margin-left: 0;
-      width: 5%;
-    }
-    50% {
-      margin-left: 40%;
-      width: 35%;
-    }
-    90% {
-      margin-left: 85%;
-      width: 15%;
+      margin-left: -35%;
     }
     100% {
       margin-left: 100%;
-      width: 0%;
     }
   }
 `;
-const Loader = () => <LoadingBar />;
+
+const Loader = () => (
+  <LoadingContainer>
+    <LoadingBar />
+  </LoadingContainer>
+);
 export default Loader;

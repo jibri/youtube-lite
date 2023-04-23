@@ -32,7 +32,7 @@ export const darkTheme: DefaultTheme = {
   // Theme
   white: "#ffffff",
   black: "#333333",
-  active: "#ff55ff",
+  active: "#ff6189",
   primary: "#303030",
   secondary: "#444444",
   background: "#222222",
