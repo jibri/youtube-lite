@@ -92,7 +92,7 @@ export const listSubscriptions = async (
     "subscriptions",
     {
       part: "snippet",
-      fields: "items(snippet(resourceId(channelId)))",
+      fields: "items(snippet(resourceId(channelId))),nextPageToken",
       maxResults: 50,
       mine: true,
     },
@@ -115,7 +115,7 @@ export const listMyPlaylists = async (
     "playlists",
     {
       part: ["snippet"],
-      fields: "items(id,snippet(title))",
+      fields: "items(id,snippet(title)),nextPageToken",
       maxResults: 50,
       mine: true,
     },
@@ -140,7 +140,7 @@ export const listPlaylistItems = async (
     "playlistItems",
     {
       part: ["snippet"],
-      fields: "items(id,snippet(resourceId,publishedAt))",
+      fields: "items(id,snippet(resourceId,publishedAt)),nextPageToken",
       playlistId: idPlaylist,
       maxResults,
     },
@@ -172,7 +172,7 @@ export const listVideos = async (
     {
       part: ["snippet", "contentDetails"],
       fields:
-        "items(id, snippet(description, thumbnails(default), channelTitle, title), contentDetails(duration))",
+        "items(id, snippet(description, thumbnails(default), channelTitle, title, publishedAt), contentDetails(duration)), nextPageToken",
       maxResult: 50,
       id: playlistItems.map((i) => i.snippet?.resourceId?.videoId).join(","),
     },
@@ -210,7 +210,7 @@ export const listChannels = async (
     "channels",
     {
       part: ["contentDetails"],
-      fields: "items(contentDetails(relatedPlaylists(uploads)))",
+      fields: "items(contentDetails(relatedPlaylists(uploads))),nextPageToken",
       id: chanIds,
       maxResult: 50,
     },
