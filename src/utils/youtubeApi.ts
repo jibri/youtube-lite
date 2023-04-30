@@ -3,11 +3,22 @@ import { API_KEY } from "src/utils/constants";
 const YOUTUBE_API = "https://youtube.googleapis.com/youtube/v3/";
 
 type primitive = undefined | null | string | boolean | number;
+
+const filterByFields = process.env.REACT_APP_YOUTUBE_API_FILTER_BY_FIELDS === "true";
 export const buildQueryString = (params: Record<string, primitive | primitive[]>) => {
-  return Object.keys(params).reduce((queryString, key) => {
+  const reducer = (queryString: string, key: string) => {
     const start = queryString ? `${queryString}&` : "?";
     const value = params[key] === undefined || params[key] === null ? "" : params[key];
     return `${start}${key}=${value}`;
+  };
+  return Object.keys(params).reduce((queryString, key) => {
+    switch (key) {
+      case "fields":
+        if (filterByFields) return reducer(queryString, key);
+        return queryString;
+      default:
+        return reducer(queryString, key);
+    }
   }, "");
 };
 
@@ -92,7 +103,7 @@ export const listSubscriptions = async (
     "subscriptions",
     {
       part: "snippet",
-      fields: "items(snippet(resourceId(channelId))),nextPageToken",
+      fields: "items(snippet(resourceId(channelId))),nextPageToken,etag",
       maxResults: 50,
       mine: true,
     },
@@ -115,7 +126,7 @@ export const listMyPlaylists = async (
     "playlists",
     {
       part: ["snippet"],
-      fields: "items(id,snippet(title)),nextPageToken",
+      fields: "items(id,snippet(title)),nextPageToken,etag",
       maxResults: 50,
       mine: true,
     },
@@ -140,7 +151,7 @@ export const listPlaylistItems = async (
     "playlistItems",
     {
       part: ["snippet"],
-      fields: "items(id,snippet(resourceId,publishedAt)),nextPageToken",
+      fields: "items(id,snippet(resourceId,publishedAt)),nextPageToken,etag",
       playlistId: idPlaylist,
       maxResults,
     },
@@ -210,7 +221,7 @@ export const listChannels = async (
     "channels",
     {
       part: ["contentDetails"],
-      fields: "items(contentDetails(relatedPlaylists(uploads))),nextPageToken",
+      fields: "items(contentDetails(relatedPlaylists(uploads))),nextPageToken,etag",
       id: chanIds,
       maxResult: 50,
     },
