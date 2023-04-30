@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useMemo, useRef, useState } from "react
 import { faPlus, faThumbsUp, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video, { VisualAction } from "src/gui/components/video";
-import { LoginContext } from "src/data/context/loginProvider";
+import { LoginContext, token } from "src/data/context/loginProvider";
 import { VideoItem } from "src/utils/types";
 import { WlVideoWrapper } from "../watchlist/watchlist";
 import ReactSwipe from "react-swipe";
@@ -20,7 +20,7 @@ function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
   const { playlistId } = useContext(ConfigContext);
   const { feedVideos, playlistVideos } = useContext(VideoContext);
-  const { userId, token, handleError, callYoutube } = useContext(LoginContext);
+  const { userId, handleError, callYoutube } = useContext(LoginContext);
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
   const matches = useLargeScreenMq();
   const reactSwipeEl = useRef<ReactSwipe>(null);
@@ -53,7 +53,7 @@ function Feed() {
         addVideoToWatchlistCache(video);
       }
     },
-    [addVideoToWatchlistCache, callYoutube, handleError, playlistId, playlistVideos, token]
+    [addVideoToWatchlistCache, callYoutube, handleError, playlistId, playlistVideos]
   );
 
   const deleteFromFeed = useCallback(
@@ -72,7 +72,7 @@ function Feed() {
         reactSwipeEl.current?.prev();
       }
     },
-    [callYoutube, handleError, token]
+    [callYoutube, handleError]
   );
 
   const swipeActions: [VisualAction, VisualAction] = useMemo(

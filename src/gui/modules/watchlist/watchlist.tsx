@@ -3,7 +3,7 @@ import { faTrash, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video, { VisualAction } from "src/gui/components/video";
 import { VideoWrapper, ActionButton, Text, Flex } from "src/utils/styled";
-import { LoginContext } from "src/data/context/loginProvider";
+import { LoginContext, token } from "src/data/context/loginProvider";
 import { VideoItem } from "src/utils/types";
 import styled from "styled-components";
 import useDelayAction from "src/hooks/useDelayAction";
@@ -20,7 +20,7 @@ export const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
 `;
 
 function Watchlist() {
-  const { token, handleError, callYoutube } = useContext(LoginContext);
+  const { handleError, callYoutube } = useContext(LoginContext);
   const { playlistVideos, deleteFromWatchlist } = useContext(VideoContext);
   const { playlistId } = useContext(ConfigContext);
   const [removing, setRemoving] = useState<string[]>([]);
@@ -44,7 +44,7 @@ function Watchlist() {
         }
       }
     },
-    [callYoutube, deleteFromWatchlist, handleError, token]
+    [callYoutube, deleteFromWatchlist, handleError]
   );
 
   const removeFromWatchlist = useCallback(
@@ -77,7 +77,7 @@ function Watchlist() {
         });
       }
     },
-    [callYoutube, delayAction, deletePlaylistItem, handleError, token]
+    [callYoutube, delayAction, deletePlaylistItem, handleError]
   );
 
   const swipeActions: [VisualAction, VisualAction] = useMemo(

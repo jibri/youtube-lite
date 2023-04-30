@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
-import { LoginContext } from "./loginProvider";
+import { LoginContext, token } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
 import { getTimeSeconds } from "src/utils/utils";
 import { ConfigContext } from "src/data/context/configProvider";
@@ -58,7 +58,7 @@ const VideoProvider = ({ children }: any) => {
   const [playlistVideos, setPlaylistVideos] = useState<VideoItem[]>([]);
   const [feedCache, setFeedCache] = useState<VideoItem[]>([]);
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
-  const { userId, token, handleError, callYoutube } = useContext(LoginContext);
+  const { userId, handleError, callYoutube } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
 
@@ -69,7 +69,7 @@ const VideoProvider = ({ children }: any) => {
       if (!response.ok) return handleError(response.error);
       return response.data.items;
     },
-    [callYoutube, handleError, token]
+    [callYoutube, handleError]
   );
 
   const fetchPlaylistItems = useCallback(
@@ -114,7 +114,7 @@ const VideoProvider = ({ children }: any) => {
         return newVideos;
       });
     },
-    [token, callYoutube, handleError, maxAge, fetchVideos, feedCache, minDuration]
+    [callYoutube, handleError, maxAge, fetchVideos, feedCache, minDuration]
   );
 
   const fetchChannels = useCallback(
@@ -131,7 +131,7 @@ const VideoProvider = ({ children }: any) => {
           fetchPlaylistItems(id);
         });
     },
-    [token, callYoutube, handleError, fetchPlaylistItems]
+    [callYoutube, handleError, fetchPlaylistItems]
   );
 
   const fetchSubscriptions = useCallback(async () => {
@@ -153,7 +153,7 @@ const VideoProvider = ({ children }: any) => {
         pageToken = nextPageToken;
       } while (pageToken);
     }
-  }, [token, callYoutube, handleError, fetchChannels]);
+  }, [callYoutube, handleError, fetchChannels]);
 
   const fetchWatchList = useCallback(async () => {
     if (!playlistId || !token) {
@@ -186,7 +186,7 @@ const VideoProvider = ({ children }: any) => {
     } while (pageToken);
     // Le plus important, mise à jour du state
     setPlaylistVideos(allVideosToAdd);
-  }, [callYoutube, fetchVideos, handleError, playlistId, token]);
+  }, [callYoutube, fetchVideos, handleError, playlistId]);
 
   const deleteFromWatchlist = (playlistItemId?: string) => {
     setPlaylistVideos((playlist) => playlist.filter((v) => v.playlistItem.id !== playlistItemId));
@@ -240,8 +240,8 @@ const VideoProvider = ({ children }: any) => {
   }, [feedCache]);
 
   useEffect(() => {
-    if (playlistVideos.length === 0) fetchWatchList();
-  }, [fetchWatchList, playlistVideos]);
+    fetchWatchList();
+  }, [fetchWatchList]);
 
   const values: VideoData = {
     feedVideos,

@@ -5,8 +5,6 @@ import { ResponseYoutube } from "src/utils/youtubeApi";
 interface LoginData {
   // id google de l'utilisateur connecté
   userId?: string;
-  // OAuth access token
-  token?: google.accounts.oauth2.TokenResponse;
   error?: string;
   loading: number;
 
@@ -38,9 +36,11 @@ const SCOPES = [
 ];
 export const LoginContext = createContext<LoginData>(defaultData);
 
+// OAuth access token déclaré en global car les composant ne doivent pas se recharger lorsqu'il change.
+export let token: google.accounts.oauth2.TokenResponse | undefined;
+
 const LoginProvider = ({ children }: any) => {
   const [userId, setUserId] = useState<string>();
-  const [token, setToken] = useState<google.accounts.oauth2.TokenResponse>();
   const [error, setError] = useState<string>();
   const [loading, setLoading] = useState(0);
   const oAuthClient = useRef<google.accounts.oauth2.TokenClient>();
@@ -52,7 +52,7 @@ const LoginProvider = ({ children }: any) => {
   const logout = useCallback((revokeToken: google.accounts.oauth2.TokenResponse) => {
     google.accounts.oauth2.revoke(revokeToken.access_token, () => {
       setUserId(undefined);
-      setToken(undefined);
+      token = undefined;
     });
   }, []);
 
@@ -100,7 +100,7 @@ const LoginProvider = ({ children }: any) => {
       prompt: "",
       callback: async (tokenResponse) => {
         // Réception des accès aux API youtube, après client.requestAccessToken();
-        setToken(tokenResponse);
+        token = tokenResponse;
         await fetchUserInfos(tokenResponse);
       },
     });
@@ -134,7 +134,6 @@ const LoginProvider = ({ children }: any) => {
 
   const values: LoginData = {
     userId,
-    token,
     error,
     loading,
     handleError,

@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import styled from "styled-components";
-import { LoginContext } from "src/data/context/loginProvider";
+import { LoginContext, token } from "src/data/context/loginProvider";
 import { Link } from "react-router-dom";
 import { PATHS } from "src/router/path";
 import { ActionButton, Text } from "src/utils/styled";
@@ -81,7 +81,7 @@ function Login() {
   const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
   const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
   const [playlists, setPlaylists] = useState<youtube.Playlist[]>([]);
-  const { userId, token, handleError, login, logout, callYoutube } = useContext(LoginContext);
+  const { userId, handleError, login, logout, callYoutube } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [not, setNot] = useState(false);
 
@@ -122,7 +122,7 @@ function Login() {
       }
     };
     loadPlaylists();
-  }, [callYoutube, handleError, token, playlists]);
+  }, [callYoutube, handleError, playlists]);
 
   function handleAuthClick() {
     if (token) {

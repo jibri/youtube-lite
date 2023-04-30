@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import Router from "src/router";
 import Footer from "src/gui/modules/layout/footer";
 import Login from "src/gui/modules/login/login";
-import { LoginContext } from "src/data/context/loginProvider";
+import { LoginContext, token } from "src/data/context/loginProvider";
 import VideoProvider, { VideoContext } from "src/data/context/videoProvider";
 import styled from "styled-components";
 import Notification from "src/gui/components/notification";
@@ -45,7 +45,7 @@ const VideoModule = () => {
 };
 
 const Home = () => {
-  const { token, error } = useContext(LoginContext);
+  const { error } = useContext(LoginContext);
 
   return (
     <MainScreeen>
