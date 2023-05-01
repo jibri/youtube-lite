@@ -194,6 +194,7 @@ const VideoProvider = ({ children }: any) => {
 
   const playVideo = (video?: VideoItem) => {
     setVideoPlaying(video);
+    setDescriptionOpened(false);
   };
 
   useEffect(() => {
