@@ -61,9 +61,40 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
   return elements;
 };
 
-const Player = ({ video }: { video: VideoItem }) => {
+const isArray = (video: VideoItem | VideoItem[]): video is VideoItem[] => {
+  return !(video as VideoItem).video;
+};
+
+const initPlayer = (video: VideoItem | VideoItem[], playerHeight: string) => {
+  return new window.YT.Player(`video_player`, {
+    height: playerHeight,
+    width: "100%",
+    videoId: isArray(video) ? "" : video.video.id,
+    playerVars: {
+      // autoplay: 1,
+      rel: 0,
+    },
+    events: {
+      onReady: (event) => {
+        event.target.setVolume(50);
+        if (isArray(video)) {
+          event.target.cuePlaylist(video.map((v) => v.video.id || ""));
+        }
+      },
+      onStateChange: (event) => {
+        if (event.data === 5) {
+          // quand on queue une playlist, on la shuffle puis on démarre la lecture
+          event.target.setShuffle(true);
+          event.target.playVideoAt(0);
+        }
+      },
+      onError: (event) => console.log("onError", event.data),
+    },
+  });
+};
+
+const Player = ({ video }: { video: VideoItem | VideoItem[] }) => {
   const player = useRef<YT.Player>();
-  const readyPlayerOne = useRef<boolean>(false);
   const { playlistId } = useContext(ConfigContext);
   const { callYoutube, handleError } = useContext(LoginContext);
   const { descriptionOpened } = useContext(VideoContext);
@@ -71,22 +102,12 @@ const Player = ({ video }: { video: VideoItem }) => {
   const playerHeight = theme.playerHeight;
 
   useEffect(() => {
-    if (readyPlayerOne.current && video.video.id) player.current?.loadVideoById(video.video.id);
-    else {
-      player.current = new window.YT.Player(`video_player`, {
-        height: playerHeight,
-        width: "100%",
-        videoId: video.video.id,
-        playerVars: {
-          rel: 0,
-        },
-        events: {
-          onReady: () => {
-            readyPlayerOne.current = true;
-            player.current?.setVolume(50);
-          },
-        },
-      });
+    if (player.current?.cueVideoById && !isArray(video) && video.video.id) {
+      player.current?.cueVideoById(video.video.id);
+    } else if (player.current?.cueVideoById && isArray(video)) {
+      player.current.cuePlaylist(video.map((v) => v.video.id || ""));
+    } else {
+      player.current = initPlayer(video, playerHeight);
     }
   }, [video, playerHeight]);
 
@@ -113,7 +134,9 @@ const Player = ({ video }: { video: VideoItem }) => {
       {/* This div will be replaced by an iframe */}
       <div id="video_player" title="video_player" />
       <Description open={descriptionOpened}>
-        <Text>{formatDescription(video.video.snippet?.description, addToWatchlist)}</Text>
+        {!isArray(video) && (
+          <Text>{formatDescription(video.video.snippet?.description, addToWatchlist)}</Text>
+        )}
       </Description>
     </IFrameWrapper>
   );
