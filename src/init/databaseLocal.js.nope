@@ -1,0 +1,185 @@
+const DB_NAME = "mdn-demo-indexeddb-epublications";
+const DB_VERSION = 1; //  Utilisez un "long long" pour cette valeur (ne pas utiliser un flottant (float))
+const DB_STORE_NAME = "publications";
+
+let db: IDBDatabase;
+
+const isErrorEvent = (evt: Event): evt is RTCPeerConnectionIceErrorEvent => {
+  return !!(evt as RTCPeerConnectionIceErrorEvent).errorCode;
+};
+
+export function openDb() {
+  console.log("openDb ...");
+  var req = indexedDB.open(DB_NAME, DB_VERSION);
+  req.onsuccess = function (evt) {
+    //  Le mieux utiliser "this" que "req" pour obtenir le résultat et éviter
+    // les problèmes avec "garbage collection".
+    // db = req.result;
+    db = this.result;
+    console.log("openDb DONE");
+  };
+  req.onerror = function (evt) {
+    if (isErrorEvent(evt)) {
+      console.error("openDb:", evt.target?.errorCode);
+    }
+  };
+
+  req.onupgradeneeded = function (evt) {
+    console.log("openDb.onupgradeneeded");
+    var subsStore = evt.currentTarget?.result.createObjectStore("subs", {
+      keyPath: "id",
+      autoIncrement: true,
+    });
+
+    subsStore.createIndex("etag", "year", { unique: false });
+  };
+}
+
+/**
+ * @paramètre {string}(chaîne de caractères) store_name
+ * @paramètre {string}(chaîne de caractères) mode either "readonly" ou "readwrite"
+ */
+function getObjectStore(store_name, mode) {
+  var tx = db.transaction(store_name, mode);
+  return tx.objectStore(store_name);
+}
+
+export function clearObjectStore(store_name) {
+  var store = getObjectStore(DB_STORE_NAME, "readwrite");
+  var req = store.clear();
+  req.onsuccess = function (evt) {
+    displayPubList(store);
+  };
+  req.onerror = function (evt) {
+    console.error("clearObjectStore:", evt.target.errorCode);
+  };
+}
+
+/**
+ * @paramètre objet de stockage {IDBObjectStore=}
+ */
+function displayPubList(store) {
+  console.log("displayPubList");
+
+  if (typeof store == "undefined") store = getObjectStore(DB_STORE_NAME, "readonly");
+
+  var req;
+  req = store.count();
+  // Les requêtes sont exécutées dans l'ordre où elles ont été faites en-dehors de la
+  // transaction,  et leurs résultats sont retournés dans le même ordre.
+  // Ainsi, le texte du compteur ci-dessous sera affiché avant la liste de pub actuelle
+  // (ce n'est pas algorithmiquement important dans ce cas) .
+  req.onsuccess = function (evt) {
+    // faire qqch avec evt.target.result
+  };
+  req.onerror = function (evt) {
+    console.error("add error", this.error);
+  };
+
+  req = store.openCursor();
+  req.onsuccess = function (evt) {
+    var cursor = evt.target.result;
+
+    //  Si le curseur pointe vers quelque chose, demandez les données
+    if (cursor) {
+      console.log("displayPubList cursor:", cursor);
+      req = store.get(cursor.key);
+      req.onsuccess = function (evt) {
+        var value = evt.target.result;
+        console.log(cursor.key, value);
+      };
+
+      //  Passer à l'objet de stockage suivant
+      cursor.continue();
+
+      // Ce compteur sert seulement à créer des identifiants distincts
+    } else {
+      console.log("No more entries");
+    }
+  };
+}
+
+/**
+ * @paramètre {string} (chaîne de caractères) biblioid (identifiant bibliothèque)
+ * @paramètre {string} (chaîne de caractères) title (titre)
+ * @paramètre {number} (nombre) year (année)
+ * @paramètre {Blob=} blob
+ */
+export function addPublication(biblioid, title, year, blob) {
+  console.log("addPublication arguments:", arguments);
+  var obj = { biblioid: biblioid, title: title, year: year };
+  if (typeof blob != "undefined") obj.blob = blob;
+
+  var store = getObjectStore(DB_STORE_NAME, "readwrite");
+  var req;
+  try {
+    req = store.add(obj);
+  } catch (e) {
+    if (e.name === "DataCloneError") throw e;
+  }
+  req.onsuccess = function (evt) {
+    console.log("Insertion in DB successful");
+    displayPubList(store);
+  };
+  req.onerror = function () {
+    console.error("addPublication error", this.error);
+  };
+}
+
+/**
+ * @paramètre {string} (chaîne de caractères) biblioid (identifiant bibliothèque)
+ */
+export function deletePublicationFromBib(biblioid) {
+  console.log("deletePublication:", arguments);
+  var store = getObjectStore(DB_STORE_NAME, "readwrite");
+  var req = store.index("biblioid");
+  req.get(biblioid).onsuccess = function (evt) {
+    if (typeof evt.target.result == "undefined") {
+      return;
+    }
+    deletePublication(evt.target.result.id, store);
+  };
+  req.onerror = function (evt) {
+    console.error("deletePublicationFromBib:", evt.target.errorCode);
+  };
+}
+
+/**
+ * @paramètre {number} (nombre) key (clé)
+ * @paramètre {IDBObjectStore=} store (objet de stockage)
+ */
+function deletePublication(key, store) {
+  console.log("deletePublication:", arguments);
+
+  if (typeof store == "undefined") store = getObjectStore(DB_STORE_NAME, "readwrite");
+
+  // Selon les spécifications http://www.w3.org/TR/IndexedDB/#object-store-deletion-operation
+  // le résultat de l'objet de stockage, l'algorithme de l'opération de suppression est
+  // "undefined" (indéfini), donc il n'est pas possible de savoir si certains enregistrements
+  // ont été effectivement supprimés en lisant le résultat de la requête.
+  var req = store.get(key);
+  req.onsuccess = function (evt) {
+    var record = evt.target.result;
+    console.log("record:", record);
+    if (typeof record == "undefined") {
+      return;
+    }
+    // Attention:  La même clé utilisée pour la création doit être transmise pour
+    // la suppression.  Si la clé était un nombre pour la création, elle doit
+    // être un nombre pour la suppression.
+    req = store.delete(key);
+    req.onsuccess = function (evt) {
+      console.log("evt:", evt);
+      console.log("evt.target:", evt.target);
+      console.log("evt.target.result:", evt.target.result);
+      console.log("delete successful");
+      displayPubList(store);
+    };
+    req.onerror = function (evt) {
+      console.error("deletePublication:", evt.target.errorCode);
+    };
+  };
+  req.onerror = function (evt) {
+    console.error("deletePublication:", evt.target.errorCode);
+  };
+}

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
-import { LoginContext, token } from "./loginProvider";
+import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
 import { getTimeSeconds } from "src/utils/utils";
 import { ConfigContext } from "src/data/context/configProvider";
@@ -19,6 +19,7 @@ import {
   listSubscriptions,
   listVideos,
 } from "src/utils/youtubeApi";
+import { token } from "src/init/youtubeOAuth";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 

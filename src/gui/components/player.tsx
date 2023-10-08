@@ -3,9 +3,10 @@ import styled, { useTheme } from "styled-components";
 import { VideoItem } from "src/utils/types";
 import { VideoContext } from "src/data/context/videoProvider";
 import { Text } from "src/utils/styled";
-import { LoginContext, token } from "src/data/context/loginProvider";
+import { LoginContext } from "src/data/context/loginProvider";
 import { insertPlaylistItem } from "src/utils/youtubeApi";
 import { ConfigContext } from "src/data/context/configProvider";
+import { token } from "src/init/youtubeOAuth";
 
 const IFrameWrapper = styled.div`
   position: sticky;
@@ -76,12 +77,12 @@ const initPlayer = (video: VideoItem | VideoItem[], playerHeight: string) => {
     },
     events: {
       onReady: (event) => {
-        event.target.setVolume(50);
         if (isArray(video)) {
           event.target.cuePlaylist(video.map((v) => v.video.id || ""));
         }
       },
       onStateChange: (event) => {
+        console.log("event.data", event.data);
         if (event.data === 5) {
           // quand on queue une playlist, on la shuffle puis on démarre la lecture
           event.target.setShuffle(true);

@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from "react";
 import styled from "styled-components";
-import { LoginContext, token } from "src/data/context/loginProvider";
+import { LoginContext } from "src/data/context/loginProvider";
 import { Link } from "react-router-dom";
 import { PATHS } from "src/router/path";
 import { ActionButton, Text } from "src/utils/styled";
@@ -9,6 +9,7 @@ import { db } from "src/init/firestore";
 import { ConfigContext, ConfigData } from "src/data/context/configProvider";
 import Notification from "src/gui/components/notification";
 import { listMyPlaylists } from "src/utils/youtubeApi";
+import { login, token } from "src/init/youtubeOAuth";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -81,7 +82,7 @@ function Login() {
   const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
   const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
   const [playlists, setPlaylists] = useState<youtube.Playlist[]>([]);
-  const { userId, handleError, login, logout, callYoutube } = useContext(LoginContext);
+  const { userId, handleError, callYoutube, signout } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [not, setNot] = useState(false);
 
@@ -127,7 +128,7 @@ function Login() {
   function handleAuthClick() {
     if (token) {
       // User is authorized and has clicked "Sign out" button.
-      logout(token);
+      signout();
     } else {
       // User is not signed in. Start Google auth flow.
       login();
@@ -136,7 +137,7 @@ function Login() {
 
   return (
     <MainContainer>
-      {token && (
+      {userId && (
         <>
           <Container sx={{ alignSelf: "start" }}>
             <Text>My playlists :</Text>
@@ -154,10 +155,6 @@ function Login() {
             </PlaylistItems>
           </Container>
           <Separator />
-        </>
-      )}
-      {userId && (
-        <>
           <Container sx={{ alignSelf: "start" }}>
             <Text>Theme :</Text>
             <PlaylistItems>

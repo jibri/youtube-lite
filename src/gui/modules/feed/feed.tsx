@@ -2,7 +2,7 @@ import React, { useCallback, useContext, useMemo, useRef, useState } from "react
 import { faPlus, faThumbsUp, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video, { VisualAction } from "src/gui/components/video";
-import { LoginContext, token } from "src/data/context/loginProvider";
+import { LoginContext } from "src/data/context/loginProvider";
 import { VideoItem } from "src/utils/types";
 import { WlVideoWrapper } from "../watchlist/watchlist";
 import ReactSwipe from "react-swipe";
@@ -15,6 +15,7 @@ import { db } from "src/init/firestore";
 import { insertPlaylistItem, rateVideos } from "src/utils/youtubeApi";
 import { useLargeScreenMq } from "src/hooks/useMq";
 import SwipableVideo from "src/gui/components/SwipableVideo";
+import { token } from "src/init/youtubeOAuth";
 
 function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
