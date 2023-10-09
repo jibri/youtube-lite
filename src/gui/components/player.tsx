@@ -9,9 +9,6 @@ import { ConfigContext } from "src/data/context/configProvider";
 import { token } from "src/init/youtubeOAuth";
 
 const IFrameWrapper = styled.div`
-  position: sticky;
-  top: 0;
-  z-index: ${(props) => props.theme.zIndex.player};
   background-color: ${(props) => props.theme.background};
 `;
 
@@ -69,7 +66,7 @@ const isArray = (video: VideoItem | VideoItem[]): video is VideoItem[] => {
 const initPlayer = (video: VideoItem | VideoItem[], playerHeight: string) => {
   return new window.YT.Player(`video_player`, {
     height: playerHeight,
-    width: "100%",
+    width: window.innerHeight < 650 ? window.innerWidth / 2 : "100%",
     videoId: isArray(video) ? "" : video.video.id,
     playerVars: {
       // autoplay: 1,
@@ -100,6 +97,7 @@ const Player = ({ video }: { video: VideoItem | VideoItem[] }) => {
   const { callYoutube, handleError } = useContext(LoginContext);
   const { descriptionOpened } = useContext(VideoContext);
   const theme = useTheme();
+
   const playerHeight = theme.playerHeight;
 
   useEffect(() => {

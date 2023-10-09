@@ -18,13 +18,37 @@ const MainScreeen = styled.div`
 `;
 
 const MainContainer = styled.div`
-  min-height: 100vh;
+  height: 100vh;
   max-width: ${(props) => props.theme.appMaxWidth};
   margin: auto;
   background-color: ${(props) => props.theme.background};
+
+  overflow: hidden;
+
+  @media (max-height: 650px) {
+    display: flex;
+    > * {
+      min-width: 50%;
+    }
+  }
 `;
-const ContentWrapper = styled.div`
+const ContentWrapper = styled.div<{ playerOpened: boolean }>`
   padding: ${(props) => props.theme.headerHeigth} 0;
+  overflow-y: auto;
+  height: calc(
+    100vh - 2 * ${(props) => props.theme.headerHeigth} -
+      ${(props) => (props.playerOpened ? props.theme.playerHeight : "0px")}
+  );
+
+  @media (max-height: 650px) {
+    height: calc(100vh - 2 * ${(props) => props.theme.headerHeigth});
+  }
+`;
+const VideoContainer = styled.div`
+  @media (max-height: 650px) {
+    display: flex;
+    align-items: center;
+  }
 `;
 
 const VideoModule = () => {
@@ -34,9 +58,13 @@ const VideoModule = () => {
   return (
     <>
       {loading > 0 && <Loader />}
-      {videoPlaying && <Player video={videoPlaying} />}
+      {videoPlaying && (
+        <VideoContainer>
+          <Player video={videoPlaying} />
+        </VideoContainer>
+      )}
       <Header />
-      <ContentWrapper>
+      <ContentWrapper playerOpened={!!videoPlaying}>
         <Router />
       </ContentWrapper>
       <Footer />
