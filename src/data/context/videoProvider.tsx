@@ -33,14 +33,13 @@ import { token } from "src/init/youtubeOAuth";
 interface VideoData {
   feedVideos: VideoItem[];
   playlistVideos: VideoItem[];
-  videoPlaying?: VideoItem | VideoItem[];
+  videoPlaying?: VideoItem;
   descriptionOpened: boolean;
   setDescriptionOpened: React.Dispatch<React.SetStateAction<boolean>>;
   fetchWatchList: (pageToken?: string) => void;
   fetchSubscriptions: () => void;
   deleteFromWatchlist: (playlistItemId?: string) => void;
   playVideo: (video?: VideoItem) => void;
-  readPlaylist: () => void;
 }
 const defaultData: VideoData = {
   feedVideos: [],
@@ -51,7 +50,6 @@ const defaultData: VideoData = {
   fetchSubscriptions: () => null,
   deleteFromWatchlist: (e) => e,
   playVideo: () => null,
-  readPlaylist: () => null,
 };
 
 export const VideoContext = createContext<VideoData>(defaultData);
@@ -60,7 +58,7 @@ const VideoProvider = ({ children }: any) => {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>([]);
   const [playlistVideos, setPlaylistVideos] = useState<VideoItem[]>([]);
   const [feedCache, setFeedCache] = useState<VideoItem[]>([]);
-  const [videoPlaying, setVideoPlaying] = useState<VideoItem | VideoItem[]>();
+  const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
   const { userId, handleError, callYoutube } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
@@ -247,10 +245,6 @@ const VideoProvider = ({ children }: any) => {
     fetchWatchList();
   }, [fetchWatchList]);
 
-  const readPlaylist = useCallback(() => {
-    setVideoPlaying([...playlistVideos]);
-  }, [playlistVideos]);
-
   const values: VideoData = {
     feedVideos,
     playlistVideos,
@@ -261,7 +255,6 @@ const VideoProvider = ({ children }: any) => {
     fetchSubscriptions,
     deleteFromWatchlist,
     setDescriptionOpened,
-    readPlaylist,
   };
 
   return <VideoContext.Provider value={values}> {children} </VideoContext.Provider>;

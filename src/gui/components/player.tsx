@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef } from "react";
-import styled, { useTheme } from "styled-components";
+import styled from "styled-components";
 import { VideoItem } from "src/utils/types";
 import { VideoContext } from "src/data/context/videoProvider";
 import { Text } from "src/utils/styled";
@@ -59,56 +59,41 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
   return elements;
 };
 
-const isArray = (video: VideoItem | VideoItem[]): video is VideoItem[] => {
-  return !(video as VideoItem).video;
-};
-
-const initPlayer = (video: VideoItem | VideoItem[], playerHeight: string) => {
+const initPlayer = (video: VideoItem, playerHeight: number, playerWidth: number) => {
   return new window.YT.Player(`video_player`, {
     height: playerHeight,
-    width: window.innerHeight < 650 ? window.innerWidth / 2 : "100%",
-    videoId: isArray(video) ? "" : video.video.id,
+    width: playerWidth,
+    videoId: video.video.id,
     playerVars: {
       // autoplay: 1,
       rel: 0,
     },
     events: {
-      onReady: (event) => {
-        if (isArray(video)) {
-          event.target.cuePlaylist(video.map((v) => v.video.id || ""));
-        }
-      },
       onStateChange: (event) => {
         console.log("event.data", event.data);
-        if (event.data === 5) {
-          // quand on queue une playlist, on la shuffle puis on démarre la lecture
-          event.target.setShuffle(true);
-          event.target.playVideoAt(0);
-        }
       },
       onError: (event) => console.log("onError", event.data),
     },
   });
 };
 
-const Player = ({ video }: { video: VideoItem | VideoItem[] }) => {
+const Player = ({ video, height, width }: { video: VideoItem; height: number; width: number }) => {
   const player = useRef<YT.Player>();
   const { playlistId } = useContext(ConfigContext);
   const { callYoutube, handleError } = useContext(LoginContext);
   const { descriptionOpened } = useContext(VideoContext);
-  const theme = useTheme();
-
-  const playerHeight = theme.playerHeight;
 
   useEffect(() => {
-    if (player.current?.cueVideoById && !isArray(video) && video.video.id) {
+    console.log("useeffect", video.video.id, width, height);
+    if (player.current?.cueVideoById && video.video.id) {
+      console.log("cue video");
       player.current?.cueVideoById(video.video.id);
-    } else if (player.current?.cueVideoById && isArray(video)) {
-      player.current.cuePlaylist(video.map((v) => v.video.id || ""));
+      player.current.setSize(width, height);
     } else {
-      player.current = initPlayer(video, playerHeight);
+      console.log("init player");
+      player.current = initPlayer(video, height, width);
     }
-  }, [video, playerHeight]);
+  }, [video, height, width]);
 
   const addToWatchlist = useCallback(
     async (videoId: string) => {
@@ -133,9 +118,7 @@ const Player = ({ video }: { video: VideoItem | VideoItem[] }) => {
       {/* This div will be replaced by an iframe */}
       <div id="video_player" title="video_player" />
       <Description open={descriptionOpened}>
-        {!isArray(video) && (
-          <Text>{formatDescription(video.video.snippet?.description, addToWatchlist)}</Text>
-        )}
+        <Text>{formatDescription(video.video.snippet?.description, addToWatchlist)}</Text>
       </Description>
     </IFrameWrapper>
   );

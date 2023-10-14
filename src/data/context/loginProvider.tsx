@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback, useReducer, Reducer } from "react";
+import React, { createContext, useState, useEffect, useCallback, Reducer } from "react";
 import { fetchUserInfos, initClient, login, logout } from "src/init/youtubeOAuth";
 import { ResponseYoutube } from "src/utils/youtubeApi";
 

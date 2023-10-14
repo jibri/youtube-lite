@@ -10,14 +10,8 @@ import {
 import { HeaderWrapper, TopButton } from "src/utils/styled";
 
 const Header = () => {
-  const {
-    fetchSubscriptions,
-    fetchWatchList,
-    setDescriptionOpened,
-    playVideo,
-    videoPlaying,
-    readPlaylist,
-  } = useContext(VideoContext);
+  const { fetchSubscriptions, fetchWatchList, setDescriptionOpened, playVideo, videoPlaying } =
+    useContext(VideoContext);
   const location = useLocation();
 
   const headerComponents = !!videoPlaying ? playingHeaderComponents : defaultHeaderComponents;
@@ -48,12 +42,6 @@ const Header = () => {
             return (
               <TopButton key="DESC_BTN" onClick={() => setDescriptionOpened((old) => !old)}>
                 Description
-              </TopButton>
-            );
-          case HeaderComponents.READ_ALL:
-            return (
-              <TopButton key="READ_ALL" onClick={() => readPlaylist()}>
-                Play all
               </TopButton>
             );
           default:
