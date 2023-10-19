@@ -4,7 +4,7 @@ import Footer from "src/gui/modules/layout/footer";
 import Login from "src/gui/modules/login/login";
 import { LoginContext } from "src/data/context/loginProvider";
 import VideoProvider, { VideoContext } from "src/data/context/videoProvider";
-import styled, { useTheme } from "styled-components";
+import styled, { DefaultTheme, useTheme } from "styled-components";
 import Notification from "src/gui/components/notification";
 import Loader from "src/gui/components/loader";
 import Player from "src/gui/components/player";
@@ -52,20 +52,20 @@ const VideoContainer = styled.div`
 `;
 
 const landscape = window.matchMedia("(max-height: 650px)");
+const appWidth = (theme: DefaultTheme) => Math.min(window.innerWidth, parseInt(theme.appMaxWidth));
 
 const VideoModule = () => {
   const { loading } = useContext(LoginContext);
   const { videoPlaying } = useContext(VideoContext);
   const theme = useTheme();
-  const [playerWidth, setPlayerWidth] = useState(window.innerWidth);
+  const [playerWidth, setPlayerWidth] = useState(appWidth(theme));
 
   useEffect(() => {
-    landscape.onchange = (e) =>
-      setPlayerWidth(e.matches ? window.innerWidth / 2 : window.innerWidth);
+    landscape.onchange = (e) => setPlayerWidth(e.matches ? appWidth(theme) / 2 : appWidth(theme));
     return () => {
       landscape.onchange = null;
     };
-  }, []);
+  }, [theme]);
 
   return (
     <>
