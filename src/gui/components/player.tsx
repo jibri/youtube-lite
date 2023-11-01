@@ -59,13 +59,11 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
   return elements;
 };
 
-const initPlayer = (video: VideoItem, playerHeight: number, playerWidth: number) => {
+const initPlayer = (video: VideoItem) => {
   return new window.YT.Player(`video_player`, {
-    height: playerHeight,
-    width: playerWidth,
+    width: "100%",
     videoId: video.video.id,
     playerVars: {
-      // autoplay: 1,
       rel: 0,
     },
     events: {
@@ -77,23 +75,19 @@ const initPlayer = (video: VideoItem, playerHeight: number, playerWidth: number)
   });
 };
 
-const Player = ({ video, height, width }: { video: VideoItem; height: number; width: number }) => {
+const Player = ({ video }: { video: VideoItem }) => {
   const player = useRef<YT.Player>();
   const { playlistId } = useContext(ConfigContext);
   const { callYoutube, handleError } = useContext(LoginContext);
   const { descriptionOpened } = useContext(VideoContext);
 
   useEffect(() => {
-    console.log("useeffect", video.video.id, width, height);
     if (player.current?.cueVideoById && video.video.id) {
-      console.log("cue video");
       player.current?.cueVideoById(video.video.id);
-      player.current.setSize(width, height);
     } else {
-      console.log("init player");
-      player.current = initPlayer(video, height, width);
+      player.current = initPlayer(video);
     }
-  }, [video, height, width]);
+  }, [video]);
 
   const addToWatchlist = useCallback(
     async (videoId: string) => {

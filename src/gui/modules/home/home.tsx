@@ -1,10 +1,10 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import Router from "src/router";
 import Footer from "src/gui/modules/layout/footer";
 import Login from "src/gui/modules/login/login";
 import { LoginContext } from "src/data/context/loginProvider";
 import VideoProvider, { VideoContext } from "src/data/context/videoProvider";
-import styled, { DefaultTheme, useTheme } from "styled-components";
+import styled from "styled-components";
 import Notification from "src/gui/components/notification";
 import Loader from "src/gui/components/loader";
 import Player from "src/gui/components/player";
@@ -48,35 +48,22 @@ const VideoContainer = styled.div`
   @media (max-height: 650px) {
     display: flex;
     align-items: center;
+    > * {
+      width: 100%;
+    }
   }
 `;
-
-const landscape = window.matchMedia("(max-height: 650px)");
-const appWidth = (theme: DefaultTheme) => Math.min(window.innerWidth, parseInt(theme.appMaxWidth));
 
 const VideoModule = () => {
   const { loading } = useContext(LoginContext);
   const { videoPlaying } = useContext(VideoContext);
-  const theme = useTheme();
-  const [playerWidth, setPlayerWidth] = useState(appWidth(theme));
-
-  useEffect(() => {
-    landscape.onchange = (e) => setPlayerWidth(e.matches ? appWidth(theme) / 2 : appWidth(theme));
-    return () => {
-      landscape.onchange = null;
-    };
-  }, [theme]);
 
   return (
     <>
       {loading > 0 && <Loader />}
       {videoPlaying && (
         <VideoContainer>
-          <Player
-            video={videoPlaying}
-            width={playerWidth}
-            height={Number.parseInt(theme.playerHeight)}
-          />
+          <Player video={videoPlaying} />
         </VideoContainer>
       )}
       <Header />
