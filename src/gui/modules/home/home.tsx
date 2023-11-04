@@ -11,45 +11,41 @@ import Player from "src/gui/components/player";
 import Header from "../layout/header";
 import { Text } from "src/utils/styled";
 
-const MainScreeen = styled.div`
+const MainScreen = styled.div`
   min-height: 100vh;
   width: 100%;
   background-color: ${(props) => props.theme.background};
 `;
 
 const MainContainer = styled.div`
-  height: 100vh;
   max-width: ${(props) => props.theme.appMaxWidth};
   margin: auto;
   background-color: ${(props) => props.theme.background};
-
-  overflow: hidden;
-
-  @media (max-height: 650px) {
-    display: flex;
-    > * {
-      min-width: 50%;
-    }
-  }
-`;
-const ContentWrapper = styled.div<{ playerOpened: boolean }>`
-  padding: ${(props) => props.theme.headerHeigth} 0;
-  overflow-y: auto;
-  height: calc(
-    100vh - 2 * ${(props) => props.theme.headerHeigth} -
-      ${(props) => (props.playerOpened ? props.theme.playerHeight : "0px")}
-  );
+  padding-bottom: ${(props) => props.theme.headerHeigth};
 
   @media (max-height: 650px) {
-    height: calc(100vh - 2 * ${(props) => props.theme.headerHeigth});
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-template-areas:
+      "video ."
+      "video .";
   }
 `;
+
+const ContentWrapper = styled.div``;
 const VideoContainer = styled.div`
+  z-index: ${(props) => props.theme.zIndex.player};
+  max-width: ${(props) => props.theme.appMaxWidth};
+  position: sticky;
+  top: 0;
+
   @media (max-height: 650px) {
-    display: flex;
-    align-items: center;
-    > * {
-      width: 100%;
+    grid-area: video;
+
+    position: initial;
+    > :first-child {
+      position: sticky;
+      top: 0;
     }
   }
 `;
@@ -61,13 +57,13 @@ const VideoModule = () => {
   return (
     <>
       {loading > 0 && <Loader />}
-      {videoPlaying && (
-        <VideoContainer>
-          <Player video={videoPlaying} />
-        </VideoContainer>
-      )}
-      <Header />
-      <ContentWrapper playerOpened={!!videoPlaying}>
+      <VideoContainer>
+        <div>
+          {videoPlaying && <Player video={videoPlaying} />}
+          <Header />
+        </div>
+      </VideoContainer>
+      <ContentWrapper>
         <Router />
       </ContentWrapper>
       <Footer />
@@ -79,7 +75,7 @@ const Home = () => {
   const { error, userId } = useContext(LoginContext);
 
   return (
-    <MainScreeen>
+    <MainScreen>
       <MainContainer>
         {userId ? (
           <VideoProvider>
@@ -92,7 +88,7 @@ const Home = () => {
           <Text>{error}</Text>
         </Notification>
       </MainContainer>
-    </MainScreeen>
+    </MainScreen>
   );
 };
 

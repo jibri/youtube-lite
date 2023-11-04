@@ -5,7 +5,7 @@ import { ButtonLink, FooterWrapper } from "src/utils/styled";
 const Footer = () => (
   <FooterWrapper>
     <ButtonLink to={PATHS.FEED}>Feed</ButtonLink>
-    <ButtonLink to={PATHS.WATCHLIST}>Watchlist</ButtonLink>
+    <ButtonLink to={PATHS.WATCHLIST}>Playlist</ButtonLink>
     <ButtonLink to={PATHS.PROFILE}>Profile</ButtonLink>
   </FooterWrapper>
 );

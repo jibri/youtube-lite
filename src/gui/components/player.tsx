@@ -8,8 +8,14 @@ import { insertPlaylistItem } from "src/utils/youtubeApi";
 import { ConfigContext } from "src/data/context/configProvider";
 import { token } from "src/init/youtubeOAuth";
 
-const IFrameWrapper = styled.div`
+const PlayerContainer = styled.div`
   background-color: ${(props) => props.theme.background};
+`;
+
+const IFrameWrapper = styled.div`
+  height: ${(props) => props.theme.playerHeight};
+  display: flex;
+  justify-content: center;
 `;
 
 const Description = styled.div<{ open: boolean }>`
@@ -61,6 +67,7 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
 
 const initPlayer = (video: VideoItem) => {
   return new window.YT.Player(`video_player`, {
+    height: "100%",
     width: "100%",
     videoId: video.video.id,
     playerVars: {
@@ -108,13 +115,15 @@ const Player = ({ video }: { video: VideoItem }) => {
   );
 
   return (
-    <IFrameWrapper>
-      {/* This div will be replaced by an iframe */}
-      <div id="video_player" title="video_player" />
+    <PlayerContainer>
+      <IFrameWrapper>
+        {/* This div will be replaced by an iframe */}
+        <div id="video_player" title="video_player" />
+      </IFrameWrapper>
       <Description open={descriptionOpened}>
         <Text>{formatDescription(video.video.snippet?.description, addToWatchlist)}</Text>
       </Description>
-    </IFrameWrapper>
+    </PlayerContainer>
   );
 };
 export default Player;

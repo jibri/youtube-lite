@@ -8,7 +8,7 @@ import { WlVideoWrapper } from "../watchlist/watchlist";
 import ReactSwipe from "react-swipe";
 import useDelayAction from "src/hooks/useDelayAction";
 import Notification from "src/gui/components/notification";
-import { ActionButton, Text } from "src/utils/styled";
+import { ActionButton, Flex, Text } from "src/utils/styled";
 import { ConfigContext } from "src/data/context/configProvider";
 import { addDoc, collection } from "firebase/firestore";
 import { db } from "src/init/firestore";
@@ -93,6 +93,11 @@ function Feed() {
 
   return (
     <>
+      {feedVideos.length === 0 && (
+        <Flex jc="center">
+          <Text>Aucune vidéo dans votre feed.</Text>
+        </Flex>
+      )}
       {feedVideos.map((video) => (
         <WlVideoWrapper key={video.video.id} removing={removing.includes(video.video.id!)}>
           {matches ? (

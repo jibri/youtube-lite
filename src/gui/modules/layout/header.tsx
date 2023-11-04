@@ -23,13 +23,13 @@ const Header = () => {
           case HeaderComponents.FEED_RELOAD_BTN:
             return (
               <TopButton key="FEED_RELOAD_BTN" onClick={() => fetchSubscriptions()}>
-                Reload
+                Reload feed
               </TopButton>
             );
           case HeaderComponents.WL_RELOAD_BTN:
             return (
               <TopButton key="WL_RELOAD_BTN" onClick={() => fetchWatchList()}>
-                Reload
+                Reload playlist
               </TopButton>
             );
           case HeaderComponents.CLOSE_BTN:

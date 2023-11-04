@@ -1,4 +1,3 @@
-import React from "react";
 import styled, { css } from "styled-components";
 import { NavLink } from "react-router-dom";
 
@@ -14,22 +13,19 @@ export const Flex = styled.div<{
   flex-wrap: ${(p) => p.fw};
   flex-direction: ${(p) => p.fd};
 `;
-const FixedLayout = styled.div<{ bottom?: boolean }>`
-  position: fixed;
+export const HeaderWrapper = styled.div<{ bottom?: boolean }>`
   display: flex;
-  width: 100%;
   box-shadow: 0 0 5px #00000055;
-  z-index: ${(props) => props.theme.zIndex.header};
-  max-width: ${(props) => props.theme.appMaxWidth};
-
-  ${(props) =>
-    props.bottom &&
-    css`
-      bottom: 0;
-    `}
 `;
-export const HeaderWrapper = (props: any) => <FixedLayout {...props} />;
-export const FooterWrapper = (props: any) => <FixedLayout bottom={true} {...props} />;
+export const FooterWrapper = styled.div`
+  position: fixed;
+  z-index: ${(props) => props.theme.zIndex.player};
+  width: 100%;
+  max-width: ${(props) => props.theme.appMaxWidth};
+  display: flex;
+  box-shadow: 0 0 5px #00000055;
+  bottom: 0;
+`;
 
 export const button = css`
   color: ${(props) => props.theme.text.main};
