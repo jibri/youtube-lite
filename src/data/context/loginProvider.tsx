@@ -42,9 +42,7 @@ const LoginProvider = ({ children }: any) => {
 
   useEffect(() => {
     // on crée le client d'accès à l'api youtube
-    initClient(() => {
-      fetchUserInfos(setUserId, handleError);
-    });
+    initClient(() => fetchUserInfos(setUserId, handleError));
     // Connexion auto
     login();
   }, [handleError]);
@@ -59,7 +57,7 @@ const LoginProvider = ({ children }: any) => {
       const response = await service(...args);
       incLoading(-1);
       // Unauthorize => try to get another accessToken
-      if (response.status === 401) login();
+      if (response.status === 401) login(true, () => service(...args));
 
       // Ok => return data
       // autre erreurs => return data

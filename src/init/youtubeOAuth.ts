@@ -1,4 +1,6 @@
 import { API_KEY } from "src/utils/constants";
+import Cookie from "js-cookie";
+import { addSeconds } from "date-fns";
 
 const SCOPES = [
   // Accès en écriture à son compte youtube (like, supprimer les videos des playlists)
@@ -11,12 +13,27 @@ const SCOPES = [
   "https://www.googleapis.com/auth/userinfo.email",
 ];
 
-// OAuth access token déclaré en global car les composant ne doivent pas se recharger lorsqu'il change.
-export let token: google.accounts.oauth2.TokenResponse | undefined;
-let oAuthClient: google.accounts.oauth2.TokenClient;
+const ACCESS_TOKEN_COOKIE = "access_token";
 
-export const login = () => {
-  if (oAuthClient) oAuthClient.requestAccessToken();
+// OAuth access token déclaré en global car les composant ne doivent pas se recharger lorsqu'il change.
+// normaliement il s'agit d'un "google.accounts.oauth2.TokenResponse" mais on simplifie
+export let token: { access_token: string; expires_in: string } | undefined;
+let oAuthClient: google.accounts.oauth2.TokenClient;
+let tokenRecievedCallback: () => void;
+let tokenRecievedTempCallback: (() => void) | undefined;
+
+export const login = (force?: boolean, cb?: () => void) => {
+  const accessTokenCookie = Cookie.get(ACCESS_TOKEN_COOKIE);
+  if (force || !accessTokenCookie || !tokenRecievedCallback) {
+    tokenRecievedTempCallback = cb;
+    if (oAuthClient) oAuthClient.requestAccessToken();
+  } else if (accessTokenCookie && tokenRecievedCallback) {
+    token = {
+      access_token: accessTokenCookie,
+      expires_in: "",
+    };
+    tokenRecievedCallback();
+  }
 };
 
 export const logout = (handleSuccess: () => void) => {
@@ -29,6 +46,7 @@ export const logout = (handleSuccess: () => void) => {
 };
 
 export const initClient = (cb: () => void) => {
+  tokenRecievedCallback = cb;
   // on crée le client d'accès à l'api youtube
   oAuthClient = google.accounts.oauth2.initTokenClient({
     client_id: API_KEY,
@@ -37,7 +55,14 @@ export const initClient = (cb: () => void) => {
     callback: async (tokenResponse) => {
       // Réception des accès aux API youtube, après client.requestAccessToken();
       token = tokenResponse;
-      cb();
+      Cookie.set(ACCESS_TOKEN_COOKIE, token.access_token, {
+        expires: addSeconds(new Date(), +token.expires_in),
+      });
+      tokenRecievedCallback && tokenRecievedCallback();
+      if (tokenRecievedTempCallback) {
+        tokenRecievedTempCallback();
+        tokenRecievedTempCallback = undefined;
+      }
     },
   });
 };

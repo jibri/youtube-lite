@@ -131,7 +131,7 @@ function Login() {
       signout();
     } else {
       // User is not signed in. Start Google auth flow.
-      login();
+      login(true);
     }
   }
 
