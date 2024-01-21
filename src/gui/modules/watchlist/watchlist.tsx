@@ -24,7 +24,7 @@ export const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
 function Watchlist() {
   const handleError = useContext(ErrorUpdaterContext);
   const { playlistVideos, deleteFromWatchlist } = useContext(VideoContext);
-  const { playlistId } = useContext(ConfigContext);
+  const { playlistId, useSwipe } = useContext(ConfigContext);
   const [removing, setRemoving] = useState<string[]>([]);
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
   const matches = useLargeScreenMq();
@@ -103,7 +103,7 @@ function Watchlist() {
       )}
       {playlistVideos.map((video) => (
         <WlVideoWrapper key={video.video.id} removing={removing.includes(video.video.id || "")}>
-          {matches ? (
+          {!useSwipe || matches ? (
             <Video video={video} actions={swipeActions} />
           ) : (
             <SwipableVideo video={video} videoActions={[]} swipeActions={swipeActions} />

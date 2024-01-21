@@ -83,10 +83,11 @@ function Login() {
   const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
   const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
   const [autoAuthInputValue, setAutoAuthInputValue] = useState(false);
+  const [useSwipeInputValue, setUseSwipeInputValue] = useState(false);
   const [playlists, setPlaylists] = useState<youtube.Playlist[]>([]);
   const [init, setInit] = useState(false);
   const { userId, signout } = useContext(LoginContext);
-  const { minDuration, maxAge, playlistId, autoAuth } = useContext(ConfigContext);
+  const { minDuration, maxAge, playlistId, autoAuth, useSwipe } = useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
   const [not, setNot] = useState(false);
   const callYoutube = useYoutubeService();
@@ -106,6 +107,10 @@ function Login() {
   useEffect(() => {
     setAutoAuthInputValue(autoAuth);
   }, [autoAuth]);
+
+  useEffect(() => {
+    setUseSwipeInputValue(useSwipe);
+  }, [useSwipe]);
 
   useEffect(() => {
     setMaxAgeInputValue(`${maxAge}`);
@@ -198,6 +203,17 @@ function Login() {
               onChange={(e) => {
                 setAutoAuthInputValue(e.target.checked);
                 updateConfig("autoAuth", e.target.checked);
+              }}
+            />
+          </Container>
+          <Container sx={{ alignSelf: "start" }}>
+            <Text>Use swipeable videos : </Text>
+            <input
+              type="checkbox"
+              checked={useSwipeInputValue}
+              onChange={(e) => {
+                setUseSwipeInputValue(e.target.checked);
+                updateConfig("useSwipe", e.target.checked);
               }}
             />
           </Container>

@@ -21,7 +21,7 @@ import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 
 function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
-  const { playlistId } = useContext(ConfigContext);
+  const { playlistId, useSwipe } = useContext(ConfigContext);
   const { feedVideos, playlistVideos } = useContext(VideoContext);
   const { userId } = useContext(LoginContext);
   const handleError = useContext(ErrorUpdaterContext);
@@ -104,7 +104,7 @@ function Feed() {
       )}
       {feedVideos.map((video) => (
         <WlVideoWrapper key={video.video.id} removing={removing.includes(video.video.id!)}>
-          {matches ? (
+          {!useSwipe || matches ? (
             <Video video={video} actions={videoActions} />
           ) : (
             <SwipableVideo

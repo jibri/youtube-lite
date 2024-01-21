@@ -167,7 +167,7 @@ const VideoProvider = ({ children }: any) => {
     // Token de la page suivante. on va récupérer les videos tant qu'il n'est pas vide
     let pageToken: string | undefined;
     // Va contenir toutes les videos récupérées (pages par pages), et sera ajouté au state en une fois
-    const allVideosToAdd: VideoItem[] = [];
+    setPlaylistVideos([]);
     do {
       const response = await callYoutube(
         listPlaylistItems,
@@ -185,12 +185,12 @@ const VideoProvider = ({ children }: any) => {
           playlistItem: items.find((i) => i.snippet?.resourceId?.videoId === v.id) || {},
           video: v,
         }));
-        allVideosToAdd.push(...videosToAdd);
+        setPlaylistVideos((oldList) => {
+          return [...oldList, ...videosToAdd];
+        });
       }
       pageToken = nextPageToken;
     } while (pageToken);
-    // Le plus important, mise à jour du state
-    setPlaylistVideos(allVideosToAdd);
   }, [callYoutube, fetchVideos, handleError, playlistId]);
 
   const deleteFromWatchlist = (playlistItemId?: string) => {
