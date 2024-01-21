@@ -20,12 +20,10 @@ const ACCESS_TOKEN_COOKIE = "access_token";
 export let token: { access_token: string; expires_in: string } | undefined;
 let oAuthClient: google.accounts.oauth2.TokenClient;
 let tokenRecievedCallback: () => void;
-let tokenRecievedTempCallback: (() => void) | undefined;
 
-export const login = (force?: boolean, cb?: () => void) => {
+export const login = (force?: boolean) => {
   const accessTokenCookie = Cookie.get(ACCESS_TOKEN_COOKIE);
   if (force || !accessTokenCookie || !tokenRecievedCallback) {
-    tokenRecievedTempCallback = cb;
     if (oAuthClient) oAuthClient.requestAccessToken();
   } else if (accessTokenCookie && tokenRecievedCallback) {
     token = {
@@ -52,24 +50,20 @@ export const initClient = (cb: () => void) => {
     client_id: API_KEY,
     scope: SCOPES.join(" "),
     prompt: "",
-    callback: async (tokenResponse) => {
+    callback: (tokenResponse) => {
       // Réception des accès aux API youtube, après client.requestAccessToken();
       token = tokenResponse;
       Cookie.set(ACCESS_TOKEN_COOKIE, token.access_token, {
         expires: addSeconds(new Date(), +token.expires_in),
       });
       tokenRecievedCallback && tokenRecievedCallback();
-      if (tokenRecievedTempCallback) {
-        tokenRecievedTempCallback();
-        tokenRecievedTempCallback = undefined;
-      }
     },
   });
 };
 
 export const fetchUserInfos = async (
   handleUserId: (id: string) => void,
-  handleError: (err: string) => void
+  handleError: (stauts: number, err?: string) => void
 ) => {
   if (token) {
     const userInfoResponse = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
@@ -86,10 +80,10 @@ export const fetchUserInfos = async (
       if (userInfoResponse.ok) {
         handleUserId(userInfos.sub);
       } else {
-        handleError(errMsg);
+        handleError(userInfoResponse.status, errMsg);
       }
     } catch (err) {
-      handleError(errMsg);
+      handleError(userInfoResponse.status, errMsg);
     }
   }
 };

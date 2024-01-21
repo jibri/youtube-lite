@@ -17,6 +17,8 @@ export interface ConfigData {
   maxAge: number;
   /** id de la playlist que l'on souhaite afficher, et remplir à partir de feed */
   playlistId: string;
+  /** si l'app doit tenter de se re-authentifier après une 401 */
+  autoAuth: boolean;
   /** le dernier theme selectionné */
   theme: "light" | "dark";
 }
@@ -25,6 +27,7 @@ const defaultData: ConfigData = {
   minDuration: 0,
   maxAge: 0,
   playlistId: "",
+  autoAuth: false,
   theme: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
 };
 

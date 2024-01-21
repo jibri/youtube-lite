@@ -4,17 +4,20 @@ import LoginProvider from "src/data/context/loginProvider";
 import ConfigProvider from "src/data/context/configProvider";
 import MyThemeProvider from "./data/context/ThemeProvider";
 import Home from "./gui/modules/home/home";
+import ErrorProvider from "src/data/context/errorProvider";
 
 const App = () => (
-    <BrowserRouter>
-        <LoginProvider>
-          <ConfigProvider>
-            <MyThemeProvider>
-              <Home />
-            </MyThemeProvider>
-          </ConfigProvider>
-        </LoginProvider>
-    </BrowserRouter>
-  );
+  <BrowserRouter>
+    <ErrorProvider>
+      <LoginProvider>
+        <ConfigProvider>
+          <MyThemeProvider>
+            <Home />
+          </MyThemeProvider>
+        </ConfigProvider>
+      </LoginProvider>
+    </ErrorProvider>
+  </BrowserRouter>
+);
 
 export default App;

@@ -3,7 +3,6 @@ import { faTrash, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video, { VisualAction } from "src/gui/components/video";
 import { VideoWrapper, ActionButton, Text, Flex } from "src/utils/styled";
-import { LoginContext } from "src/data/context/loginProvider";
 import { VideoItem } from "src/utils/types";
 import styled from "styled-components";
 import useDelayAction from "src/hooks/useDelayAction";
@@ -13,6 +12,8 @@ import { deletePlaylistItems, rateVideos } from "src/utils/youtubeApi";
 import { useLargeScreenMq } from "src/hooks/useMq";
 import SwipableVideo from "src/gui/components/SwipableVideo";
 import { token } from "src/init/youtubeOAuth";
+import useYoutubeService from "src/hooks/useYoutubeService";
+import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 
 export const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
   transition: max-height 0.5s ease;
@@ -21,12 +22,13 @@ export const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
 `;
 
 function Watchlist() {
-  const { handleError, callYoutube } = useContext(LoginContext);
+  const handleError = useContext(ErrorUpdaterContext);
   const { playlistVideos, deleteFromWatchlist } = useContext(VideoContext);
   const { playlistId } = useContext(ConfigContext);
   const [removing, setRemoving] = useState<string[]>([]);
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
   const matches = useLargeScreenMq();
+  const callYoutube = useYoutubeService();
 
   const deletePlaylistItem = useCallback(
     async (video: VideoItem) => {
@@ -37,7 +39,7 @@ function Watchlist() {
           token.access_token
         );
         if (!response.ok) {
-          handleError(response.error);
+          handleError(response.status, response.error);
           // On retire l'id en erreur des removed video pour réafficher la video dans la playlist
           setRemoving((removedIds) => removedIds.filter((id) => id !== video.video.id));
         } else {
@@ -68,7 +70,7 @@ function Watchlist() {
           if (token && video.video.id) {
             const response = await callYoutube(rateVideos, video.video.id, token.access_token);
             if (!response.ok) {
-              handleError(response.error);
+              handleError(response.status, response.error);
               // On retire l'id en erreur des removed video pour réafficher la video dans la playlist
               setRemoving((removedIds) => removedIds.filter((id) => id !== video.video.id));
             } else {

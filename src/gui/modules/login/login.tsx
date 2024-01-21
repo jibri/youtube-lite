@@ -10,6 +10,8 @@ import { ConfigContext, ConfigData } from "src/data/context/configProvider";
 import Notification from "src/gui/components/notification";
 import { listMyPlaylists } from "src/utils/youtubeApi";
 import { login, token } from "src/init/youtubeOAuth";
+import useYoutubeService from "src/hooks/useYoutubeService";
+import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -77,14 +79,17 @@ const Input = styled.input`
   font-size: 1em;
   width: 2em;
 `;
-
 function Login() {
   const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
   const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
+  const [autoAuthInputValue, setAutoAuthInputValue] = useState(false);
   const [playlists, setPlaylists] = useState<youtube.Playlist[]>([]);
-  const { userId, handleError, callYoutube, signout } = useContext(LoginContext);
-  const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
+  const [init, setInit] = useState(false);
+  const { userId, signout } = useContext(LoginContext);
+  const { minDuration, maxAge, playlistId, autoAuth } = useContext(ConfigContext);
+  const handleError = useContext(ErrorUpdaterContext);
   const [not, setNot] = useState(false);
+  const callYoutube = useYoutubeService();
 
   const updateConfig = <K extends keyof ConfigData>(key: K, value?: ConfigData[K]) => {
     if (userId && key) {
@@ -99,20 +104,24 @@ function Login() {
   }, [minDuration]);
 
   useEffect(() => {
+    setAutoAuthInputValue(autoAuth);
+  }, [autoAuth]);
+
+  useEffect(() => {
     setMaxAgeInputValue(`${maxAge}`);
   }, [maxAge]);
 
   useEffect(() => {
     const loadPlaylists = async () => {
       // on charge les playlists seulement si on a token et si on ne les à pas déjà chargé.
-      if (token && !playlists.length) {
+      if (token && !init) {
         let nextToken: string | undefined;
         const myPlaylists: youtube.Playlist[] = [];
 
         do {
           const response = await callYoutube(listMyPlaylists, token.access_token, nextToken);
           if (!response.ok) {
-            handleError(response.error);
+            handleError(response.status, response.error);
           } else {
             const { items, nextPageToken } = response.data;
             myPlaylists.push(...items);
@@ -120,10 +129,11 @@ function Login() {
           }
         } while (nextToken);
         setPlaylists(myPlaylists);
+        setInit(true);
       }
     };
     loadPlaylists();
-  }, [callYoutube, handleError, playlists]);
+  }, [callYoutube, handleError, init]);
 
   function handleAuthClick() {
     if (token) {
@@ -178,6 +188,17 @@ function Login() {
               onBlur={(e) => updateConfig("maxAge", +e.target.value)}
               value={maxAgeInputValue}
               onChange={(e) => setMaxAgeInputValue(e.target.value)}
+            />
+          </Container>
+          <Container sx={{ alignSelf: "start" }}>
+            <Text>Auto auth on 401 : </Text>
+            <input
+              type="checkbox"
+              checked={autoAuthInputValue}
+              onChange={(e) => {
+                setAutoAuthInputValue(e.target.checked);
+                updateConfig("autoAuth", e.target.checked);
+              }}
             />
           </Container>
           <Separator />

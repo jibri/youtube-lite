@@ -16,15 +16,19 @@ import { insertPlaylistItem, rateVideos } from "src/utils/youtubeApi";
 import { useLargeScreenMq } from "src/hooks/useMq";
 import SwipableVideo from "src/gui/components/SwipableVideo";
 import { token } from "src/init/youtubeOAuth";
+import useYoutubeService from "src/hooks/useYoutubeService";
+import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 
 function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
   const { playlistId } = useContext(ConfigContext);
   const { feedVideos, playlistVideos } = useContext(VideoContext);
-  const { userId, handleError, callYoutube } = useContext(LoginContext);
+  const { userId } = useContext(LoginContext);
+  const handleError = useContext(ErrorUpdaterContext);
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
   const matches = useLargeScreenMq();
   const reactSwipeEl = useRef<ReactSwipe>(null);
+  const callYoutube = useYoutubeService();
 
   const addVideoToWatchlistCache = useCallback(
     (video: VideoItem) => {
@@ -47,7 +51,7 @@ function Feed() {
             token.access_token
           );
           if (!response.ok) {
-            handleError(response.error);
+            handleError(response.status, response.error);
             return;
           }
         }
@@ -69,7 +73,7 @@ function Feed() {
     async (video: VideoItem) => {
       if (token && video.video.id) {
         const response = await callYoutube(rateVideos, video.video.id, token.access_token);
-        if (!response.ok) handleError(response.error);
+        if (!response.ok) handleError(response.status, response.error);
         reactSwipeEl.current?.prev();
       }
     },

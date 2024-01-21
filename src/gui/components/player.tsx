@@ -3,10 +3,11 @@ import styled from "styled-components";
 import { VideoItem } from "src/utils/types";
 import { VideoContext } from "src/data/context/videoProvider";
 import { Text } from "src/utils/styled";
-import { LoginContext } from "src/data/context/loginProvider";
 import { insertPlaylistItem } from "src/utils/youtubeApi";
 import { ConfigContext } from "src/data/context/configProvider";
 import { token } from "src/init/youtubeOAuth";
+import useYoutubeService from "src/hooks/useYoutubeService";
+import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 
 const PlayerContainer = styled.div`
   background-color: ${(props) => props.theme.background};
@@ -85,8 +86,9 @@ const initPlayer = (video: VideoItem) => {
 const Player = ({ video }: { video: VideoItem }) => {
   const player = useRef<YT.Player>();
   const { playlistId } = useContext(ConfigContext);
-  const { callYoutube, handleError } = useContext(LoginContext);
+  const handleError = useContext(ErrorUpdaterContext);
   const { descriptionOpened } = useContext(VideoContext);
+  const callYoutube = useYoutubeService();
 
   useEffect(() => {
     if (player.current?.cueVideoById && video.video.id) {
@@ -106,7 +108,7 @@ const Player = ({ video }: { video: VideoItem }) => {
           token.access_token
         );
         if (!response.ok) {
-          handleError(response.error);
+          handleError(response.status, response.error);
           return;
         }
       }

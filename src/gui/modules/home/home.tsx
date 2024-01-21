@@ -10,6 +10,7 @@ import Loader from "src/gui/components/loader";
 import Player from "src/gui/components/player";
 import Header from "../layout/header";
 import { Text } from "src/utils/styled";
+import { ErrorContext } from "src/data/context/errorProvider";
 
 const MainScreen = styled.div`
   min-height: 100vh;
@@ -72,7 +73,8 @@ const VideoModule = () => {
 };
 
 const Home = () => {
-  const { error, userId } = useContext(LoginContext);
+  const { userId } = useContext(LoginContext);
+  const error = useContext(ErrorContext);
 
   return (
     <MainScreen>
@@ -89,7 +91,7 @@ const Home = () => {
         </Notification>
       </MainContainer>
     </MainScreen>
-  );
+  ); 
 };
 
 export default Home;

@@ -20,6 +20,8 @@ import {
   listVideos,
 } from "src/utils/youtubeApi";
 import { token } from "src/init/youtubeOAuth";
+import useYoutubeService from "src/hooks/useYoutubeService";
+import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -59,15 +61,17 @@ const VideoProvider = ({ children }: any) => {
   const [playlistVideos, setPlaylistVideos] = useState<VideoItem[]>([]);
   const [feedCache, setFeedCache] = useState<VideoItem[]>([]);
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
-  const { userId, handleError, callYoutube } = useContext(LoginContext);
+  const { userId } = useContext(LoginContext);
+  const handleError = useContext(ErrorUpdaterContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
+  const callYoutube = useYoutubeService();
 
   const fetchVideos = useCallback(
     async (playlistItems: youtube.PlaylistItem[]) => {
       if (!token) return;
       const response = await callYoutube(listVideos, playlistItems, token.access_token);
-      if (!response.ok) return handleError(response.error);
+      if (!response.ok) return handleError(response.status, response.error);
       return response.data.items;
     },
     [callYoutube, handleError]
@@ -77,7 +81,7 @@ const VideoProvider = ({ children }: any) => {
     async (idPlaylist: string) => {
       if (!token) return;
       const response = await callYoutube(listPlaylistItems, idPlaylist, 10, token.access_token);
-      if (!response.ok) return handleError(response.error);
+      if (!response.ok) return handleError(response.status, response.error);
 
       const { items } = response.data;
       if (!items) return;
@@ -122,7 +126,7 @@ const VideoProvider = ({ children }: any) => {
     async (chanIds: string) => {
       if (!token) return;
       const response = await callYoutube(listChannels, chanIds, token.access_token);
-      if (!response.ok) return handleError(response.error);
+      if (!response.ok) return handleError(response.status, response.error);
 
       const channels = response.data;
       channels.items
@@ -145,7 +149,7 @@ const VideoProvider = ({ children }: any) => {
       setFeedVideos([]);
       do {
         const response = await callYoutube(listSubscriptions, token.access_token, pageToken);
-        if (!response.ok) return handleError(response.error);
+        if (!response.ok) return handleError(response.status, response.error);
 
         const { items, nextPageToken } = response.data;
         if (items?.length) {
@@ -172,7 +176,7 @@ const VideoProvider = ({ children }: any) => {
         token.access_token,
         pageToken
       );
-      if (!response.ok) return handleError(response.error);
+      if (!response.ok) return handleError(response.status, response.error);
 
       const { items, nextPageToken } = response.data;
       const videos = await fetchVideos(items || []);
