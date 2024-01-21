@@ -84,10 +84,12 @@ function Login() {
   const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
   const [autoAuthInputValue, setAutoAuthInputValue] = useState(false);
   const [useSwipeInputValue, setUseSwipeInputValue] = useState(false);
+  const [autoPlayNextRandomInputValue, setAutoPlayNextRandomInputValue] = useState(false);
   const [playlists, setPlaylists] = useState<youtube.Playlist[]>([]);
   const [init, setInit] = useState(false);
   const { userId, signout } = useContext(LoginContext);
-  const { minDuration, maxAge, playlistId, autoAuth, useSwipe } = useContext(ConfigContext);
+  const { minDuration, maxAge, playlistId, autoAuth, useSwipe, autoPlayNextRandom } =
+    useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
   const [not, setNot] = useState(false);
   const callYoutube = useYoutubeService();
@@ -111,6 +113,10 @@ function Login() {
   useEffect(() => {
     setUseSwipeInputValue(useSwipe);
   }, [useSwipe]);
+
+  useEffect(() => {
+    setAutoPlayNextRandomInputValue(autoPlayNextRandom);
+  }, [autoPlayNextRandom]);
 
   useEffect(() => {
     setMaxAgeInputValue(`${maxAge}`);
@@ -214,6 +220,17 @@ function Login() {
               onChange={(e) => {
                 setUseSwipeInputValue(e.target.checked);
                 updateConfig("useSwipe", e.target.checked);
+              }}
+            />
+          </Container>
+          <Container sx={{ alignSelf: "start" }}>
+            <Text>Auto play next video randomly : </Text>
+            <input
+              type="checkbox"
+              checked={autoPlayNextRandomInputValue}
+              onChange={(e) => {
+                setAutoPlayNextRandomInputValue(e.target.checked);
+                updateConfig("autoPlayNextRandom", e.target.checked);
               }}
             />
           </Container>

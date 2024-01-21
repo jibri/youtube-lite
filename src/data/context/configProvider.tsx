@@ -21,6 +21,8 @@ export interface ConfigData {
   autoAuth: boolean;
   /** si les video sont swipeable */
   useSwipe: boolean;
+  /** si le player doit lire un video aléatoire de la liste après celle ci */
+  autoPlayNextRandom: boolean;
   /** le dernier theme selectionné */
   theme: "light" | "dark";
 }
@@ -31,6 +33,7 @@ const defaultData: ConfigData = {
   playlistId: "",
   autoAuth: false,
   useSwipe: false,
+  autoPlayNextRandom: false,
   theme: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
 };
 

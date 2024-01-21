@@ -197,10 +197,10 @@ const VideoProvider = ({ children }: any) => {
     setPlaylistVideos((playlist) => playlist.filter((v) => v.playlistItem.id !== playlistItemId));
   };
 
-  const playVideo = (video?: VideoItem) => {
+  const playVideo = useCallback((video?: VideoItem) => {
     setVideoPlaying(video);
     setDescriptionOpened(false);
-  };
+  }, []);
 
   useEffect(() => {
     if (userId) {

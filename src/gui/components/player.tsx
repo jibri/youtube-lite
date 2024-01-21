@@ -66,17 +66,34 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
   return elements;
 };
 
-const initPlayer = (video: VideoItem) => {
+const initPlayer = (
+  video: VideoItem,
+  playlist: VideoItem[],
+  autoNextRandom: boolean,
+  playVideo: (v: VideoItem) => void
+) => {
   return new window.YT.Player(`video_player`, {
     height: "100%",
     width: "100%",
     videoId: video.video.id,
     playerVars: {
+      autoplay: 1,
       rel: 0,
     },
     events: {
       onStateChange: (event) => {
-        console.log("event.data", event.data);
+        console.log("event.data", event.data, autoNextRandom);
+        // Fin de video, on en charge une autre random
+        if (autoNextRandom && event.data === 0) {
+          let vidNumber = Math.floor(Math.random() * playlist.length);
+          if (playlist[vidNumber].video.id === video.video.id) vidNumber++;
+          playVideo(playlist[vidNumber]);
+        }
+
+        // Video cued, auto play
+        if (autoNextRandom && event.data === 5) {
+          event.target.playVideo();
+        }
       },
       onError: (event) => console.log("onError", event.data),
     },
@@ -85,18 +102,18 @@ const initPlayer = (video: VideoItem) => {
 
 const Player = ({ video }: { video: VideoItem }) => {
   const player = useRef<YT.Player>();
-  const { playlistId } = useContext(ConfigContext);
+  const { playlistId, autoPlayNextRandom } = useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
-  const { descriptionOpened } = useContext(VideoContext);
+  const { descriptionOpened, playlistVideos, playVideo } = useContext(VideoContext);
   const callYoutube = useYoutubeService();
 
   useEffect(() => {
     if (player.current?.cueVideoById && video.video.id) {
       player.current?.cueVideoById(video.video.id);
     } else {
-      player.current = initPlayer(video);
+      player.current = initPlayer(video, playlistVideos, autoPlayNextRandom, playVideo);
     }
-  }, [video]);
+  }, [autoPlayNextRandom, playVideo, playlistVideos, video]);
 
   const addToWatchlist = useCallback(
     async (videoId: string) => {
