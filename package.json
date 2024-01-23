@@ -1,13 +1,14 @@
 {
   "name": "youtube-lite",
   "private": true,
-  "version": "2.16.0",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
     "start": "tsc && vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
+    "up-bl": "npx update-browserslist-db@latest",
     "deploy": "yarn && yarn up-bl && yarn version --patch && git push && yarn build && firebase deploy --only hosting",
     "deploy:major": "yarn && yarn up-bl && yarn version --major && git push && yarn build && firebase deploy --only hosting",
     "deploy:minor": "yarn && yarn up-bl && yarn version --minor && git push && yarn build && firebase deploy --only hosting"
