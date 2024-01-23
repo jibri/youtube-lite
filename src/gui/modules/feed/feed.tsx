@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useMemo, useRef, useState } from "react";
 import { faPlus, faThumbsUp, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video, { VisualAction } from "src/gui/components/video";
@@ -36,7 +36,7 @@ function Feed() {
         addDoc(collection(db, "feedCache", userId, "videos"), video);
       }
     },
-    [userId]
+    [userId],
   );
 
   const addToWatchlist = useCallback(
@@ -48,7 +48,7 @@ function Feed() {
             insertPlaylistItem,
             video.playlistItem.snippet?.resourceId,
             playlistId,
-            token.access_token
+            token.access_token,
           );
           if (!response.ok) {
             handleError(response.status, response.error);
@@ -58,7 +58,7 @@ function Feed() {
         addVideoToWatchlistCache(video);
       }
     },
-    [addVideoToWatchlistCache, callYoutube, handleError, playlistId, playlistVideos]
+    [addVideoToWatchlistCache, callYoutube, handleError, playlistId, playlistVideos],
   );
 
   const deleteFromFeed = useCallback(
@@ -66,7 +66,7 @@ function Feed() {
       setTimeout(() => setRemoving((rem) => [...rem, video.video.id!]), 100);
       delayAction("Video supprimée", () => addVideoToWatchlistCache(video));
     },
-    [addVideoToWatchlistCache, delayAction]
+    [addVideoToWatchlistCache, delayAction],
   );
 
   const likeVideo = useCallback(
@@ -77,7 +77,7 @@ function Feed() {
         reactSwipeEl.current?.prev();
       }
     },
-    [callYoutube, handleError]
+    [callYoutube, handleError],
   );
 
   const swipeActions: [VisualAction, VisualAction] = useMemo(
@@ -85,7 +85,7 @@ function Feed() {
       { action: (video) => deleteFromFeed(video), actionIcon: faTrash },
       { action: (video) => likeVideo(video), actionIcon: faThumbsUp },
     ],
-    [deleteFromFeed, likeVideo]
+    [deleteFromFeed, likeVideo],
   );
 
   const videoActions = useMemo(() => {
@@ -103,7 +103,7 @@ function Feed() {
         </Flex>
       )}
       {feedVideos.map((video) => (
-        <WlVideoWrapper key={video.video.id} removing={removing.includes(video.video.id!)}>
+        <WlVideoWrapper key={video.video.id} $removing={removing.includes(video.video.id!)}>
           {!useSwipe || matches ? (
             <Video video={video} actions={videoActions} />
           ) : (

@@ -56,7 +56,7 @@ const defaultData: VideoData = {
 
 export const VideoContext = createContext<VideoData>(defaultData);
 
-const VideoProvider = ({ children }: any) => {
+const VideoProvider = ({ children }: React.PropsWithChildren) => {
   const [feedVideos, setFeedVideos] = useState<VideoItem[]>([]);
   const [playlistVideos, setPlaylistVideos] = useState<VideoItem[]>([]);
   const [feedCache, setFeedCache] = useState<VideoItem[]>([]);
@@ -74,7 +74,7 @@ const VideoProvider = ({ children }: any) => {
       if (!response.ok) return handleError(response.status, response.error);
       return response.data.items;
     },
-    [callYoutube, handleError]
+    [callYoutube, handleError],
   );
 
   const fetchPlaylistItems = useCallback(
@@ -89,7 +89,7 @@ const VideoProvider = ({ children }: any) => {
       // On commence par filtrer les video du cache pour pas aller les fetch inutilement
       const itemsToFetch = items.filter((item) => {
         return !feedCache.find(
-          (cachedVideo) => cachedVideo.video.id === item.snippet?.resourceId?.videoId
+          (cachedVideo) => cachedVideo.video.id === item.snippet?.resourceId?.videoId,
         );
       });
 
@@ -114,12 +114,13 @@ const VideoProvider = ({ children }: any) => {
         newVideos.push(...videosToAdd);
         newVideos.sort(
           (v1, v2) =>
-            v2.video?.snippet?.publishedAt?.localeCompare(v1.video?.snippet?.publishedAt || "") || 0
+            v2.video?.snippet?.publishedAt?.localeCompare(v1.video?.snippet?.publishedAt || "") ||
+            0,
         );
         return newVideos;
       });
     },
-    [callYoutube, handleError, maxAge, fetchVideos, feedCache, minDuration]
+    [callYoutube, handleError, maxAge, fetchVideos, feedCache, minDuration],
   );
 
   const fetchChannels = useCallback(
@@ -136,11 +137,11 @@ const VideoProvider = ({ children }: any) => {
           fetchPlaylistItems(id);
         });
     },
-    [callYoutube, handleError, fetchPlaylistItems]
+    [callYoutube, handleError, fetchPlaylistItems],
   );
 
   const fetchSubscriptions = useCallback(async () => {
-    if (process.env.REACT_APP_DEV_MODE === "true") {
+    if (import.meta.env.VITE_DEV_MODE === "true") {
       const { FEED_VIDEOS } = await import("src/__mock__/feedVideos");
       setFeedVideos(FEED_VIDEOS);
     } else {
@@ -174,7 +175,7 @@ const VideoProvider = ({ children }: any) => {
         playlistId,
         50,
         token.access_token,
-        pageToken
+        pageToken,
       );
       if (!response.ok) return handleError(response.status, response.error);
 
@@ -209,7 +210,7 @@ const VideoProvider = ({ children }: any) => {
       return onSnapshot(
         query(
           collection(db, "feedCache", userId, "videos"),
-          where("playlistItem.snippet.publishedAt", ">", searchMaxDate.toISOString())
+          where("playlistItem.snippet.publishedAt", ">", searchMaxDate.toISOString()),
         ).withConverter({
           toFirestore(video: VideoItem): DocumentData {
             return video;
@@ -225,12 +226,8 @@ const VideoProvider = ({ children }: any) => {
             if (videoDoc.type === "added") addedVideos.push(videoDoc.doc.data());
           });
           // add new videos to the local cache liste
-          setFeedCache((oldCache) => {
-            let newCache = [...oldCache];
-            newCache.push(...addedVideos);
-            return newCache;
-          });
-        }
+          setFeedCache((oldCache) => [...oldCache, ...addedVideos]);
+        },
       );
     }
   }, [userId, maxAge]);

@@ -6,7 +6,7 @@ import {
   setDoc,
   SnapshotOptions,
 } from "firebase/firestore";
-import React, { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
 import { LoginContext } from "src/data/context/loginProvider";
 import { db } from "src/init/firestore";
 
@@ -39,7 +39,7 @@ const defaultData: ConfigData = {
 
 export const ConfigContext = createContext<ConfigData>(defaultData);
 
-const ConfigProvider = ({ children }: any) => {
+const ConfigProvider = ({ children }: React.PropsWithChildren) => {
   const [config, setConfig] = useState<ConfigData>(defaultData);
   const { userId } = useContext(LoginContext);
 
@@ -60,7 +60,7 @@ const ConfigProvider = ({ children }: any) => {
             // Creation du doc s'il n'exist pas (permiere connexion)
             setDoc(doc(db, "configuration", userId), defaultData);
           }
-        }
+        },
       );
     }
   }, [userId]);

@@ -1,4 +1,3 @@
-import React from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
 import Feed from "../gui/modules/feed/feed";
 import Watchlist from "../gui/modules/watchlist/watchlist";

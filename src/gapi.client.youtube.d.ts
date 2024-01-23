@@ -268,7 +268,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -620,7 +620,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -863,7 +863,7 @@ declare namespace youtube {
     nextPageToken?: string;
     /** General pagination information. */
     pageInfo?: PageInfo;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -969,7 +969,7 @@ declare namespace youtube {
     nextPageToken?: string;
     /** General pagination information. */
     pageInfo?: PageInfo;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -1334,7 +1334,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -1778,7 +1778,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -1990,7 +1990,7 @@ declare namespace youtube {
     pageInfo?: PageInfo;
     /** The amount of time the client should wait before polling again. */
     pollingIntervalMillis?: number;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -2094,7 +2094,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -2248,7 +2248,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -2317,7 +2317,7 @@ declare namespace youtube {
      */
     nextPageToken?: string;
     pageInfo?: PageInfo;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -2561,7 +2561,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -2638,7 +2638,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -2785,7 +2785,7 @@ declare namespace youtube {
      */
     prevPageToken?: string;
     regionCode?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -2874,7 +2874,7 @@ declare namespace youtube {
      */
     nextPageToken?: string;
     pageInfo?: PageInfo;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The `visitorId` identifies the visitor. */
     visitorId?: string;
   }
@@ -2956,7 +2956,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -3028,7 +3028,7 @@ declare namespace youtube {
      */
     nextPageToken?: string;
     pageInfo?: PageInfo;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -3341,7 +3341,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }
@@ -3542,7 +3542,7 @@ declare namespace youtube {
      * parameter to retrieve the previous page in the result set.
      */
     prevPageToken?: string;
-    tokenPagination?: any;
+    tokenPagination?: unknown;
     /** The <code>visitorId</code> identifies the visitor. */
     visitorId?: string;
   }

@@ -3,7 +3,7 @@ import { ThemeProvider } from "styled-components";
 import { darkTheme, defaultTheme } from "src/utils/theme";
 import { ConfigContext } from "src/data/context/configProvider";
 
-const MyThemeProvider = ({ children }: any) => {
+const MyThemeProvider = ({ children }: React.PropsWithChildren) => {
   const { theme } = useContext(ConfigContext);
 
   return (

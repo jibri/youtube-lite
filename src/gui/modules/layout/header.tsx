@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { useLocation } from "react-router-dom";
 import { VideoContext } from "src/data/context/videoProvider";
 import {
@@ -14,7 +14,7 @@ const Header = () => {
     useContext(VideoContext);
   const location = useLocation();
 
-  const headerComponents = !!videoPlaying ? playingHeaderComponents : defaultHeaderComponents;
+  const headerComponents = videoPlaying ? playingHeaderComponents : defaultHeaderComponents;
 
   return (
     <HeaderWrapper>

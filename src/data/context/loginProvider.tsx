@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback, useContext } from "react";
+import { createContext, useState, useEffect, useCallback, useContext } from "react";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 import { fetchUserInfos, initClient, login, logout } from "src/init/youtubeOAuth";
 
@@ -18,7 +18,7 @@ const defaultData: LoginData = {
 
 export const LoginContext = createContext<LoginData>(defaultData);
 
-const LoginProvider = ({ children }: any) => {
+const LoginProvider = ({ children }: React.PropsWithChildren) => {
   const [userId, setUserId] = useState<string>();
   const [loading, setLoading] = useState(0);
   const handleError = useContext(ErrorUpdaterContext);

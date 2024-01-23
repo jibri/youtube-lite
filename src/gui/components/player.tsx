@@ -112,6 +112,7 @@ const Player = ({ video }: { video: VideoItem }) => {
       player.current?.cueVideoById(video.video.id);
     } else {
       player.current = initPlayer(video, playlistVideos, autoPlayNextRandom, playVideo);
+      // TODO utiliser player.current.addEventListener pour que les param soient bien pris en compte, meme si le player est dejà ouvert
     }
   }, [autoPlayNextRandom, playVideo, playlistVideos, video]);
 

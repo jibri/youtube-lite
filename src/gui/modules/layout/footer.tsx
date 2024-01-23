@@ -1,4 +1,3 @@
-import React from "react";
 import { PATHS } from "src/router/path";
 import { ButtonLink, FooterWrapper } from "src/utils/styled";
 

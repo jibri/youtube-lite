@@ -4,7 +4,7 @@ const YOUTUBE_API = "https://youtube.googleapis.com/youtube/v3/";
 
 type primitive = undefined | null | string | boolean | number;
 
-const filterByFields = process.env.REACT_APP_YOUTUBE_API_FILTER_BY_FIELDS === "true";
+const filterByFields = import.meta.env.VITE_YOUTUBE_API_FILTER_BY_FIELDS === "true";
 export const buildQueryString = (params: Record<string, primitive | primitive[]>) => {
   const reducer = (queryString: string, key: string) => {
     const start = queryString ? `${queryString}&` : "?";
@@ -40,7 +40,7 @@ const ytbFetch = async <T>(
   body: Record<string, unknown> | undefined,
   accessToken: string,
   pageToken?: string,
-  method: "GET" | "POST" | "DELETE" = "GET"
+  method: "GET" | "POST" | "DELETE" = "GET",
 ): Promise<ResponseYoutube<T>> => {
   const response = await fetch(
     `${YOUTUBE_API}${service}${buildQueryString({
@@ -55,7 +55,7 @@ const ytbFetch = async <T>(
         Accept: "application/json",
       },
       body: JSON.stringify(body),
-    }
+    },
   );
   if (response.ok)
     return {
@@ -86,13 +86,13 @@ type YoutubeError = {
     }[];
   };
 };
-const isYoutubeError = (error: any): error is YoutubeError => {
-  return error?.error?.errors;
+const isYoutubeError = (error: YoutubeError): error is YoutubeError => {
+  return !!error?.error?.errors;
 };
 
 export const listSubscriptions = async (
   accessToken: string,
-  pageToken?: string
+  pageToken?: string,
 ): Promise<
   ResponseYoutube<{
     items: youtube.Subscription[];
@@ -109,13 +109,13 @@ export const listSubscriptions = async (
     },
     undefined,
     accessToken,
-    pageToken
+    pageToken,
   );
 };
 
 export const listMyPlaylists = async (
   accessToken: string,
-  pageToken?: string
+  pageToken?: string,
 ): Promise<
   ResponseYoutube<{
     items: youtube.Playlist[];
@@ -132,7 +132,7 @@ export const listMyPlaylists = async (
     },
     undefined,
     accessToken,
-    pageToken
+    pageToken,
   );
 };
 
@@ -140,7 +140,7 @@ export const listPlaylistItems = async (
   idPlaylist: string,
   maxResults: number,
   accessToken: string,
-  pageToken?: string
+  pageToken?: string,
 ): Promise<
   ResponseYoutube<{
     items: youtube.PlaylistItem[];
@@ -157,13 +157,13 @@ export const listPlaylistItems = async (
     },
     undefined,
     accessToken,
-    pageToken
+    pageToken,
   );
 };
 
 export const deletePlaylistItems = async (
   id: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<ResponseYoutube<void>> => {
   return await ytbFetch("playlistItems", { id }, undefined, accessToken, undefined, "DELETE");
 };
@@ -171,7 +171,7 @@ export const deletePlaylistItems = async (
 export const listVideos = async (
   playlistItems: youtube.PlaylistItem[],
   accessToken: string,
-  pageToken?: string
+  pageToken?: string,
 ): Promise<
   ResponseYoutube<{
     items: youtube.Video[];
@@ -189,13 +189,13 @@ export const listVideos = async (
     },
     undefined,
     accessToken,
-    pageToken
+    pageToken,
   );
 };
 
 export const rateVideos = async (
   id: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<ResponseYoutube<void>> => {
   return await ytbFetch(
     "videos/rate",
@@ -203,14 +203,14 @@ export const rateVideos = async (
     undefined,
     accessToken,
     undefined,
-    "POST"
+    "POST",
   );
 };
 
 export const listChannels = async (
   chanIds: string,
   accessToken: string,
-  pageToken?: string
+  pageToken?: string,
 ): Promise<
   ResponseYoutube<{
     items: youtube.Channel[];
@@ -227,14 +227,14 @@ export const listChannels = async (
     },
     undefined,
     accessToken,
-    pageToken
+    pageToken,
   );
 };
 
 export const insertPlaylistItem = async (
   resourceId: youtube.ResourceId,
   playlistId: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<ResponseYoutube<void>> => {
   return await ytbFetch(
     "playlistItems",
@@ -242,6 +242,6 @@ export const insertPlaylistItem = async (
     { snippet: { resourceId, playlistId } },
     accessToken,
     undefined,
-    "POST"
+    "POST",
   );
 };

@@ -1,4 +1,3 @@
-import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import LoginProvider from "src/data/context/loginProvider";
 import ConfigProvider from "src/data/context/configProvider";

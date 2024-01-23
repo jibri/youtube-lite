@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import styled from "styled-components";
 import { LoginContext } from "src/data/context/loginProvider";
 import { Link } from "react-router-dom";
@@ -12,6 +12,7 @@ import { listMyPlaylists } from "src/utils/youtubeApi";
 import { login, token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
+import logoUrl from "src/assets/logo192.png";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -65,8 +66,8 @@ const Separator = styled.div`
   border-top: 1px solid ${(props) => props.theme.primary};
 `;
 
-const Container = styled.div<{ sx: any }>`
-  ${(props) => props.sx}
+const Container = styled.div<{ $alignSelf?: string }>`
+  align-self: ${(props) => (props.$alignSelf ? props.$alignSelf : "start")};
 `;
 
 const Input = styled.input`
@@ -160,7 +161,7 @@ function Login() {
     <MainContainer>
       {userId && (
         <>
-          <Container sx={{ alignSelf: "start" }}>
+          <Container>
             <Text>My playlists :</Text>
             <PlaylistItems>
               {playlists.map((pl) => (
@@ -176,7 +177,7 @@ function Login() {
             </PlaylistItems>
           </Container>
           <Separator />
-          <Container sx={{ alignSelf: "start" }}>
+          <Container>
             <Text>Theme :</Text>
             <PlaylistItems>
               <ActionButton onClick={() => updateConfig("theme", "dark")}>Dark Theme</ActionButton>
@@ -185,7 +186,7 @@ function Login() {
               </ActionButton>
             </PlaylistItems>
           </Container>
-          <Container sx={{ alignSelf: "start" }}>
+          <Container>
             <Text>Min video duration in feed (seconds) : </Text>
             <Input
               onBlur={(e) => updateConfig("minDuration", +e.target.value)}
@@ -193,7 +194,7 @@ function Login() {
               onChange={(e) => setMinDurationInputValue(e.target.value)}
             />
           </Container>
-          <Container sx={{ alignSelf: "start" }}>
+          <Container>
             <Text>Max age video in feed (days) : </Text>
             <Input
               onBlur={(e) => updateConfig("maxAge", +e.target.value)}
@@ -201,7 +202,7 @@ function Login() {
               onChange={(e) => setMaxAgeInputValue(e.target.value)}
             />
           </Container>
-          <Container sx={{ alignSelf: "start" }}>
+          <Container>
             <Text>Auto auth on 401 : </Text>
             <input
               type="checkbox"
@@ -212,7 +213,7 @@ function Login() {
               }}
             />
           </Container>
-          <Container sx={{ alignSelf: "start" }}>
+          <Container>
             <Text>Use swipeable videos : </Text>
             <input
               type="checkbox"
@@ -223,7 +224,7 @@ function Login() {
               }}
             />
           </Container>
-          <Container sx={{ alignSelf: "start" }}>
+          <Container>
             <Text>Auto play next video randomly : </Text>
             <input
               type="checkbox"
@@ -241,7 +242,7 @@ function Login() {
         {userId ? "Sign out" : "Sign In/Authorize"}
       </ActionButton>
       <YoutubeButton href="http://youtube.com" target="_blank" rel="noopener noreferer">
-        <img src={`${process.env.PUBLIC_URL}/logo192.png`} width="100px" alt="Logo Youtube-lite" />
+        <img src={logoUrl} width="100px" alt="Logo Youtube-lite" />
         <Text>Go to Youtube</Text>
       </YoutubeButton>
       <Separator />
@@ -253,8 +254,8 @@ function Login() {
         </Text>
         <ActionButton onClick={() => setNot((n) => !n)}>Fermer</ActionButton>
       </Notification>
-      <Container sx={{ alignSelf: "end" }}>
-        <Text>version v{process.env.REACT_APP_VERSION}</Text>
+      <Container $alignSelf="end">
+        <Text>version v{import.meta.env.VITE_VERSION}</Text>
       </Container>
     </MainContainer>
   );

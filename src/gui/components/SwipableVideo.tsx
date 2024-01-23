@@ -1,4 +1,3 @@
-import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ReactSwipe from "react-swipe";
 import Video, { VisualAction } from "src/gui/components/video";
@@ -58,6 +57,7 @@ const SwipableVideo = ({
         startSlide: 1,
         continuous: false,
         callback: (idx) => {
+          console.log(ref);
           if (idx === 0) swipeActions[0].action(video);
           if (idx === 2) swipeActions[1].action(video);
         },

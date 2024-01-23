@@ -1,13 +1,13 @@
-import React, { createContext, useState, useCallback, useContext } from "react";
+import { createContext, useState, useCallback, useContext } from "react";
 import { ConfigContext } from "src/data/context/configProvider";
 import { login } from "src/init/youtubeOAuth";
 
 export const ErrorContext = createContext<string | undefined>(undefined);
 export const ErrorUpdaterContext = createContext<(status: number, message?: string) => void>(
-  () => null
+  () => null,
 );
 
-const ErrorProvider = ({ children }: any) => {
+const ErrorProvider = ({ children }: React.PropsWithChildren) => {
   const [error, setError] = useState<string>();
   const { autoAuth } = useContext(ConfigContext);
 
@@ -25,7 +25,7 @@ const ErrorProvider = ({ children }: any) => {
         setTimeout(() => setError(undefined), 5000);
       }
     },
-    [autoAuth]
+    [autoAuth],
   );
 
   return (

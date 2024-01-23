@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 
-const Container = styled.div<{ show: boolean; animationDuration: number }>`
+const Container = styled.div<{ $show: boolean; $animationDuration: number }>`
   position: fixed;
   bottom: 3.5em;
   padding: 5px 1em;
@@ -20,9 +20,9 @@ const Container = styled.div<{ show: boolean; animationDuration: number }>`
 
   background-color: ${(props) => props.theme.primary};
 
-  transition: all ${(props) => props.animationDuration}ms ease-in-out;
-  left: ${(p) => (p.show ? 0 : "-100%")};
-  opacity: ${(p) => (p.show ? 1 : 0)};
+  transition: all ${(props) => props.$animationDuration}ms ease-in-out;
+  left: ${(p) => (p.$show ? 0 : "-100%")};
+  opacity: ${(p) => (p.$show ? 1 : 0)};
 `;
 
 const Notification = ({ show, children }: { show: boolean; children: React.ReactNode }) => {
@@ -39,7 +39,7 @@ const Notification = ({ show, children }: { show: boolean; children: React.React
   }, [show]);
 
   return (
-    <Container show={show} animationDuration={animationDuration}>
+    <Container $show={show} $animationDuration={animationDuration}>
       {/* on cache les enfant lorsque la notif n'est pas affichée pour éviter que ses element ne puissent prendre le focus */}
       {showChildren && children}
     </Container>

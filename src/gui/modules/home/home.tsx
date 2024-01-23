@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import Router from "src/router";
 import Footer from "src/gui/modules/layout/footer";
 import Login from "src/gui/modules/login/login";

@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useMemo, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { faTrash, faThumbsUp } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import Video, { VisualAction } from "src/gui/components/video";
@@ -15,9 +15,9 @@ import { token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 
-export const WlVideoWrapper = styled(VideoWrapper)<{ removing: boolean }>`
+export const WlVideoWrapper = styled(VideoWrapper)<{ $removing: boolean }>`
   transition: max-height 0.5s ease;
-  max-height: ${(props) => (props.removing ? "0" : props.theme.video.height)};
+  max-height: ${(props) => (props.$removing ? "0" : props.theme.video.height)};
   overflow: hidden;
 `;
 
@@ -36,7 +36,7 @@ function Watchlist() {
         const response = await callYoutube(
           deletePlaylistItems,
           video.playlistItem.id,
-          token.access_token
+          token.access_token,
         );
         if (!response.ok) {
           handleError(response.status, response.error);
@@ -47,7 +47,7 @@ function Watchlist() {
         }
       }
     },
-    [callYoutube, deleteFromWatchlist, handleError]
+    [callYoutube, deleteFromWatchlist, handleError],
   );
 
   const removeFromWatchlist = useCallback(
@@ -58,7 +58,7 @@ function Watchlist() {
         delayAction("Video supprimée", () => deletePlaylistItem(video));
       }
     },
-    [delayAction, deletePlaylistItem]
+    [delayAction, deletePlaylistItem],
   );
 
   const likeVideo = useCallback(
@@ -80,7 +80,7 @@ function Watchlist() {
         });
       }
     },
-    [callYoutube, delayAction, deletePlaylistItem, handleError]
+    [callYoutube, delayAction, deletePlaylistItem, handleError],
   );
 
   const swipeActions: [VisualAction, VisualAction] = useMemo(
@@ -88,7 +88,7 @@ function Watchlist() {
       { action: (video) => removeFromWatchlist(video), actionIcon: faTrash },
       { action: (video) => likeVideo(video), actionIcon: faThumbsUp },
     ],
-    [likeVideo, removeFromWatchlist]
+    [likeVideo, removeFromWatchlist],
   );
 
   return (
@@ -102,7 +102,7 @@ function Watchlist() {
         </Flex>
       )}
       {playlistVideos.map((video) => (
-        <WlVideoWrapper key={video.video.id} removing={removing.includes(video.video.id || "")}>
+        <WlVideoWrapper key={video.video.id} $removing={removing.includes(video.video.id || "")}>
           {!useSwipe || matches ? (
             <Video video={video} actions={swipeActions} />
           ) : (
