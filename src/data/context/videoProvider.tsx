@@ -3,16 +3,7 @@ import { LoginContext } from "./loginProvider";
 import { VideoItem } from "src/utils/types";
 import { getTimeSeconds } from "src/utils/utils";
 import { ConfigContext } from "src/data/context/configProvider";
-import {
-  collection,
-  DocumentData,
-  onSnapshot,
-  query,
-  QueryDocumentSnapshot,
-  SnapshotOptions,
-  where,
-} from "firebase/firestore";
-import { db } from "src/init/firestore";
+import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
 import {
   listChannels,
   listPlaylistItems,
@@ -22,6 +13,7 @@ import {
 import { token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
+import { useFirebase } from "src/hooks/useFirebase";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -66,6 +58,7 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
   const callYoutube = useYoutubeService();
+  const fb = useFirebase();
 
   const fetchVideos = useCallback(
     async (playlistItems: youtube.PlaylistItem[]) => {
@@ -204,21 +197,23 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
   }, []);
 
   useEffect(() => {
-    if (userId) {
+    if (userId && fb) {
       const searchMaxDate = new Date();
       searchMaxDate.setDate(new Date().getDate() - maxAge);
-      return onSnapshot(
-        query(
-          collection(db, "feedCache", userId, "videos"),
-          where("playlistItem.snippet.publishedAt", ">", searchMaxDate.toISOString()),
-        ).withConverter({
-          toFirestore(video: VideoItem): DocumentData {
-            return video;
-          },
-          fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): VideoItem {
-            return snapshot.data(options) as VideoItem;
-          },
-        }),
+      return fb.onSnapshot(
+        fb
+          .query(
+            fb.collection(fb.db, "feedCache", userId, "videos"),
+            fb.where("playlistItem.snippet.publishedAt", ">", searchMaxDate.toISOString()),
+          )
+          .withConverter({
+            toFirestore(video: VideoItem): DocumentData {
+              return video;
+            },
+            fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): VideoItem {
+              return snapshot.data(options) as VideoItem;
+            },
+          }),
         (querySnapshot) => {
           const addedVideos: VideoItem[] = [];
           querySnapshot.docChanges().forEach((videoDoc) => {
@@ -230,7 +225,7 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
         },
       );
     }
-  }, [userId, maxAge]);
+  }, [userId, maxAge, fb]);
 
   useEffect(() => {
     // filter the cachedVideo from the local feed list

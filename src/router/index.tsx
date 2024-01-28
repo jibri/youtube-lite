@@ -1,20 +1,28 @@
+import { Suspense, lazy } from "react";
 import { Switch, Route, Redirect } from "react-router-dom";
-import Feed from "../gui/modules/feed/feed";
-import Watchlist from "../gui/modules/watchlist/watchlist";
 import { PATHS } from "./path";
-import Login from "src/gui/modules/login/login";
+
+const Feed = lazy(() => import("../gui/modules/feed/feed"));
+const Watchlist = lazy(() => import("../gui/modules/watchlist/watchlist"));
+const Login = lazy(() => import("../gui/modules/login/login"));
 
 const Router = () => (
   <Switch>
     <Redirect exact from="/" to={PATHS.WATCHLIST} />
     <Route path={PATHS.FEED}>
-      <Feed />
+      <Suspense>
+        <Feed />
+      </Suspense>
     </Route>
     <Route path={PATHS.WATCHLIST}>
-      <Watchlist />
+      <Suspense>
+        <Watchlist />
+      </Suspense>
     </Route>
     <Route path={PATHS.PROFILE}>
-      <Login />
+      <Suspense>
+        <Login />
+      </Suspense>
     </Route>
   </Switch>
 );

@@ -52,7 +52,9 @@ const Time = styled.div`
   background-color: ${(props) => props.theme.black};
 `;
 const Image = styled.img`
-  flex: 0 0 110px;
+  display: block;
+  width: 120px;
+  height: 90px;
 `;
 const ActionWrapper = styled.div`
   /* width: ${(props) => props.theme.video.height}; */
@@ -77,6 +79,7 @@ const Video = ({ video, actions }: { video: VideoItem; actions: VisualAction[] }
       <ThumbnailContainer>
         <Image
           alt="youtube thumbnail"
+          loading="lazy"
           src={video.video.snippet?.thumbnails?.default?.url}
           width={video.video.snippet?.thumbnails?.default?.width}
           height={video.video.snippet?.thumbnails?.default?.height}

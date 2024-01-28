@@ -1,21 +1,25 @@
-// Initialize Cloud Firestore through Firebase
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
+const getFirebase = async () => {
+  // Initialize Cloud Firestore through Firebase
+  const app = await import("firebase/app");
+  const firebase = await import("firebase/firestore");
 
-// config firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyCyqMQ1prIpkE1zu7CwtJBvAeL1yPfez2I",
-  authDomain: "lite-280209.firebaseapp.com",
-  databaseURL: "https://lite-280209.firebaseio.com",
-  projectId: "youtube-lite-280209",
-  storageBucket: "youtube-lite-280209.appspot.com",
-  messagingSenderId: "468424122318",
-  appId: "1:468424122318:web:146925b7493aae3f82559f",
+  // config firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCyqMQ1prIpkE1zu7CwtJBvAeL1yPfez2I",
+    authDomain: "lite-280209.firebaseapp.com",
+    databaseURL: "https://lite-280209.firebaseio.com",
+    projectId: "youtube-lite-280209",
+    storageBucket: "youtube-lite-280209.appspot.com",
+    messagingSenderId: "468424122318",
+    appId: "1:468424122318:web:146925b7493aae3f82559f",
+  };
+
+  app.initializeApp(firebaseConfig);
+  const db = firebase.getFirestore();
+
+  return { db, ...firebase };
 };
-
-export const firebaseApp = initializeApp(firebaseConfig);
-export const db = getFirestore();
-
+export default getFirebase;
 // on localhost we connect to the emulator
 // if (process.env.NODE_ENV === "development" || window.location.hostname === "localhost") {
 //   connectFirestoreEmulator(db, "localhost", 8080);

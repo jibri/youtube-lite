@@ -4,6 +4,13 @@ import ConfigProvider from "src/data/context/configProvider";
 import MyThemeProvider from "./data/context/ThemeProvider";
 import Home from "./gui/modules/home/home";
 import ErrorProvider from "src/data/context/errorProvider";
+import { createGlobalStyle } from "styled-components";
+
+const GlobalStyle = createGlobalStyle`
+  body {
+    background-color: ${(props) => props.theme.background};
+  }
+`;
 
 const App = () => (
   <BrowserRouter>
@@ -11,6 +18,7 @@ const App = () => (
       <LoginProvider>
         <ConfigProvider>
           <MyThemeProvider>
+            <GlobalStyle />
             <Home />
           </MyThemeProvider>
         </ConfigProvider>

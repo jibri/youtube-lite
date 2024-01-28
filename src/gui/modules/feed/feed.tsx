@@ -10,14 +10,13 @@ import useDelayAction from "src/hooks/useDelayAction";
 import Notification from "src/gui/components/notification";
 import { ActionButton, Flex, Text } from "src/utils/styled";
 import { ConfigContext } from "src/data/context/configProvider";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "src/init/firestore";
 import { insertPlaylistItem, rateVideos } from "src/utils/youtubeApi";
 import { useLargeScreenMq } from "src/hooks/useMq";
 import SwipableVideo from "src/gui/components/SwipableVideo";
 import { token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
+import { useFirebase } from "src/hooks/useFirebase";
 
 function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
@@ -26,17 +25,20 @@ function Feed() {
   const { userId } = useContext(LoginContext);
   const handleError = useContext(ErrorUpdaterContext);
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
-  const matches = useLargeScreenMq();
+  const matchesLageScreen = useLargeScreenMq();
   const reactSwipeEl = useRef<ReactSwipe>(null);
   const callYoutube = useYoutubeService();
+  const fb = useFirebase();
+
+  const shouldNotSwipe = !useSwipe || matchesLageScreen;
 
   const addVideoToWatchlistCache = useCallback(
     (video: VideoItem) => {
-      if (userId) {
-        addDoc(collection(db, "feedCache", userId, "videos"), video);
+      if (userId && fb) {
+        fb.addDoc(fb.collection(fb.db, "feedCache", userId, "videos"), video);
       }
     },
-    [userId],
+    [userId, fb],
   );
 
   const addToWatchlist = useCallback(
@@ -90,10 +92,10 @@ function Feed() {
 
   const videoActions = useMemo(() => {
     const actions: VisualAction[] = [];
-    if (matches) actions.push(...swipeActions);
+    if (shouldNotSwipe) actions.push(...swipeActions);
     actions.push({ action: (video) => addToWatchlist(video), actionIcon: faPlus });
     return actions;
-  }, [addToWatchlist, matches, swipeActions]);
+  }, [addToWatchlist, shouldNotSwipe, swipeActions]);
 
   return (
     <>
@@ -104,7 +106,7 @@ function Feed() {
       )}
       {feedVideos.map((video) => (
         <WlVideoWrapper key={video.video.id} $removing={removing.includes(video.video.id!)}>
-          {!useSwipe || matches ? (
+          {shouldNotSwipe ? (
             <Video video={video} actions={videoActions} />
           ) : (
             <SwipableVideo

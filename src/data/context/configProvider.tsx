@@ -1,14 +1,7 @@
-import {
-  doc,
-  DocumentData,
-  onSnapshot,
-  QueryDocumentSnapshot,
-  setDoc,
-  SnapshotOptions,
-} from "firebase/firestore";
+import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
 import { createContext, useState, useEffect, useContext } from "react";
 import { LoginContext } from "src/data/context/loginProvider";
-import { db } from "src/init/firestore";
+import { useFirebase } from "src/hooks/useFirebase";
 
 export interface ConfigData {
   /** Durée mini en seconde des videos à remonter dans le feed (permet d'eviter les #short) */
@@ -42,11 +35,12 @@ export const ConfigContext = createContext<ConfigData>(defaultData);
 const ConfigProvider = ({ children }: React.PropsWithChildren) => {
   const [config, setConfig] = useState<ConfigData>(defaultData);
   const { userId } = useContext(LoginContext);
+  const fb = useFirebase();
 
   useEffect(() => {
-    if (userId) {
-      return onSnapshot(
-        doc(db, "configuration", userId).withConverter({
+    if (userId && fb) {
+      return fb.onSnapshot(
+        fb.doc(fb.db, "configuration", userId).withConverter({
           toFirestore(config: ConfigData): DocumentData {
             return config;
           },
@@ -58,12 +52,12 @@ const ConfigProvider = ({ children }: React.PropsWithChildren) => {
           if (snapshot.exists()) setConfig(snapshot.data());
           else {
             // Creation du doc s'il n'exist pas (permiere connexion)
-            setDoc(doc(db, "configuration", userId), defaultData);
+            fb.setDoc(fb.doc(fb.db, "configuration", userId), defaultData);
           }
         },
       );
     }
-  }, [userId]);
+  }, [userId, fb]);
 
   return <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>;
 };

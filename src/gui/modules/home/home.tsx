@@ -1,7 +1,6 @@
-import { useContext } from "react";
+import { lazy, useContext } from "react";
 import Router from "src/router";
 import Footer from "src/gui/modules/layout/footer";
-import Login from "src/gui/modules/login/login";
 import { LoginContext } from "src/data/context/loginProvider";
 import VideoProvider, { VideoContext } from "src/data/context/videoProvider";
 import styled from "styled-components";
@@ -51,6 +50,8 @@ const VideoContainer = styled.div`
   }
 `;
 
+const Login = lazy(() => import("src/gui/modules/login/login"));
+
 const VideoModule = () => {
   const { loading } = useContext(LoginContext);
   const { videoPlaying } = useContext(VideoContext);
@@ -91,7 +92,7 @@ const Home = () => {
         </Notification>
       </MainContainer>
     </MainScreen>
-  ); 
+  );
 };
 
 export default Home;

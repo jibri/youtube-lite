@@ -4,8 +4,6 @@ import { LoginContext } from "src/data/context/loginProvider";
 import { Link } from "react-router-dom";
 import { PATHS } from "src/router/path";
 import { ActionButton, Text } from "src/utils/styled";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "src/init/firestore";
 import { ConfigContext, ConfigData } from "src/data/context/configProvider";
 import Notification from "src/gui/components/notification";
 import { listMyPlaylists } from "src/utils/youtubeApi";
@@ -13,6 +11,7 @@ import { login, token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 import logoUrl from "src/assets/logo192.png";
+import { useFirebase } from "src/hooks/useFirebase";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -94,10 +93,11 @@ function Login() {
   const handleError = useContext(ErrorUpdaterContext);
   const [not, setNot] = useState(false);
   const callYoutube = useYoutubeService();
+  const fb = useFirebase();
 
   const updateConfig = <K extends keyof ConfigData>(key: K, value?: ConfigData[K]) => {
-    if (userId && key) {
-      updateDoc(doc(db, "configuration", userId), {
+    if (userId && fb && key) {
+      fb.updateDoc(fb.doc(fb.db, "configuration", userId), {
         [key]: value,
       });
     }
@@ -156,6 +156,13 @@ function Login() {
       login(true);
     }
   }
+
+  // FIXME random play
+  // fixme player state update
+  // FIXME add plylist by url
+  // FIXME add option random ou non
+  // FIXME save listened playlists
+  // FIXME color sur video en cours de lecture
 
   return (
     <MainContainer>
