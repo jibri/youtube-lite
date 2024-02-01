@@ -38,7 +38,7 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
       elements.push(
         <a href={elt} target="_blank" rel="noreferrer">
           {elt}
-        </a>
+        </a>,
       );
       if (handleYtbLink) {
         let result;
@@ -66,40 +66,6 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
   return elements;
 };
 
-const initPlayer = (
-  video: VideoItem,
-  playlist: VideoItem[],
-  autoNextRandom: boolean,
-  playVideo: (v: VideoItem) => void
-) => {
-  return new window.YT.Player(`video_player`, {
-    height: "100%",
-    width: "100%",
-    videoId: video.video.id,
-    playerVars: {
-      autoplay: 1,
-      rel: 0,
-    },
-    events: {
-      onStateChange: (event) => {
-        console.log("event.data", event.data, autoNextRandom);
-        // Fin de video, on en charge une autre random
-        if (autoNextRandom && event.data === 0) {
-          let vidNumber = Math.floor(Math.random() * playlist.length);
-          if (playlist[vidNumber].video.id === video.video.id) vidNumber++;
-          playVideo(playlist[vidNumber]);
-        }
-
-        // Video cued, auto play
-        if (autoNextRandom && event.data === 5) {
-          event.target.playVideo();
-        }
-      },
-      onError: (event) => console.log("onError", event.data),
-    },
-  });
-};
-
 const Player = ({ video }: { video: VideoItem }) => {
   const player = useRef<YT.Player>();
   const { playlistId, autoPlayNextRandom } = useContext(ConfigContext);
@@ -108,13 +74,40 @@ const Player = ({ video }: { video: VideoItem }) => {
   const callYoutube = useYoutubeService();
 
   useEffect(() => {
-    if (player.current?.cueVideoById && video.video.id) {
-      player.current?.cueVideoById(video.video.id);
-    } else {
-      player.current = initPlayer(video, playlistVideos, autoPlayNextRandom, playVideo);
-      // TODO utiliser player.current.addEventListener pour que les param soient bien pris en compte, meme si le player est dejà ouvert
+    // if (player.current?.cueVideoById && video.video.id) {
+    //   player.current?.cueVideoById(video.video.id);
+    // } else {
+    if (!player.current) {
+      new window.YT.Player(`video_player`, {
+        height: "100%",
+        width: "100%",
+        videoId: video.video.id,
+        playerVars: {
+          autoplay: 1,
+          rel: 0,
+        },
+        events: {
+          onReady: (event) => (player.current = event.target),
+          onStateChange: (event) => {
+            console.log("event.data", event.data, autoPlayNextRandom);
+            // Fin de video, on en charge une autre random
+            if (autoPlayNextRandom && event.data === 0) {
+              let vidNumber = Math.floor(Math.random() * playlistVideos.length);
+              if (playlistVideos[vidNumber].video.id === video.video.id) vidNumber++;
+              playVideo(playlistVideos[vidNumber]);
+            }
+          },
+          onError: (event) => console.log("onError", event.data),
+        },
+      });
     }
   }, [autoPlayNextRandom, playVideo, playlistVideos, video]);
+
+  useEffect(() => {
+    if (player.current?.loadVideoById && video.video.id) {
+      player.current.loadVideoById(video.video.id);
+    }
+  }, [video]);
 
   const addToWatchlist = useCallback(
     async (videoId: string) => {
@@ -123,7 +116,7 @@ const Player = ({ video }: { video: VideoItem }) => {
           insertPlaylistItem,
           { kind: "youtube#video", videoId },
           playlistId,
-          token.access_token
+          token.access_token,
         );
         if (!response.ok) {
           handleError(response.status, response.error);
@@ -131,7 +124,7 @@ const Player = ({ video }: { video: VideoItem }) => {
         }
       }
     },
-    [callYoutube, handleError, playlistId]
+    [callYoutube, handleError, playlistId],
   );
 
   return (
