@@ -8,8 +8,8 @@ const filterByFields = import.meta.env.VITE_YOUTUBE_API_FILTER_BY_FIELDS === "tr
 export const buildQueryString = (params: Record<string, primitive | primitive[]>) => {
   const reducer = (queryString: string, key: string) => {
     const start = queryString ? `${queryString}&` : "?";
-    const value = params[key] === undefined || params[key] === null ? "" : params[key];
-    return `${start}${key}=${value}`;
+    const value = params[key] === undefined || params[key] === null ? undefined : params[key];
+    return value ? `${start}${key}=${value}` : queryString;
   };
   return Object.keys(params).reduce((queryString, key) => {
     switch (key) {
@@ -114,6 +114,7 @@ export const listSubscriptions = async (
 };
 
 export const listMyPlaylists = async (
+  ids: string[],
   accessToken: string,
   pageToken?: string,
 ): Promise<
@@ -128,7 +129,8 @@ export const listMyPlaylists = async (
       part: ["snippet"],
       fields: "items(id,snippet(title)),nextPageToken,etag",
       maxResults: 50,
-      mine: true,
+      mine: !ids.length,
+      id: ids.length ? ids : undefined,
     },
     undefined,
     accessToken,

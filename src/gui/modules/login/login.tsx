@@ -12,6 +12,8 @@ import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 import logoUrl from "src/assets/logo192.png";
 import { useFirebase } from "src/hooks/useFirebase";
+import usePlaylists, { Playlist } from "src/hooks/usePlaylists";
+import { uniqBy } from "lodash";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -69,7 +71,7 @@ const Container = styled.div<{ $alignSelf?: string }>`
   align-self: ${(props) => (props.$alignSelf ? props.$alignSelf : "start")};
 `;
 
-const Input = styled.input`
+const Input = styled.input<{ width?: string }>`
   border: 1px solid;
   border-color: ${(props) => props.theme.black};
   background-color: ${(props) => props.theme.secondary};
@@ -77,16 +79,23 @@ const Input = styled.input`
   padding: 0.5em;
   color: ${(props) => props.theme.text.main};
   font-size: 1em;
-  width: 2em;
+  width: ${(props) => props.width || "auto"};
 `;
+
 function Login() {
-  const [minDurationInputValue, setMinDurationInputValue] = useState<string>("0");
-  const [maxAgeInputValue, setMaxAgeInputValue] = useState<string>("0");
+  const [minDurationInputValue, setMinDurationInputValue] = useState("0");
+  const [maxAgeInputValue, setMaxAgeInputValue] = useState("0");
   const [autoAuthInputValue, setAutoAuthInputValue] = useState(false);
   const [useSwipeInputValue, setUseSwipeInputValue] = useState(false);
   const [autoPlayNextRandomInputValue, setAutoPlayNextRandomInputValue] = useState(false);
-  const [playlists, setPlaylists] = useState<youtube.Playlist[]>([]);
-  const [init, setInit] = useState(false);
+  const [playlistIdValue, setPlaylistIdValue] = useState("");
+
+  const [playlists, setPlaylists] = useState<{
+    init: boolean;
+    pl: youtube.Playlist[];
+  }>({ init: false, pl: [] });
+  const customPlaylistsIds = usePlaylists();
+
   const { userId, signout } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId, autoAuth, useSwipe, autoPlayNextRandom } =
     useContext(ConfigContext);
@@ -100,6 +109,21 @@ function Login() {
       fb.updateDoc(fb.doc(fb.db, "configuration", userId), {
         [key]: value,
       });
+    }
+  };
+
+  const addPlaylist = async () => {
+    if (userId && fb && playlistIdValue) {
+      const regex = /list=(.*?)(&|$)/i;
+      const match = playlistIdValue.match(regex);
+
+      if (match && match[1]) {
+        const playlistId = match[1];
+        await fb.addDoc(fb.collection(fb.db, "playlists", userId, "playlists"), {
+          id: playlistId,
+        } as Playlist);
+        setPlaylistIdValue("");
+      }
     }
   };
 
@@ -126,26 +150,43 @@ function Login() {
   useEffect(() => {
     const loadPlaylists = async () => {
       // on charge les playlists seulement si on a token et si on ne les à pas déjà chargé.
-      if (token && !init) {
+      if (token && !playlists.init && customPlaylistsIds.length) {
         let nextToken: string | undefined;
+        let nextToken2: string | undefined;
         const myPlaylists: youtube.Playlist[] = [];
-
         do {
-          const response = await callYoutube(listMyPlaylists, token.access_token, nextToken);
+          const response = await callYoutube(listMyPlaylists, [], token.access_token, nextToken);
           if (!response.ok) {
             handleError(response.status, response.error);
           } else {
-            const { items, nextPageToken } = response.data;
-            myPlaylists.push(...items);
-            nextToken = nextPageToken;
+            myPlaylists.push(...response.data.items);
+            nextToken = response.data.nextPageToken;
           }
         } while (nextToken);
-        setPlaylists(myPlaylists);
-        setInit(true);
+
+        do {
+          const response = await callYoutube(
+            listMyPlaylists,
+            customPlaylistsIds,
+            token.access_token,
+            nextToken2,
+          );
+          if (!response.ok) {
+            handleError(response.status, response.error);
+          } else {
+            myPlaylists.push(...response.data.items);
+            nextToken2 = response.data.nextPageToken;
+          }
+        } while (nextToken2);
+
+        setPlaylists({
+          init: true,
+          pl: uniqBy(myPlaylists, "id"),
+        });
       }
     };
     loadPlaylists();
-  }, [callYoutube, handleError, init]);
+  }, [callYoutube, handleError, customPlaylistsIds, playlists]);
 
   function handleAuthClick() {
     if (token) {
@@ -157,8 +198,6 @@ function Login() {
     }
   }
 
-  // FIXME random play
-  // fixme player state update
   // FIXME add plylist by url
   // FIXME add option random ou non
   // FIXME save listened playlists
@@ -171,7 +210,7 @@ function Login() {
           <Container>
             <Text>My playlists :</Text>
             <PlaylistItems>
-              {playlists.map((pl) => (
+              {playlists.pl.map((pl) => (
                 <PlaylistItem
                   to={PATHS.WATCHLIST}
                   onClick={() => updateConfig("playlistId", pl.id)}
@@ -182,6 +221,11 @@ function Login() {
                 </PlaylistItem>
               ))}
             </PlaylistItems>
+          </Container>
+          <Container>
+            <Text>Add a playlist : </Text>
+            <Input value={playlistIdValue} onChange={(e) => setPlaylistIdValue(e.target.value)} />
+            <ActionButton onClick={addPlaylist}>Go</ActionButton>
           </Container>
           <Separator />
           <Container>
@@ -196,6 +240,7 @@ function Login() {
           <Container>
             <Text>Min video duration in feed (seconds) : </Text>
             <Input
+              width="2em"
               onBlur={(e) => updateConfig("minDuration", +e.target.value)}
               value={minDurationInputValue}
               onChange={(e) => setMinDurationInputValue(e.target.value)}
@@ -204,6 +249,7 @@ function Login() {
           <Container>
             <Text>Max age video in feed (days) : </Text>
             <Input
+              width="2em"
               onBlur={(e) => updateConfig("maxAge", +e.target.value)}
               value={maxAgeInputValue}
               onChange={(e) => setMaxAgeInputValue(e.target.value)}
