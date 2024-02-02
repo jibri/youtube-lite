@@ -16,12 +16,16 @@ const LinkWrapper = styled.a`
   text-decoration: none;
   width: 100%;
   color: ${(props) => props.theme.text.main};
+  overflow: hidden;
 `;
-const VideoWrapper = styled.div<{ height?: number }>`
-  display: flex;
+const VideoWrapper = styled.div<{ height?: number; videoWidth?: number; highlight: boolean }>`
+  display: grid;
+  grid-template-columns: ${(props) => props.videoWidth}px 1fr min-content;
+
   width: 100%;
   height: ${(props) => `${props.height}px`};
-  background-color: ${(props) => props.theme.background};
+  background-color: ${(props) =>
+    props.highlight ? props.theme.secondary : props.theme.background};
   &:hover {
     /* background-color: ${(props) => props.theme.secondary}; */
     ${LinkWrapper} {
@@ -73,9 +77,13 @@ const ActionWrapper = styled.div`
 `;
 
 const Video = ({ video, actions }: { video: VideoItem; actions: VisualAction[] }) => {
-  const { playVideo } = useContext(VideoContext);
+  const { playVideo, videoPlaying } = useContext(VideoContext);
   return (
-    <VideoWrapper height={video.video.snippet?.thumbnails?.default?.height}>
+    <VideoWrapper
+      highlight={videoPlaying?.video.id === video.video.id}
+      height={video.video.snippet?.thumbnails?.default?.height}
+      videoWidth={video.video.snippet?.thumbnails?.default?.width}
+    >
       <ThumbnailContainer>
         <Image
           alt="youtube thumbnail"
