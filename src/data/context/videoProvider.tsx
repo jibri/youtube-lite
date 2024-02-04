@@ -14,6 +14,7 @@ import { token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 import { useFirebase } from "src/hooks/useFirebase";
+import { uniq } from "lodash";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -28,6 +29,7 @@ interface VideoData {
   feedVideos: VideoItem[];
   playlistVideos: VideoItem[];
   videoPlaying?: VideoItem;
+  playedVideosIdx: number[];
   descriptionOpened: boolean;
   setDescriptionOpened: React.Dispatch<React.SetStateAction<boolean>>;
   fetchWatchList: (pageToken?: string) => void;
@@ -38,6 +40,7 @@ interface VideoData {
 const defaultData: VideoData = {
   feedVideos: [],
   playlistVideos: [],
+  playedVideosIdx: [],
   descriptionOpened: false,
   setDescriptionOpened: (e) => e,
   fetchWatchList: (e) => e,
@@ -53,6 +56,7 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
   const [playlistVideos, setPlaylistVideos] = useState<VideoItem[]>([]);
   const [feedCache, setFeedCache] = useState<VideoItem[]>([]);
   const [videoPlaying, setVideoPlaying] = useState<VideoItem>();
+  const [playedVideosIdx, setPlayedVideosIdx] = useState<number[]>([]);
   const { userId } = useContext(LoginContext);
   const handleError = useContext(ErrorUpdaterContext);
   const { minDuration, maxAge, playlistId } = useContext(ConfigContext);
@@ -191,10 +195,22 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
     setPlaylistVideos((playlist) => playlist.filter((v) => v.playlistItem.id !== playlistItemId));
   };
 
-  const playVideo = useCallback((video?: VideoItem) => {
-    setVideoPlaying(video);
-    setDescriptionOpened(false);
-  }, []);
+  const playVideo = useCallback(
+    (video?: VideoItem) => {
+      setPlayedVideosIdx(
+        video?.video.id
+          ? (old) => {
+              const idx = playlistVideos.findIndex((pl) => pl.video.id === video.video.id);
+              if (old.length >= playlistVideos.length) return [];
+              return uniq([...old, idx]);
+            }
+          : [],
+      );
+      setVideoPlaying(video);
+      setDescriptionOpened(false);
+    },
+    [playlistVideos],
+  );
 
   useEffect(() => {
     if (userId && fb) {
@@ -245,6 +261,7 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
     feedVideos,
     playlistVideos,
     videoPlaying,
+    playedVideosIdx,
     descriptionOpened,
     playVideo,
     fetchWatchList,

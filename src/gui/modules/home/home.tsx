@@ -1,4 +1,4 @@
-import { lazy, useContext, useEffect, useState } from "react";
+import { lazy, useContext } from "react";
 import Router from "src/router";
 import Footer from "src/gui/modules/layout/footer";
 import { LoginContext } from "src/data/context/loginProvider";
@@ -8,7 +8,6 @@ import Notification from "src/gui/components/notification";
 import Loader from "src/gui/components/loader";
 import Player from "src/gui/components/player";
 import Header from "../layout/header";
-import { Text } from "src/utils/styled";
 import { ErrorContext } from "src/data/context/errorProvider";
 
 const MainScreen = styled.div`
@@ -54,29 +53,14 @@ const Login = lazy(() => import("src/gui/modules/login/login"));
 
 const VideoModule = () => {
   const { loading } = useContext(LoginContext);
-  const { videoPlaying, playlistVideos } = useContext(VideoContext);
-  const [playedVids, setPlayedVids] = useState<number[]>([]);
-
-  useEffect(() => {
-    if (videoPlaying?.video.id) {
-      const idx = playlistVideos.findIndex((pl) => pl.video.id === videoPlaying.video.id);
-      setPlayedVids((old) => {
-        if (old.length >= playlistVideos.length) return [];
-        return [...old, idx];
-      });
-    } else {
-      setPlayedVids([]);
-    }
-  }, [playlistVideos, videoPlaying]);
+  const { videoPlaying } = useContext(VideoContext);
 
   return (
     <>
       {loading > 0 && <Loader />}
       <VideoContainer>
         <div>
-          {videoPlaying && (
-            <Player key={`${videoPlaying.video.id}`} video={videoPlaying} playedVids={playedVids} />
-          )}
+          {videoPlaying && <Player key={`${videoPlaying.video.id}`} video={videoPlaying} />}
           <Header />
         </div>
       </VideoContainer>
@@ -102,9 +86,7 @@ const Home = () => {
         ) : (
           <Login />
         )}
-        <Notification show={!!error}>
-          <Text>{error}</Text>
-        </Notification>
+        <Notification show={!!error}>{error}</Notification>
       </MainContainer>
     </MainScreen>
   );

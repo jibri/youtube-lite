@@ -67,11 +67,12 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
   return elements;
 };
 
-const Player = ({ video, playedVids }: { video: VideoItem; playedVids: number[] }) => {
+const Player = ({ video }: { video: VideoItem }) => {
   const player = useRef<YT.Player>();
   const { playlistId } = useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
-  const { descriptionOpened, playlistVideos, playVideo } = useContext(VideoContext);
+  const { descriptionOpened, playlistVideos, playedVideosIdx, playVideo } =
+    useContext(VideoContext);
   const callYoutube = useYoutubeService();
   const playlists = usePlaylists();
 
@@ -94,20 +95,31 @@ const Player = ({ video, playedVids }: { video: VideoItem; playedVids: number[] 
             if (currentPlaylist?.autoplay && event.data === 0) {
               const vidNumber = playlistVideos.findIndex((pl) => pl.video.id === video.video.id);
 
+              // console.log("vidNumber", vidNumber);
+              // console.log("playedVids.length", playedVideosIdx.length);
+              // console.log("playlistVideos.length", playlistVideos.length);
+              // console.log("currentPlaylist.loop", currentPlaylist.loop);
+
               // On s'arrete la si c'est la fin de la playlist
-              if (playedVids.length >= playlistVideos.length && !currentPlaylist.loop) return;
+              if (playedVideosIdx.length >= playlistVideos.length && !currentPlaylist.loop) return;
 
               // On calcul le prochain index à jouer
               let next = vidNumber + 1;
+              // console.log("currentPlaylist.random", currentPlaylist.random);
               if (currentPlaylist.random) {
                 next = Math.floor(Math.random() * playlistVideos.length);
+                // console.log("next random", next);
+                // console.log("playedVideosIdx", playedVideosIdx);
                 let iterations = 0;
-                while (playedVids.includes(next % playlistVideos.length)) {
+                while (playedVideosIdx.includes(next % playlistVideos.length)) {
                   next++;
                   // Au cas ou pour eviter une ininite loop
                   if (++iterations > playlistVideos.length) break;
                 }
+                // console.log("next after iterations", next);
+                // console.log("nb iterations", iterations);
               }
+              // console.log("idx next %", next % playlistVideos.length);
               // Modulo pour repasser à zéro si on dépasse
               playVideo(playlistVideos[next % playlistVideos.length]);
             }
@@ -116,7 +128,7 @@ const Player = ({ video, playedVids }: { video: VideoItem; playedVids: number[] 
         },
       });
     }
-  }, [currentPlaylist, playVideo, playlistVideos, video, playedVids]);
+  }, [currentPlaylist, playVideo, playlistVideos, video, playedVideosIdx]);
 
   const addToWatchlist = useCallback(
     async (videoId: string) => {
