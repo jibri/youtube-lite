@@ -5,10 +5,13 @@ import { useFirebase } from "src/hooks/useFirebase";
 
 export type Playlist = {
   id: string;
+  autoplay: boolean;
+  random: boolean;
+  loop: boolean;
 };
 
 const usePlaylists = () => {
-  const [playlists, setPlaylists] = useState<string[]>([]);
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const { userId } = useContext(LoginContext);
   const fb = useFirebase();
 
@@ -24,13 +27,20 @@ const usePlaylists = () => {
           },
         }),
         (querySnapshot) => {
+          console.log("snapshot");
           setPlaylists((oldPl) => {
             querySnapshot.docChanges().forEach((playlistDoc) => {
+              console.log("type", playlistDoc.type);
               if (playlistDoc.type === "added") {
-                oldPl = oldPl.concat(playlistDoc.doc.data().id);
+                oldPl = oldPl.concat(playlistDoc.doc.data());
               }
               if (playlistDoc.type === "removed") {
-                oldPl = oldPl.filter((pl) => pl !== playlistDoc.doc.data().id);
+                oldPl = oldPl.filter((pl) => pl.id !== playlistDoc.doc.data().id);
+              }
+              if (playlistDoc.type === "modified") {
+                oldPl = oldPl
+                  .filter((pl) => pl.id !== playlistDoc.doc.data().id)
+                  .concat(playlistDoc.doc.data());
               }
             });
             return oldPl;

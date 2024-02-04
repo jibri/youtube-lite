@@ -61,7 +61,7 @@ const VideoModule = () => {
       {loading > 0 && <Loader />}
       <VideoContainer>
         <div>
-          {videoPlaying && <Player video={videoPlaying} />}
+          {videoPlaying && <Player key={`${videoPlaying.video.id}`} video={videoPlaying} />}
           <Header />
         </div>
       </VideoContainer>

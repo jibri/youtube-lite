@@ -18,14 +18,14 @@ const LinkWrapper = styled.a`
   color: ${(props) => props.theme.text.main};
   overflow: hidden;
 `;
-const VideoWrapper = styled.div<{ height?: number; videoWidth?: number; highlight: boolean }>`
+const VideoWrapper = styled.div<{ $height?: number; $videoWidth?: number; $highlight: boolean }>`
   display: grid;
-  grid-template-columns: ${(props) => props.videoWidth}px 1fr min-content;
+  grid-template-columns: ${(props) => props.$videoWidth}px 1fr min-content;
 
   width: 100%;
-  height: ${(props) => `${props.height}px`};
+  height: ${(props) => `${props.$height}px`};
   background-color: ${(props) =>
-    props.highlight ? props.theme.secondary : props.theme.background};
+    props.$highlight ? props.theme.secondary : props.theme.background};
   &:hover {
     /* background-color: ${(props) => props.theme.secondary}; */
     ${LinkWrapper} {
@@ -80,9 +80,9 @@ const Video = ({ video, actions }: { video: VideoItem; actions: VisualAction[] }
   const { playVideo, videoPlaying } = useContext(VideoContext);
   return (
     <VideoWrapper
-      highlight={videoPlaying?.video.id === video.video.id}
-      height={video.video.snippet?.thumbnails?.default?.height}
-      videoWidth={video.video.snippet?.thumbnails?.default?.width}
+      $highlight={videoPlaying?.video.id === video.video.id}
+      $height={video.video.snippet?.thumbnails?.default?.height}
+      $videoWidth={video.video.snippet?.thumbnails?.default?.width}
     >
       <ThumbnailContainer>
         <Image

@@ -8,6 +8,7 @@ import { ConfigContext } from "src/data/context/configProvider";
 import { token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
+import usePlaylists from "src/hooks/usePlaylists";
 
 const PlayerContainer = styled.div`
   background-color: ${(props) => props.theme.background};
@@ -68,15 +69,15 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
 
 const Player = ({ video }: { video: VideoItem }) => {
   const player = useRef<YT.Player>();
-  const { playlistId, autoPlayNextRandom } = useContext(ConfigContext);
+  const { playlistId } = useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
   const { descriptionOpened, playlistVideos, playVideo } = useContext(VideoContext);
   const callYoutube = useYoutubeService();
+  const playlists = usePlaylists();
+
+  const currentPlaylist = playlistId ? playlists.find((pl) => pl.id === playlistId) : undefined;
 
   useEffect(() => {
-    // if (player.current?.cueVideoById && video.video.id) {
-    //   player.current?.cueVideoById(video.video.id);
-    // } else {
     if (!player.current) {
       new window.YT.Player(`video_player`, {
         height: "100%",
@@ -89,25 +90,34 @@ const Player = ({ video }: { video: VideoItem }) => {
         events: {
           onReady: (event) => (player.current = event.target),
           onStateChange: (event) => {
-            console.log("event.data", event.data, autoPlayNextRandom);
+            console.log("event.data", event.data);
             // Fin de video, on en charge une autre random
-            if (autoPlayNextRandom && event.data === 0) {
-              let vidNumber = Math.floor(Math.random() * playlistVideos.length);
-              if (playlistVideos[vidNumber].video.id === video.video.id) vidNumber++;
-              playVideo(playlistVideos[vidNumber]);
+            if (currentPlaylist?.autoplay && event.data === 0) {
+              const vidNumber = playlistVideos.findIndex((pl) => pl.video.id === video.video.id);
+
+              // On s'arrete la si c'est la fin de la playlist
+              if (
+                vidNumber === playlistVideos.length - 1 &&
+                !currentPlaylist.loop &&
+                !currentPlaylist.random
+              )
+                return;
+
+              // On calcul le prochain index à jouer
+              let next = vidNumber + 1;
+              if (currentPlaylist.random) {
+                const rand = Math.floor(Math.random() * playlistVideos.length);
+                next = rand === vidNumber ? rand + 1 : rand;
+              }
+              // Modulo pour repasser à zéro si on dépasse
+              playVideo(playlistVideos[next % playlistVideos.length]);
             }
           },
           onError: (event) => console.log("onError", event.data),
         },
       });
     }
-  }, [autoPlayNextRandom, playVideo, playlistVideos, video]);
-
-  useEffect(() => {
-    if (player.current?.loadVideoById && video.video.id) {
-      player.current.loadVideoById(video.video.id);
-    }
-  }, [video]);
+  }, [currentPlaylist, playVideo, playlistVideos, video]);
 
   const addToWatchlist = useCallback(
     async (videoId: string) => {

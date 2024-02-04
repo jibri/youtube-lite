@@ -127,7 +127,7 @@ export const listMyPlaylists = async (
     "playlists",
     {
       part: ["snippet"],
-      fields: "items(id,snippet(title)),nextPageToken,etag",
+      fields: "items(id,snippet(title, thumbnails)),nextPageToken,etag",
       maxResults: 50,
       mine: !ids.length,
       id: ids.length ? ids : undefined,

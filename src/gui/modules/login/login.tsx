@@ -2,7 +2,6 @@ import { useContext, useState, useEffect } from "react";
 import styled from "styled-components";
 import { LoginContext } from "src/data/context/loginProvider";
 import { Link } from "react-router-dom";
-import { PATHS } from "src/router/path";
 import { ActionButton, Text } from "src/utils/styled";
 import { ConfigContext, ConfigData } from "src/data/context/configProvider";
 import Notification from "src/gui/components/notification";
@@ -14,6 +13,7 @@ import logoUrl from "src/assets/logo192.png";
 import { useFirebase } from "src/hooks/useFirebase";
 import usePlaylists, { Playlist } from "src/hooks/usePlaylists";
 import { uniqBy } from "lodash";
+import CurrentPlaylist from "src/gui/modules/login/currentPlaylist";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -38,6 +38,8 @@ const YoutubeButton = styled.a`
 const PlaylistItems = styled.div`
   display: flex;
   flex-wrap: wrap;
+  gap: 10px;
+
   margin: 0.5em;
 `;
 const PlaylistItem = styled(Link)<{ $active: boolean }>`
@@ -46,6 +48,10 @@ const PlaylistItem = styled(Link)<{ $active: boolean }>`
   margin-left: 0.5em;
   padding: 0.5em;
   background-color: ${(props) => props.theme.primary};
+
+  display: flex;
+  align-items: center;
+  gap: 3px;
 
   text-decoration: none;
   color: ${(props) => (props.$active ? props.theme.active : props.theme.text.main)};
@@ -87,22 +93,24 @@ function Login() {
   const [maxAgeInputValue, setMaxAgeInputValue] = useState("0");
   const [autoAuthInputValue, setAutoAuthInputValue] = useState(false);
   const [useSwipeInputValue, setUseSwipeInputValue] = useState(false);
-  const [autoPlayNextRandomInputValue, setAutoPlayNextRandomInputValue] = useState(false);
   const [playlistIdValue, setPlaylistIdValue] = useState("");
 
   const [playlists, setPlaylists] = useState<{
     init: boolean;
     pl: youtube.Playlist[];
   }>({ init: false, pl: [] });
-  const customPlaylistsIds = usePlaylists();
+  const customPlaylists = usePlaylists();
 
   const { userId, signout } = useContext(LoginContext);
-  const { minDuration, maxAge, playlistId, autoAuth, useSwipe, autoPlayNextRandom } =
-    useContext(ConfigContext);
+  const { minDuration, maxAge, playlistId, autoAuth, useSwipe } = useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
   const [not, setNot] = useState(false);
   const callYoutube = useYoutubeService();
   const fb = useFirebase();
+
+  const currentPlaylist = playlistId
+    ? customPlaylists.find((pl) => pl.id === playlistId)
+    : undefined;
 
   const updateConfig = <K extends keyof ConfigData>(key: K, value?: ConfigData[K]) => {
     if (userId && fb && key) {
@@ -113,17 +121,26 @@ function Login() {
   };
 
   const addPlaylist = async () => {
-    if (userId && fb && playlistIdValue) {
+    if (playlistIdValue) {
       const regex = /list=(.*?)(&|$)/i;
       const match = playlistIdValue.match(regex);
 
       if (match && match[1]) {
         const playlistId = match[1];
-        await fb.addDoc(fb.collection(fb.db, "playlists", userId, "playlists"), {
-          id: playlistId,
-        } as Playlist);
-        setPlaylistIdValue("");
+        addPlaylistById(playlistId);
       }
+    }
+  };
+
+  const addPlaylistById = async (playlistId: string) => {
+    if (userId && fb) {
+      await fb.setDoc(fb.doc(fb.db, "playlists", userId, "playlists", playlistId), {
+        id: playlistId,
+        autoplay: false,
+        random: false,
+        loop: false,
+      } as Playlist);
+      setPlaylistIdValue("");
     }
   };
 
@@ -140,17 +157,13 @@ function Login() {
   }, [useSwipe]);
 
   useEffect(() => {
-    setAutoPlayNextRandomInputValue(autoPlayNextRandom);
-  }, [autoPlayNextRandom]);
-
-  useEffect(() => {
     setMaxAgeInputValue(`${maxAge}`);
   }, [maxAge]);
 
   useEffect(() => {
     const loadPlaylists = async () => {
       // on charge les playlists seulement si on a token et si on ne les à pas déjà chargé.
-      if (token && !playlists.init && customPlaylistsIds.length) {
+      if (token && !playlists.init && customPlaylists.length) {
         let nextToken: string | undefined;
         let nextToken2: string | undefined;
         const myPlaylists: youtube.Playlist[] = [];
@@ -167,7 +180,7 @@ function Login() {
         do {
           const response = await callYoutube(
             listMyPlaylists,
-            customPlaylistsIds,
+            customPlaylists.map((pl) => pl.id),
             token.access_token,
             nextToken2,
           );
@@ -186,7 +199,7 @@ function Login() {
       }
     };
     loadPlaylists();
-  }, [callYoutube, handleError, customPlaylistsIds, playlists]);
+  }, [callYoutube, handleError, customPlaylists, playlists]);
 
   function handleAuthClick() {
     if (token) {
@@ -198,7 +211,6 @@ function Login() {
     }
   }
 
-  // FIXME add plylist by url
   // FIXME add option random ou non
   // FIXME save listened playlists
   // FIXME color sur video en cours de lecture
@@ -212,11 +224,12 @@ function Login() {
             <PlaylistItems>
               {playlists.pl.map((pl) => (
                 <PlaylistItem
-                  to={PATHS.WATCHLIST}
+                  to="#"
                   onClick={() => updateConfig("playlistId", pl.id)}
                   $active={pl.id === playlistId}
                   key={pl.id}
                 >
+                  <img src={pl.snippet?.thumbnails?.medium?.url} height="20px" />
                   {pl.snippet?.title}
                 </PlaylistItem>
               ))}
@@ -227,6 +240,19 @@ function Login() {
             <Input value={playlistIdValue} onChange={(e) => setPlaylistIdValue(e.target.value)} />
             <ActionButton onClick={addPlaylist}>Go</ActionButton>
           </Container>
+          <Separator />
+          <Container>
+            {currentPlaylist && (
+              <>
+                <Text>Current playlist :</Text>
+                <CurrentPlaylist playlist={currentPlaylist} key={currentPlaylist.id} />
+              </>
+            )}
+            {!currentPlaylist && playlistId && (
+              <button onClick={() => addPlaylistById(playlistId)}>Add to custom playlists</button>
+            )}
+          </Container>
+
           <Separator />
           <Container>
             <Text>Theme :</Text>
@@ -274,17 +300,6 @@ function Login() {
               onChange={(e) => {
                 setUseSwipeInputValue(e.target.checked);
                 updateConfig("useSwipe", e.target.checked);
-              }}
-            />
-          </Container>
-          <Container>
-            <Text>Auto play next video randomly : </Text>
-            <input
-              type="checkbox"
-              checked={autoPlayNextRandomInputValue}
-              onChange={(e) => {
-                setAutoPlayNextRandomInputValue(e.target.checked);
-                updateConfig("autoPlayNextRandom", e.target.checked);
               }}
             />
           </Container>
