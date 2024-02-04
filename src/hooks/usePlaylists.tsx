@@ -27,10 +27,8 @@ const usePlaylists = () => {
           },
         }),
         (querySnapshot) => {
-          console.log("snapshot");
           setPlaylists((oldPl) => {
             querySnapshot.docChanges().forEach((playlistDoc) => {
-              console.log("type", playlistDoc.type);
               if (playlistDoc.type === "added") {
                 oldPl = oldPl.concat(playlistDoc.doc.data());
               }

@@ -67,7 +67,7 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
   return elements;
 };
 
-const Player = ({ video }: { video: VideoItem }) => {
+const Player = ({ video, playedVids }: { video: VideoItem; playedVids: number[] }) => {
   const player = useRef<YT.Player>();
   const { playlistId } = useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
@@ -90,24 +90,23 @@ const Player = ({ video }: { video: VideoItem }) => {
         events: {
           onReady: (event) => (player.current = event.target),
           onStateChange: (event) => {
-            console.log("event.data", event.data);
             // Fin de video, on en charge une autre random
             if (currentPlaylist?.autoplay && event.data === 0) {
               const vidNumber = playlistVideos.findIndex((pl) => pl.video.id === video.video.id);
 
               // On s'arrete la si c'est la fin de la playlist
-              if (
-                vidNumber === playlistVideos.length - 1 &&
-                !currentPlaylist.loop &&
-                !currentPlaylist.random
-              )
-                return;
+              if (playedVids.length >= playlistVideos.length && !currentPlaylist.loop) return;
 
               // On calcul le prochain index à jouer
               let next = vidNumber + 1;
               if (currentPlaylist.random) {
-                const rand = Math.floor(Math.random() * playlistVideos.length);
-                next = rand === vidNumber ? rand + 1 : rand;
+                next = Math.floor(Math.random() * playlistVideos.length);
+                let iterations = 0;
+                while (playedVids.includes(next % playlistVideos.length)) {
+                  next++;
+                  // Au cas ou pour eviter une ininite loop
+                  if (++iterations > playlistVideos.length) break;
+                }
               }
               // Modulo pour repasser à zéro si on dépasse
               playVideo(playlistVideos[next % playlistVideos.length]);
@@ -117,7 +116,7 @@ const Player = ({ video }: { video: VideoItem }) => {
         },
       });
     }
-  }, [currentPlaylist, playVideo, playlistVideos, video]);
+  }, [currentPlaylist, playVideo, playlistVideos, video, playedVids]);
 
   const addToWatchlist = useCallback(
     async (videoId: string) => {

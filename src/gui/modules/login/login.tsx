@@ -211,10 +211,6 @@ function Login() {
     }
   }
 
-  // FIXME add option random ou non
-  // FIXME save listened playlists
-  // FIXME color sur video en cours de lecture
-
   return (
     <MainContainer>
       {userId && (
