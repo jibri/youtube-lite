@@ -5,6 +5,7 @@ import MyThemeProvider from "./data/context/ThemeProvider";
 import Home from "./gui/modules/home/home";
 import ErrorProvider from "src/data/context/errorProvider";
 import { createGlobalStyle } from "styled-components";
+import PlaylistsProvider from "src/data/context/playlistsProvider";
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -17,10 +18,12 @@ const App = () => (
     <ErrorProvider>
       <LoginProvider>
         <ConfigProvider>
-          <MyThemeProvider>
-            <GlobalStyle />
-            <Home />
-          </MyThemeProvider>
+          <PlaylistsProvider>
+            <MyThemeProvider>
+              <GlobalStyle />
+              <Home />
+            </MyThemeProvider>
+          </PlaylistsProvider>
         </ConfigProvider>
       </LoginProvider>
     </ErrorProvider>

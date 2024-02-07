@@ -8,7 +8,6 @@ import { ConfigContext } from "src/data/context/configProvider";
 import { token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
-import usePlaylists from "src/hooks/usePlaylists";
 
 const PlayerContainer = styled.div`
   background-color: ${(props) => props.theme.background};
@@ -37,7 +36,7 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
   text?.split(urlRegex).forEach((elt, i) => {
     if (i % 2 !== 0) {
       elements.push(
-        <a href={elt} target="_blank" rel="noreferrer">
+        <a key={`lien_${elt}`} href={elt} target="_blank" rel="noreferrer">
           {elt}
         </a>,
       );
@@ -46,14 +45,22 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
         if ((result = ytbRegex.exec(elt)) !== null) {
           const group = result[4];
           if (group) {
-            elements.push(" ");
-            elements.push(<button onClick={() => handleYtbLink(group)}>add to playlist</button>);
+            elements.push(
+              <React.Fragment key={`btn_ytb_${elt}`}>
+                {" "}
+                <button onClick={() => handleYtbLink(group)}>add to playlist</button>
+              </React.Fragment>,
+            );
           }
         } else if ((result = ytbLiteRegex.exec(elt)) !== null) {
           const group = result && result[1];
           if (group) {
-            elements.push(" ");
-            elements.push(<button onClick={() => handleYtbLink(group)}>add to playlist</button>);
+            elements.push(
+              <React.Fragment key={`btn_ytb_lite_${elt}`}>
+                {" "}
+                <button onClick={() => handleYtbLink(group)}>add to playlist</button>
+              </React.Fragment>,
+            );
           }
         }
         // on reset les index des regex sinon ca part en sucette
@@ -61,7 +68,7 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
         ytbLiteRegex.lastIndex = 0;
       }
     } else {
-      elements.push(elt);
+      elements.push(<React.Fragment key={`frag_${elt}`}>{elt}</React.Fragment>);
     }
   });
   return elements;
@@ -71,12 +78,8 @@ const Player = ({ video }: { video: VideoItem }) => {
   const player = useRef<YT.Player>();
   const { playlistId } = useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
-  const { descriptionOpened, playlistVideos, playedVideosIdx, playVideo } =
-    useContext(VideoContext);
+  const { descriptionOpened, nextVideo } = useContext(VideoContext);
   const callYoutube = useYoutubeService();
-  const playlists = usePlaylists();
-
-  const currentPlaylist = playlistId ? playlists.find((pl) => pl.id === playlistId) : undefined;
 
   useEffect(() => {
     if (!player.current) {
@@ -92,43 +95,14 @@ const Player = ({ video }: { video: VideoItem }) => {
           onReady: (event) => (player.current = event.target),
           onStateChange: (event) => {
             // Fin de video, on en charge une autre random
-            if (currentPlaylist?.autoplay && event.data === 0) {
-              const vidNumber = playlistVideos.findIndex((pl) => pl.video.id === video.video.id);
-
-              // console.log("vidNumber", vidNumber);
-              // console.log("playedVids.length", playedVideosIdx.length);
-              // console.log("playlistVideos.length", playlistVideos.length);
-              // console.log("currentPlaylist.loop", currentPlaylist.loop);
-
-              // On s'arrete la si c'est la fin de la playlist
-              if (playedVideosIdx.length >= playlistVideos.length && !currentPlaylist.loop) return;
-
-              // On calcul le prochain index à jouer
-              let next = vidNumber + 1;
-              // console.log("currentPlaylist.random", currentPlaylist.random);
-              if (currentPlaylist.random) {
-                next = Math.floor(Math.random() * playlistVideos.length);
-                // console.log("next random", next);
-                // console.log("playedVideosIdx", playedVideosIdx);
-                let iterations = 0;
-                while (playedVideosIdx.includes(next % playlistVideos.length)) {
-                  next++;
-                  // Au cas ou pour eviter une ininite loop
-                  if (++iterations > playlistVideos.length) break;
-                }
-                // console.log("next after iterations", next);
-                // console.log("nb iterations", iterations);
-              }
-              // console.log("idx next %", next % playlistVideos.length);
-              // Modulo pour repasser à zéro si on dépasse
-              playVideo(playlistVideos[next % playlistVideos.length]);
-            }
+            if (event.data === 0) nextVideo();
           },
-          onError: (event) => console.log("onError", event.data),
+          // sur une erreur, on tente de jouer la suivante
+          onError: nextVideo,
         },
       });
     }
-  }, [currentPlaylist, playVideo, playlistVideos, video, playedVideosIdx]);
+  }, [nextVideo, video.video.id]);
 
   const addToWatchlist = useCallback(
     async (videoId: string) => {

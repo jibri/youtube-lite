@@ -15,6 +15,7 @@ import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 import { useFirebase } from "src/hooks/useFirebase";
 import { uniq } from "lodash";
+import usePlaylists from "src/hooks/usePlaylists";
 
 // https://stackoverflow.com/questions/19640796/retrieving-all-the-new-subscription-videos-in-youtube-v3-api
 
@@ -29,24 +30,26 @@ interface VideoData {
   feedVideos: VideoItem[];
   playlistVideos: VideoItem[];
   videoPlaying?: VideoItem;
-  playedVideosIdx: number[];
   descriptionOpened: boolean;
   setDescriptionOpened: React.Dispatch<React.SetStateAction<boolean>>;
   fetchWatchList: (pageToken?: string) => void;
   fetchSubscriptions: () => void;
   deleteFromWatchlist: (playlistItemId?: string) => void;
   playVideo: (video?: VideoItem) => void;
+  nextVideo: () => void;
+  prevVideo: () => void;
 }
 const defaultData: VideoData = {
   feedVideos: [],
   playlistVideos: [],
-  playedVideosIdx: [],
   descriptionOpened: false,
   setDescriptionOpened: (e) => e,
   fetchWatchList: (e) => e,
   fetchSubscriptions: () => null,
   deleteFromWatchlist: (e) => e,
   playVideo: () => null,
+  nextVideo: () => null,
+  prevVideo: () => null,
 };
 
 export const VideoContext = createContext<VideoData>(defaultData);
@@ -63,6 +66,7 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
   const [descriptionOpened, setDescriptionOpened] = useState<boolean>(false);
   const callYoutube = useYoutubeService();
   const fb = useFirebase();
+  const playlists = usePlaylists();
 
   const fetchVideos = useCallback(
     async (playlistItems: youtube.PlaylistItem[]) => {
@@ -211,6 +215,48 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
     },
     [playlistVideos],
   );
+  const nextVideo = useCallback(() => {
+    const currentPlaylist = playlistId ? playlists.find((pl) => pl.id === playlistId) : undefined;
+    if (videoPlaying && currentPlaylist?.autoplay) {
+      const vidNumber = playlistVideos.findIndex((pl) => pl.video.id === videoPlaying.video.id);
+
+      // console.log("vidNumber", vidNumber);
+      // console.log("playedVids.length", playedVideosIdx.length);
+      // console.log("playlistVideos.length", playlistVideos.length);
+      // console.log("currentPlaylist.loop", currentPlaylist.loop);
+
+      // On s'arrete la si c'est la fin de la playlist
+      if (playedVideosIdx.length >= playlistVideos.length && !currentPlaylist.loop) return;
+
+      // On calcul le prochain index à jouer
+      let next = vidNumber + 1;
+      // console.log("currentPlaylist.random", currentPlaylist.random);
+      if (currentPlaylist.random) {
+        next = Math.floor(Math.random() * playlistVideos.length);
+        // console.log("next random", next);
+        // console.log("playedVideosIdx", playedVideosIdx);
+        let iterations = 0;
+        while (playedVideosIdx.includes(next % playlistVideos.length)) {
+          next++;
+          // Au cas ou pour eviter une ininite loop
+          if (++iterations > playlistVideos.length) break;
+        }
+        // console.log("next after iterations", next);
+        // console.log("nb iterations", iterations);
+      }
+      // console.log("idx next %", next % playlistVideos.length);
+      // Modulo pour repasser à zéro si on dépasse
+      playVideo(playlistVideos[next % playlistVideos.length]);
+    }
+  }, [playlistId, playlists, playVideo, playedVideosIdx, playlistVideos, videoPlaying]);
+
+  const prevVideo = useCallback(() => {
+    const lastId = playlistVideos[playedVideosIdx[playedVideosIdx.length - 2]];
+    if (lastId) {
+      playVideo(lastId);
+      setPlayedVideosIdx((old) => old.slice(0, old.length - 1));
+    }
+  }, [playVideo, playedVideosIdx, playlistVideos]);
 
   useEffect(() => {
     if (userId && fb) {
@@ -261,9 +307,10 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
     feedVideos,
     playlistVideos,
     videoPlaying,
-    playedVideosIdx,
     descriptionOpened,
     playVideo,
+    nextVideo,
+    prevVideo,
     fetchWatchList,
     fetchSubscriptions,
     deleteFromWatchlist,

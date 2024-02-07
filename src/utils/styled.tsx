@@ -13,10 +13,6 @@ export const Flex = styled.div<{
   flex-wrap: ${(p) => p.fw};
   flex-direction: ${(p) => p.fd};
 `;
-export const HeaderWrapper = styled.div<{ bottom?: boolean }>`
-  display: flex;
-  box-shadow: 0 0 5px #00000055;
-`;
 export const FooterWrapper = styled.div`
   position: fixed;
   z-index: ${(props) => props.theme.zIndex.player};
@@ -34,16 +30,12 @@ export const button = css`
   line-height: 3em;
   font-weight: bold;
   background-color: ${(props) => props.theme.primary};
-  flex: 1 1 0;
+  flex: 1 0 auto;
   cursor: pointer;
-  :hover {
+  &:hover {
     border-color: ${(props) => props.theme.active};
     color: ${(props) => props.theme.active};
   }
-`;
-export const TopButton = styled.div`
-  ${button}
-  border-bottom: 2px solid transparent;
 `;
 export const ButtonLink = styled(NavLink).attrs({ activeClassName: "active" })`
   ${button}
