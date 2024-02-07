@@ -21,7 +21,7 @@ const ErrorProvider = ({ children }: React.PropsWithChildren) => {
         } else {
           setError(
             <>
-              <Text>Error : {message || "erreur inconnue"}</Text>
+              <Text>Session timeout</Text>
               <ActionButton onClick={() => login(true)}>login</ActionButton>
             </>,
           );
