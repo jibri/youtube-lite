@@ -38,7 +38,6 @@ const YoutubeButton = styled.a`
 
 const PlaylistItems = styled.div`
   display: flex;
-  justify-content: space-around;
   flex-wrap: wrap;
   gap: 10px;
 
