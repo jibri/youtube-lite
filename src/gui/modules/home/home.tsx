@@ -22,7 +22,7 @@ const MainContainer = styled.div`
   background-color: ${(props) => props.theme.background};
   padding-bottom: ${(props) => props.theme.headerHeigth};
 
-  @media screen and (orientation: landscape) and (min-width: 600px) {
+  @media screen and (hover: none) and (orientation: landscape) and (min-width: 600px) {
     display: grid;
     grid-template-columns: 50% 50%;
     grid-template-areas:
@@ -38,7 +38,7 @@ const VideoContainer = styled.div`
   position: sticky;
   top: 0;
 
-  @media screen and (orientation: landscape) and (min-width: 600px) {
+  @media screen and (hover: none) and (orientation: landscape) and (min-width: 600px) {
     grid-area: video;
 
     position: initial;

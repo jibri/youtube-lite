@@ -11,9 +11,10 @@ import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 import logoUrl from "src/assets/logo192.png";
 import { useFirebase } from "src/hooks/useFirebase";
-import usePlaylists, { Playlist } from "src/hooks/usePlaylists";
+import usePlaylists from "src/hooks/usePlaylists";
 import { uniqBy } from "lodash";
 import CurrentPlaylist from "src/gui/modules/login/currentPlaylist";
+import { PlaylistConfig } from "src/data/context/playlistsProvider";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -37,6 +38,7 @@ const YoutubeButton = styled.a`
 
 const PlaylistItems = styled.div`
   display: flex;
+  justify-content: space-around;
   flex-wrap: wrap;
   gap: 10px;
 
@@ -95,11 +97,10 @@ function Login() {
   const [useSwipeInputValue, setUseSwipeInputValue] = useState(false);
   const [playlistIdValue, setPlaylistIdValue] = useState("");
 
-  const [playlists, setPlaylists] = useState<{
-    init: boolean;
-    pl: youtube.Playlist[];
-  }>({ init: false, pl: [] });
-  const customPlaylists = usePlaylists();
+  // Playlist youtube gérées par youtube-lite (n'appartienne pas forcément au compte youtube) (info vient de youtube)
+  const [mesPlaylistsYtbLite, setMesPlaylistsYtbLite] = useState<youtube.Playlist[]>([]);
+  // config des playlists gérées dans youtube-lite (info vient de firestore)
+  const mesPlaylistsConfig = usePlaylists();
 
   const { userId, signout } = useContext(LoginContext);
   const { minDuration, maxAge, playlistId, autoAuth, useSwipe } = useContext(ConfigContext);
@@ -109,7 +110,7 @@ function Login() {
   const fb = useFirebase();
 
   const currentPlaylist = playlistId
-    ? customPlaylists.find((pl) => pl.id === playlistId)
+    ? mesPlaylistsConfig.find((config) => config.id === playlistId)
     : undefined;
 
   const updateConfig = <K extends keyof ConfigData>(key: K, value?: ConfigData[K]) => {
@@ -139,7 +140,7 @@ function Login() {
         autoplay: false,
         random: false,
         loop: false,
-      } as Playlist);
+      } as PlaylistConfig);
       setPlaylistIdValue("");
     }
   };
@@ -160,15 +161,43 @@ function Login() {
     setMaxAgeInputValue(`${maxAge}`);
   }, [maxAge]);
 
+  const addYtbPlaylistsToYtbLitePlaylists = async () => {
+    // on charge les playlists seulement si on a token et si on ne les à pas déjà chargé.
+    if (token && mesPlaylistsConfig.length) {
+      let nextToken: string | undefined;
+      const myPlaylists: youtube.Playlist[] = [];
+      do {
+        const response = await callYoutube(listMyPlaylists, [], token.access_token, nextToken);
+        if (!response.ok) {
+          handleError(response.status, response.error);
+        } else {
+          myPlaylists.push(...response.data.items);
+          nextToken = response.data.nextPageToken;
+        }
+      } while (nextToken);
+
+      myPlaylists.forEach((pl) => {
+        if (pl.id && !mesPlaylistsConfig.map((cfg) => cfg.id).includes(pl.id)) {
+          addPlaylistById(pl.id);
+        }
+      });
+    }
+  };
+
   useEffect(() => {
-    const loadPlaylists = async () => {
+    const loadMesPlaylistsYtbLite = async () => {
       // on charge les playlists seulement si on a token et si on ne les à pas déjà chargé.
-      if (token && !playlists.init && customPlaylists.length) {
+      if (token && mesPlaylistsConfig.length) {
         let nextToken: string | undefined;
-        let nextToken2: string | undefined;
         const myPlaylists: youtube.Playlist[] = [];
+
         do {
-          const response = await callYoutube(listMyPlaylists, [], token.access_token, nextToken);
+          const response = await callYoutube(
+            listMyPlaylists,
+            mesPlaylistsConfig.map((pl) => pl.id),
+            token.access_token,
+            nextToken,
+          );
           if (!response.ok) {
             handleError(response.status, response.error);
           } else {
@@ -177,29 +206,11 @@ function Login() {
           }
         } while (nextToken);
 
-        do {
-          const response = await callYoutube(
-            listMyPlaylists,
-            customPlaylists.map((pl) => pl.id),
-            token.access_token,
-            nextToken2,
-          );
-          if (!response.ok) {
-            handleError(response.status, response.error);
-          } else {
-            myPlaylists.push(...response.data.items);
-            nextToken2 = response.data.nextPageToken;
-          }
-        } while (nextToken2);
-
-        setPlaylists({
-          init: true,
-          pl: uniqBy(myPlaylists, "id"),
-        });
+        setMesPlaylistsYtbLite(uniqBy(myPlaylists, "id"));
       }
     };
-    loadPlaylists();
-  }, [callYoutube, handleError, customPlaylists, playlists]);
+    loadMesPlaylistsYtbLite();
+  }, [callYoutube, handleError, mesPlaylistsConfig]);
 
   function handleAuthClick() {
     if (token) {
@@ -216,9 +227,9 @@ function Login() {
       {userId && (
         <>
           <Container>
-            <Text>My playlists :</Text>
+            <Text>My Youtube-lite playlists :</Text>
             <PlaylistItems>
-              {playlists.pl.map((pl) => (
+              {mesPlaylistsYtbLite.map((pl) => (
                 <PlaylistItem
                   to="#"
                   onClick={() => updateConfig("playlistId", pl.id)}
@@ -244,11 +255,14 @@ function Login() {
                 <CurrentPlaylist playlist={currentPlaylist} key={currentPlaylist.id} />
               </>
             )}
-            {!currentPlaylist && playlistId && (
-              <button onClick={() => addPlaylistById(playlistId)}>Add to custom playlists</button>
-            )}
           </Container>
-
+          <Separator />
+          <Container>
+            <Text>Your Youtube playlists do not show up ?</Text>
+            <ActionButton onClick={addYtbPlaylistsToYtbLitePlaylists}>
+              Find my playlists
+            </ActionButton>
+          </Container>
           <Separator />
           <Container>
             <Text>Theme :</Text>

@@ -2,12 +2,18 @@ import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/f
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { LoginContext } from "src/data/context/loginProvider";
 import { useFirebase } from "src/hooks/useFirebase";
-import { Playlist } from "src/hooks/usePlaylists";
 
-export const PlaylistsContext = createContext<Playlist[]>([]);
+export type PlaylistConfig = {
+  id: string;
+  autoplay: boolean;
+  random: boolean;
+  loop: boolean;
+};
+
+export const PlaylistsContext = createContext<PlaylistConfig[]>([]);
 
 const PlaylistsProvider = ({ children }: React.PropsWithChildren) => {
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [playlists, setPlaylists] = useState<PlaylistConfig[]>([]);
   const { userId } = useContext(LoginContext);
   const fb = useFirebase();
 
@@ -15,11 +21,11 @@ const PlaylistsProvider = ({ children }: React.PropsWithChildren) => {
     if (userId && fb) {
       return fb.onSnapshot(
         fb.collection(fb.db, "playlists", userId, "playlists").withConverter({
-          toFirestore(playlist: Playlist): DocumentData {
+          toFirestore(playlist: PlaylistConfig): DocumentData {
             return playlist;
           },
-          fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): Playlist {
-            return snapshot.data(options) as Playlist;
+          fromFirestore(snapshot: QueryDocumentSnapshot, options: SnapshotOptions): PlaylistConfig {
+            return snapshot.data(options) as PlaylistConfig;
           },
         }),
         (querySnapshot) => {

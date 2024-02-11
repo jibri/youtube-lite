@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { LoginContext } from "src/data/context/loginProvider";
+import { PlaylistConfig } from "src/data/context/playlistsProvider";
 import { useFirebase } from "src/hooks/useFirebase";
-import { Playlist } from "src/hooks/usePlaylists";
 import { Text } from "src/utils/styled";
 import styled from "styled-components";
 
@@ -12,7 +12,7 @@ const Container = styled.div`
   margin-left: 1em;
 `;
 
-const CurrentPlaylist = ({ playlist }: { playlist: Playlist }) => {
+const CurrentPlaylist = ({ playlist }: { playlist: PlaylistConfig }) => {
   const [autoplay, setAutoplay] = useState(playlist.autoplay);
   const [random, setRandom] = useState(playlist.random);
   const [loop, setloop] = useState(playlist.loop);
@@ -20,7 +20,7 @@ const CurrentPlaylist = ({ playlist }: { playlist: Playlist }) => {
   const { userId } = useContext(LoginContext);
   const fb = useFirebase();
 
-  const updatePlaylist = async (data: Partial<Playlist>) => {
+  const updatePlaylist = async (data: Partial<PlaylistConfig>) => {
     if (userId && fb) {
       await fb.updateDoc(fb.doc(fb.db, "playlists", userId, "playlists", playlist.id), data);
     }
