@@ -205,7 +205,11 @@ function Login() {
           }
         } while (nextToken);
 
-        setMesPlaylistsYtbLite(uniqBy(myPlaylists, "id"));
+        setMesPlaylistsYtbLite(
+          uniqBy(myPlaylists, "id").sort((p1, p2) =>
+            (p1.snippet?.title || "").localeCompare(p2.snippet?.title || ""),
+          ),
+        );
       }
     };
     loadMesPlaylistsYtbLite();
