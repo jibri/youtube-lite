@@ -61,20 +61,18 @@ const ActionWrapper = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-
-  > svg {
-    font-size: ${(props) => `calc(${props.theme.video.height} - 50px)`};
-    margin: 0 10px;
-    color: ${(props) => props.theme.text.main};
-    &:hover {
-      color: ${(props) => props.theme.active};
-    }
-  }
 `;
-const Menu = styled.div`
+const Animated = styled.div<{ show: boolean }>`
+  height: ${(props) => (props.show ? "200px" : 0)};
+  overflow: hidden;
+  transition: height 0.5s;
   position: absolute;
+  right: 1em;
+  transform: translate(0, calc(50% + 1.5em));
+`;
+
+const Menu = styled.div`
   background-color: ${(props) => props.theme.secondary};
-  right: 10px;
   border-radius: 0.5em;
   padding: 1em;
 `;
@@ -86,6 +84,23 @@ const Overlay = styled.div`
   bottom: 0;
   background-color: #00000033;
 `;
+const IconButton = styled.button<{ $highlight: boolean }>`
+  background-color: ${(props) =>
+    props.$highlight ? props.theme.background : props.theme.secondary};
+  border: none;
+  border-radius: 50%;
+  width: 3em;
+  height: 3em;
+  margin: 1em;
+  color: ${(props) => props.theme.text.main};
+  &:hover {
+    color: ${(props) => props.theme.active};
+  }
+
+  svg {
+    font-size: 2em;
+  }
+`;
 
 const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: () => void }) => {
   const { playlistId } = useContext(ConfigContext);
@@ -93,7 +108,7 @@ const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: (
   const thumbnail =
     playlist.playlist.snippet?.thumbnails?.default || playlist.playlist.snippet?.thumbnails?.medium;
 
-  const openMenu: React.MouseEventHandler<SVGSVGElement> = () => {
+  const openMenu: React.MouseEventHandler = () => {
     setMenuOpen(true);
   };
 
@@ -107,15 +122,17 @@ const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: (
         <Title>{playlist.playlist.snippet?.title}</Title>
       </ContentWrapper>
       <ActionWrapper onClick={(e) => e.stopPropagation()}>
-        <FontAwesomeIcon icon={faEllipsis} onClick={openMenu} />
-        {menuOpen && (
-          <>
-            <Overlay onClick={() => setMenuOpen(false)} />
+        <IconButton onClick={openMenu} $highlight={playlistId === playlist.playlist.id}>
+          <FontAwesomeIcon icon={faEllipsis} />
+        </IconButton>
+        {menuOpen && <Overlay onClick={() => setMenuOpen(false)} />}
+        <Animated show={menuOpen}>
+          {menuOpen && (
             <Menu>
               <CurrentPlaylist playlist={playlist.config} />
             </Menu>
-          </>
-        )}
+          )}
+        </Animated>
       </ActionWrapper>
     </VideoWrapper>
   );
