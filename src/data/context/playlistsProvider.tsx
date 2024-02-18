@@ -2,13 +2,7 @@ import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/f
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { LoginContext } from "src/data/context/loginProvider";
 import { useFirebase } from "src/hooks/useFirebase";
-
-export type PlaylistConfig = {
-  id: string;
-  autoplay: boolean;
-  random: boolean;
-  loop: boolean;
-};
+import { PlaylistConfig } from "src/utils/types";
 
 export const PlaylistsContext = createContext<PlaylistConfig[]>([]);
 

@@ -1,15 +1,20 @@
 import { useContext, useState } from "react";
 import { LoginContext } from "src/data/context/loginProvider";
-import { PlaylistConfig } from "src/data/context/playlistsProvider";
 import { useFirebase } from "src/hooks/useFirebase";
 import { Text } from "src/utils/styled";
+import { PlaylistConfig } from "src/utils/types";
 import styled from "styled-components";
 
 const Container = styled.div`
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 10px;
-  margin-left: 1em;
+
+  input {
+    width: 2em;
+    height: 2em;
+    clip-path: rect(0 0 2em 2em round 20%);
+  }
 `;
 
 const CurrentPlaylist = ({ playlist }: { playlist: PlaylistConfig }) => {

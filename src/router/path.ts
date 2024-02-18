@@ -1,7 +1,8 @@
 export enum PATHS {
   FEED = "/feed",
-  WATCHLIST = "/watchlist",
-  PROFILE = "/profile",
+  PLAYLIST = "/playlist",
+  PLAYLISTS = "/playlists",
+  PARAMETERS = "/parameters",
 }
 export enum HeaderComponents {
   FEED_RELOAD_BTN = "FEED_RELOAD_BTN",
@@ -14,8 +15,9 @@ export enum HeaderComponents {
 export type HeaderComponentsType = { [key in PATHS]: HeaderComponents[] };
 export const defaultHeaderComponents = {
   [PATHS.FEED]: [HeaderComponents.FEED_RELOAD_BTN],
-  [PATHS.WATCHLIST]: [HeaderComponents.WL_RELOAD_BTN],
-  [PATHS.PROFILE]: [],
+  [PATHS.PLAYLIST]: [HeaderComponents.WL_RELOAD_BTN],
+  [PATHS.PLAYLISTS]: [],
+  [PATHS.PARAMETERS]: [],
 };
 export const playingHeaderComponents = {
   [PATHS.FEED]: [
@@ -25,14 +27,20 @@ export const playingHeaderComponents = {
     HeaderComponents.NEXT_BTN,
     HeaderComponents.CLOSE_BTN,
   ],
-  [PATHS.WATCHLIST]: [
+  [PATHS.PLAYLIST]: [
     HeaderComponents.WL_RELOAD_BTN,
     HeaderComponents.DESC_BTN,
     HeaderComponents.PREV_BTN,
     HeaderComponents.NEXT_BTN,
     HeaderComponents.CLOSE_BTN,
   ],
-  [PATHS.PROFILE]: [
+  [PATHS.PLAYLISTS]: [
+    HeaderComponents.DESC_BTN,
+    HeaderComponents.PREV_BTN,
+    HeaderComponents.NEXT_BTN,
+    HeaderComponents.CLOSE_BTN,
+  ],
+  [PATHS.PARAMETERS]: [
     HeaderComponents.DESC_BTN,
     HeaderComponents.PREV_BTN,
     HeaderComponents.NEXT_BTN,

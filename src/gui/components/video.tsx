@@ -14,7 +14,6 @@ export type VisualAction = {
 const LinkWrapper = styled.a`
   padding-left: 5px;
   text-decoration: none;
-  width: 100%;
   color: ${(props) => props.theme.text.main};
   overflow: hidden;
 `;
@@ -22,7 +21,6 @@ const VideoWrapper = styled.div<{ $height?: number; $videoWidth?: number; $highl
   display: grid;
   grid-template-columns: ${(props) => props.$videoWidth}px 1fr min-content;
 
-  width: 100%;
   height: ${(props) => `${props.$height}px`};
   background-color: ${(props) =>
     props.$highlight ? props.theme.secondary : props.theme.background};

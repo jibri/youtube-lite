@@ -14,6 +14,7 @@ import SwipableVideo from "src/gui/components/SwipableVideo";
 import { token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
+import usePlaylists from "src/hooks/usePlaylists";
 
 export const WlVideoWrapper = styled(VideoWrapper)<{ $removing: boolean }>`
   transition: max-height 0.5s ease;
@@ -29,6 +30,11 @@ function Watchlist() {
   const { delayedActions, delayAction, cancelAction } = useDelayAction();
   const matches = useLargeScreenMq();
   const callYoutube = useYoutubeService();
+  const playlistConfig = usePlaylists();
+
+  const currentPlaylistConfig = playlistId
+    ? playlistConfig.find((pl) => pl.id === playlistId)
+    : undefined;
 
   const deletePlaylistItem = useCallback(
     async (video: VideoItem) => {
@@ -62,34 +68,44 @@ function Watchlist() {
   );
 
   const likeVideo = useCallback(
-    (video: VideoItem) => {
+    async (video: VideoItem, remove: boolean) => {
       if (video.video.id) {
         const idToRemove = video.video.id;
-        setTimeout(() => setRemoving((videoIds) => [...videoIds, idToRemove]), 100);
-        delayAction("Like ajouté", async () => {
+        if (remove) {
+          setTimeout(() => setRemoving((videoIds) => [...videoIds, idToRemove]), 100);
+          delayAction("Like ajouté", async () => {
+            if (token && video.video.id) {
+              const response = await callYoutube(rateVideos, video.video.id, token.access_token);
+              if (!response.ok) {
+                handleError(response.status, response.error);
+                // On retire l'id en erreur des removed video pour réafficher la video dans la playlist
+                setRemoving((removedIds) => removedIds.filter((id) => id !== video.video.id));
+              } else {
+                deletePlaylistItem(video);
+              }
+            }
+          });
+        } else {
           if (token && video.video.id) {
             const response = await callYoutube(rateVideos, video.video.id, token.access_token);
             if (!response.ok) {
               handleError(response.status, response.error);
-              // On retire l'id en erreur des removed video pour réafficher la video dans la playlist
-              setRemoving((removedIds) => removedIds.filter((id) => id !== video.video.id));
-            } else {
-              deletePlaylistItem(video);
             }
           }
-        });
+        }
       }
     },
     [callYoutube, delayAction, deletePlaylistItem, handleError],
   );
 
-  const swipeActions: [VisualAction, VisualAction] = useMemo(
-    () => [
-      { action: (video) => removeFromWatchlist(video), actionIcon: faTrash },
-      { action: (video) => likeVideo(video), actionIcon: faThumbsUp },
-    ],
-    [likeVideo, removeFromWatchlist],
-  );
+  const actions: [VisualAction | undefined, VisualAction | undefined] = useMemo(() => {
+    return currentPlaylistConfig?.mine
+      ? [
+          { action: (video) => removeFromWatchlist(video), actionIcon: faTrash },
+          { action: (video) => likeVideo(video, true), actionIcon: faThumbsUp },
+        ]
+      : [undefined, { action: (video) => likeVideo(video, false), actionIcon: faThumbsUp }];
+  }, [likeVideo, removeFromWatchlist, currentPlaylistConfig]);
 
   return (
     <>
@@ -104,9 +120,9 @@ function Watchlist() {
       {playlistVideos.map((video) => (
         <WlVideoWrapper key={video.video.id} $removing={removing.includes(video.video.id || "")}>
           {!useSwipe || matches ? (
-            <Video video={video} actions={swipeActions} />
+            <Video video={video} actions={actions.filter((a) => !!a) as VisualAction[]} />
           ) : (
-            <SwipableVideo video={video} videoActions={[]} swipeActions={swipeActions} />
+            <SwipableVideo video={video} videoActions={[]} swipeActions={actions} />
           )}
         </WlVideoWrapper>
       ))}
