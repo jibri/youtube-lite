@@ -161,7 +161,7 @@ function Playlists() {
           </Container>
           <Separator />
           <Container>
-            <Text>Add a playlist : </Text>
+            <Text>Add a playlist (by url) : </Text>
             <Input value={playlistIdValue} onChange={(e) => setPlaylistIdValue(e.target.value)} />
             <ActionButton onClick={addPlaylist}>Go</ActionButton>
           </Container>
