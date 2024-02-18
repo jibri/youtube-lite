@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ConfigContext } from "src/data/context/configProvider";
-import { faEllipsis } from "@fortawesome/free-solid-svg-icons";
+import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import CurrentPlaylist from "src/gui/components/currentPlaylist";
 import { PlaylistYtbLite } from "src/utils/types";
 
@@ -123,7 +123,7 @@ const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: (
       </ContentWrapper>
       <ActionWrapper onClick={(e) => e.stopPropagation()}>
         <IconButton onClick={openMenu} $highlight={playlistId === playlist.playlist.id}>
-          <FontAwesomeIcon icon={faEllipsis} />
+          <FontAwesomeIcon icon={faEllipsisVertical} />
         </IconButton>
         {menuOpen && <Overlay onClick={() => setMenuOpen(false)} />}
         <Animated show={menuOpen}>
