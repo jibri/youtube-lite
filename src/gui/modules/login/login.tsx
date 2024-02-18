@@ -67,7 +67,6 @@ const Input = styled.input<{ width?: string }>`
 `;
 
 // TODO : dans le player, utiliser des event onstatechange pour eviter de recharge le player à chaque fois
-// TODO ; ecran liste de playlists
 // TODO : button "..." pour config une playlist
 // TODO : button "..." sur les video
 // TODO : pas d'action Delete dans les item de playlist non proprio

@@ -2,7 +2,7 @@ import { useContext, useState, useEffect } from "react";
 import styled from "styled-components";
 import { LoginContext } from "src/data/context/loginProvider";
 import { ActionButton, Text } from "src/utils/styled";
-import { ConfigContext, ConfigData } from "src/data/context/configProvider";
+import { ConfigData } from "src/data/context/configProvider";
 import { listMyPlaylists } from "src/utils/youtubeApi";
 import { token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
@@ -10,7 +10,6 @@ import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 import { useFirebase } from "src/hooks/useFirebase";
 import usePlaylists from "src/hooks/usePlaylists";
 import { uniqBy } from "lodash";
-import CurrentPlaylist from "../../components/currentPlaylist";
 import Playlist from "src/gui/components/playlist";
 import { PlaylistConfig, PlaylistYtbLite } from "src/utils/types";
 import { useHistory } from "react-router-dom";
@@ -45,15 +44,10 @@ function Playlists() {
   const mesPlaylistsConfig = usePlaylists();
 
   const { userId } = useContext(LoginContext);
-  const { playlistId } = useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
   const callYoutube = useYoutubeService();
   const fb = useFirebase();
   const history = useHistory();
-
-  const currentPlaylist = playlistId
-    ? mesPlaylistsConfig.find((config) => config.id === playlistId)
-    : undefined;
 
   const updateConfig = <K extends keyof ConfigData>(key: K, value?: ConfigData[K]) => {
     if (userId && fb && key) {
@@ -165,19 +159,11 @@ function Playlists() {
               ))}
             </div>
           </Container>
+          <Separator />
           <Container>
             <Text>Add a playlist : </Text>
             <Input value={playlistIdValue} onChange={(e) => setPlaylistIdValue(e.target.value)} />
             <ActionButton onClick={addPlaylist}>Go</ActionButton>
-          </Container>
-          <Separator />
-          <Container>
-            {currentPlaylist && (
-              <>
-                <Text>Current playlist :</Text>
-                <CurrentPlaylist playlist={currentPlaylist} key={currentPlaylist.id} />
-              </>
-            )}
           </Container>
           <Separator />
           <Container>
