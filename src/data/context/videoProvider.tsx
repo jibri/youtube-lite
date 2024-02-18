@@ -68,6 +68,13 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
   const fb = useFirebase();
   const playlists = usePlaylists();
 
+  useEffect(() => {
+    if (videoPlaying?.video.id)
+      document
+        .getElementById(videoPlaying.video.id)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
   const fetchVideos = useCallback(
     async (playlistItems: youtube.PlaylistItem[]) => {
       if (!token) return;

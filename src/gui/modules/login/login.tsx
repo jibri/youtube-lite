@@ -71,8 +71,6 @@ const Input = styled.input<{ width?: string }>`
 // TODO : button "..." pour config une playlist
 // TODO : button "..." sur les video
 // TODO : pas d'action Delete dans les item de playlist non proprio
-// TODO : footer en grid
-// TODO : auto scroll on change musique
 
 function Login() {
   const [minDurationInputValue, setMinDurationInputValue] = useState("0");

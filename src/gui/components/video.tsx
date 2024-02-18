@@ -78,6 +78,7 @@ const Video = ({ video, actions }: { video: VideoItem; actions: VisualAction[] }
   const { playVideo, videoPlaying } = useContext(VideoContext);
   return (
     <VideoWrapper
+      id={video.video.id}
       $highlight={videoPlaying?.video.id === video.video.id}
       $height={video.video.snippet?.thumbnails?.default?.height}
       $videoWidth={video.video.snippet?.thumbnails?.default?.width}
