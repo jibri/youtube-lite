@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from "react";
 import { LoginContext } from "./loginProvider";
-import { VideoItem } from "src/utils/types";
-import { getTimeSeconds } from "src/utils/utils";
+import { PlaylistConfig, VideoItem } from "src/utils/types";
+import { getMostPresent, getTimeSeconds } from "src/utils/utils";
 import { ConfigContext } from "src/data/context/configProvider";
 import { DocumentData, QueryDocumentSnapshot, SnapshotOptions } from "firebase/firestore";
 import {
@@ -197,10 +197,18 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
         setPlaylistVideos((oldList) => {
           return [...oldList, ...videosToAdd];
         });
+        // maj de la playlist firestore avec le nom de l'artiste
+        if (userId && fb) {
+          fb.updateDoc(fb.doc(fb.db, "playlists", userId, "playlists", playlistId), {
+            artists: fb.arrayUnion(
+              getMostPresent(videosToAdd.map((v) => v.video.snippet?.channelTitle || "")),
+            ),
+          } as Record<keyof PlaylistConfig, unknown>);
+        }
       }
       pageToken = nextPageToken;
     } while (pageToken);
-  }, [callYoutube, fetchVideos, handleError, playlistId]);
+  }, [callYoutube, fb, fetchVideos, handleError, playlistId, userId]);
 
   const deleteFromWatchlist = (playlistItemId?: string) => {
     setPlaylistVideos((playlist) => playlist.filter((v) => v.playlistItem.id !== playlistItemId));

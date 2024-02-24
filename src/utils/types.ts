@@ -9,6 +9,7 @@ export type PlaylistConfig = {
   random: boolean;
   loop: boolean;
   mine: boolean;
+  artists?: string[];
 };
 
 export type PlaylistYtbLite = {

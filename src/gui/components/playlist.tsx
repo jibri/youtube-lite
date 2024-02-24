@@ -102,6 +102,11 @@ const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: (
   const thumbnail =
     playlist.playlist.snippet?.thumbnails?.default || playlist.playlist.snippet?.thumbnails?.medium;
 
+  const artists = playlist.config.artists?.join(", ") || "";
+  const artistsEllipsis = artists.length > 30 ? artists?.substring(0, 30).concat("...") : artists;
+  const title = playlist.playlist.snippet?.title || "";
+  const titleEllipsis = title.length > 30 ? title.substring(0, 30).concat("...") : title;
+
   const openMenu: React.MouseEventHandler = () => {
     setMenuOpen(true);
   };
@@ -110,7 +115,8 @@ const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: (
     <VideoWrapper $highlight={playlistId === playlist.playlist.id} onClick={onClick} role="button">
       <Image alt="youtube thumbnail" loading="lazy" src={thumbnail?.url} />
       <ContentWrapper>
-        <Title>{playlist.playlist.snippet?.title}</Title>
+        <Author title={artists}>{artistsEllipsis}</Author>
+        <Title title={title}>{titleEllipsis}</Title>
       </ContentWrapper>
       <ActionWrapper onClick={(e) => e.stopPropagation()}>
         <IconButton onClick={openMenu} $highlight={playlistId === playlist.playlist.id}>

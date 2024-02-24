@@ -30,3 +30,22 @@ export const getTimeSeconds = (duration?: string) => {
   const [hours, minutes, seconds] = getTimeArray(duration);
   return 3600 * hours + 60 * minutes + seconds;
 };
+
+/**
+ * Trouve l'élément le plus représenté dans un array de string
+ */
+export const getMostPresent = (array: string[]) => {
+  if (array.length == 0) return "";
+  const countMap: Record<string, number> = {};
+  let mostPresent = array[0];
+  let maxCount = 1;
+  for (let i = 0; i < array.length; i++) {
+    const element = array[i];
+    countMap[element] = countMap[element] == null ? 1 : countMap[element] + 1;
+    if (countMap[element] > maxCount) {
+      mostPresent = element;
+      maxCount = countMap[element];
+    }
+  }
+  return mostPresent;
+};
