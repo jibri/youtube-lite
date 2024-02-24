@@ -18,11 +18,10 @@ import { PATHS } from "src/router/path";
 const Separator = styled.div`
   width: 50%;
   border-top: 1px solid ${(props) => props.theme.primary};
+  margin: 1em;
 `;
 
-const Container = styled.div<{ $alignSelf?: string }>`
-  align-self: ${(props) => (props.$alignSelf ? props.$alignSelf : "start")};
-`;
+const Container = styled.div``;
 
 const Input = styled.input<{ width?: string }>`
   border: 1px solid;
@@ -145,7 +144,6 @@ function Playlists() {
       {userId && (
         <>
           <Container>
-            <Text>My Youtube-lite playlists :</Text>
             <div>
               {mesPlaylistsYtbLite.map((pl) => (
                 <Playlist
@@ -161,8 +159,15 @@ function Playlists() {
           </Container>
           <Separator />
           <Container>
-            <Text>Add a playlist (by url) : </Text>
-            <Input value={playlistIdValue} onChange={(e) => setPlaylistIdValue(e.target.value)} />
+            <label>
+              <Text>Add a playlist : </Text>
+              <Input
+                id="new-playlist"
+                value={playlistIdValue}
+                placeholder="url"
+                onChange={(e) => setPlaylistIdValue(e.target.value)}
+              />
+            </label>
             <ActionButton onClick={addPlaylist}>Go</ActionButton>
           </Container>
           <Separator />

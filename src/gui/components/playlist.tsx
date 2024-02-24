@@ -12,8 +12,8 @@ export type VisualAction = {
   actionIcon: IconDefinition;
 };
 
-const thumbnailWidth = "120px";
-const thumbnailHeight = "90px";
+const thumbnailWidth = "60px";
+const thumbnailHeight = "3em";
 
 const ContentWrapper = styled.div`
   padding-left: 5px;
@@ -35,11 +35,6 @@ const VideoWrapper = styled.div<{
     }
   }
 `;
-const ThumbnailContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  background-color: ${(props) => props.theme.black};
-`;
 const Author = styled.h6`
   font-size: 0.8em;
   font-weight: initial;
@@ -53,9 +48,9 @@ const Title = styled(Author)`
   font-weight: bold;
 `;
 const Image = styled.img`
-  display: block;
-  max-width: ${thumbnailWidth};
-  max-height: ${thumbnailHeight};
+  object-fit: cover;
+  width: ${thumbnailWidth};
+  height: ${thumbnailHeight};
 `;
 const ActionWrapper = styled.div`
   display: flex;
@@ -91,7 +86,6 @@ const IconButton = styled.button<{ $highlight: boolean }>`
   border-radius: 50%;
   width: 3em;
   height: 3em;
-  margin: 1em;
   color: ${(props) => props.theme.text.main};
   &:hover {
     color: ${(props) => props.theme.active};
@@ -114,11 +108,8 @@ const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: (
 
   return (
     <VideoWrapper $highlight={playlistId === playlist.playlist.id} onClick={onClick} role="button">
-      <ThumbnailContainer>
-        <Image alt="youtube thumbnail" loading="lazy" src={thumbnail?.url} />
-      </ThumbnailContainer>
+      <Image alt="youtube thumbnail" loading="lazy" src={thumbnail?.url} />
       <ContentWrapper>
-        <Author>{playlist.playlist.snippet?.channelTitle}</Author>
         <Title>{playlist.playlist.snippet?.title}</Title>
       </ContentWrapper>
       <ActionWrapper onClick={(e) => e.stopPropagation()}>

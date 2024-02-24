@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 import { LoginContext } from "src/data/context/loginProvider";
 import { useFirebase } from "src/hooks/useFirebase";
-import { Text } from "src/utils/styled";
+import { ActionButton, Text } from "src/utils/styled";
 import { PlaylistConfig } from "src/utils/types";
 import styled from "styled-components";
 
@@ -25,11 +25,18 @@ const CurrentPlaylist = ({ playlist }: { playlist: PlaylistConfig }) => {
   const { userId } = useContext(LoginContext);
   const fb = useFirebase();
 
-  const updatePlaylist = async (data: Partial<PlaylistConfig>) => {
+  const updatePlaylist = (data: Partial<PlaylistConfig>) => {
     if (userId && fb) {
-      await fb.updateDoc(fb.doc(fb.db, "playlists", userId, "playlists", playlist.id), data);
+      fb.updateDoc(fb.doc(fb.db, "playlists", userId, "playlists", playlist.id), data);
     }
   };
+
+  const deletePlaylist = () => {
+    if (userId && fb) {
+      fb.deleteDoc(fb.doc(fb.db, "playlists", userId, "playlists", playlist.id));
+    }
+  };
+
   return (
     <Container>
       <label>
@@ -65,6 +72,7 @@ const CurrentPlaylist = ({ playlist }: { playlist: PlaylistConfig }) => {
         />
         <Text>Loop</Text>
       </label>
+      <ActionButton onClick={deletePlaylist}>Delete</ActionButton>
     </Container>
   );
 };
