@@ -1,11 +1,11 @@
 import { useContext, useState } from "react";
 import styled from "styled-components";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ConfigContext } from "src/data/context/configProvider";
-import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import CurrentPlaylist from "src/gui/components/currentPlaylist";
 import { PlaylistYtbLite } from "src/utils/types";
+import { IconButton } from "@mui/material";
+import { MoreVert } from "@mui/icons-material";
 
 export type VisualAction = {
   action: (video: youtube.Playlist) => void;
@@ -17,7 +17,7 @@ const thumbnailHeight = "3em";
 
 const ContentWrapper = styled.div`
   padding-left: 5px;
-  color: ${(props) => props.theme.text.main};
+  color: ${(props) => props.theme.palette.text.primary};
   overflow: hidden;
 `;
 const VideoWrapper = styled.div<{
@@ -28,10 +28,10 @@ const VideoWrapper = styled.div<{
 
   height: ${thumbnailHeight};
   background-color: ${(props) =>
-    props.$highlight ? props.theme.secondary : props.theme.background};
+    props.$highlight ? props.theme.palette.secondary.main : props.theme.palette.background.main};
   &:hover {
     ${ContentWrapper} {
-      color: ${(props) => props.theme.active};
+      color: ${(props) => props.theme.palette.primary.main};
     }
   }
 `;
@@ -67,7 +67,7 @@ const Animated = styled.div<{ show: boolean }>`
 `;
 
 const Menu = styled.div`
-  background-color: ${(props) => props.theme.secondary};
+  background-color: ${(props) => props.theme.palette.secondary.main};
   border-radius: 0.5em;
   padding: 1em;
 `;
@@ -78,22 +78,6 @@ const Overlay = styled.div`
   right: 0;
   bottom: 0;
   background-color: #00000033;
-`;
-const IconButton = styled.button<{ $highlight: boolean }>`
-  background-color: ${(props) =>
-    props.$highlight ? props.theme.background : props.theme.secondary};
-  border: none;
-  border-radius: 50%;
-  width: 3em;
-  height: 3em;
-  color: ${(props) => props.theme.text.main};
-  &:hover {
-    color: ${(props) => props.theme.active};
-  }
-
-  svg {
-    font-size: 2em;
-  }
 `;
 
 const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: () => void }) => {
@@ -119,8 +103,11 @@ const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: (
         <Title title={title}>{titleEllipsis}</Title>
       </ContentWrapper>
       <ActionWrapper onClick={(e) => e.stopPropagation()}>
-        <IconButton onClick={openMenu} $highlight={playlistId === playlist.playlist.id}>
-          <FontAwesomeIcon icon={faEllipsisVertical} />
+        <IconButton onClick={openMenu}>
+          {/* $highlight={playlistId === playlist.playlist.id} */}
+          {/* <FontAwesomeIcon icon={faEllipsisVertical} fixedWidth /> */}
+          {/* FIXME gestion thme */}
+          <MoreVert />
         </IconButton>
         {menuOpen && <Overlay onClick={() => setMenuOpen(false)} />}
         <Animated show={menuOpen}>

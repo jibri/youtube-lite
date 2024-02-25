@@ -13,13 +13,13 @@ import { ErrorContext } from "src/data/context/errorProvider";
 const MainScreen = styled.div`
   min-height: 100vh;
   width: 100%;
-  background-color: ${(props) => props.theme.background};
+  background-color: ${(props) => props.theme.palette.background.default};
 `;
 
 const MainContainer = styled.div`
   max-width: ${(props) => props.theme.appMaxWidth};
   margin: auto;
-  background-color: ${(props) => props.theme.background};
+  background-color: ${(props) => props.theme.palette.background.default};
   padding-bottom: ${(props) => props.theme.headerHeigth};
 
   @media screen and (hover: none) and (orientation: landscape) and (min-width: 600px) {
@@ -33,7 +33,7 @@ const MainContainer = styled.div`
 
 const ContentWrapper = styled.div``;
 const VideoContainer = styled.div`
-  z-index: ${(props) => props.theme.zIndex.player};
+  z-index: ${(props) => props.theme.zIndex.appBar};
   max-width: ${(props) => props.theme.appMaxWidth};
   position: sticky;
   top: 0;

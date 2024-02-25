@@ -9,7 +9,7 @@ const Container = styled.div<{ $show: boolean; $animationDuration: number }>`
   max-width: calc(100vw - 2 * 1em);
   min-height: 2em;
   max-height: 80vh;
-  z-index: ${(props) => props.theme.zIndex.popup};
+  z-index: ${(props) => props.theme.zIndex.snackbar};
   overflow: hidden;
   border-radius: 0 10px 10px 0;
   box-shadow: 2px 2px 5px #00000055;
@@ -18,7 +18,7 @@ const Container = styled.div<{ $show: boolean; $animationDuration: number }>`
   align-items: center;
   justify-content: space-between;
 
-  background-color: ${(props) => props.theme.primary};
+  background-color: ${(props) => props.theme.palette.secondary.dark};
 
   transition: all ${(props) => props.$animationDuration}ms ease-in-out;
   left: ${(p) => (p.$show ? 0 : "-100%")};

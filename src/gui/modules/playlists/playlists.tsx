@@ -17,7 +17,7 @@ import { PATHS } from "src/router/path";
 
 const Separator = styled.div`
   width: 50%;
-  border-top: 1px solid ${(props) => props.theme.primary};
+  border-top: 1px solid ${(props) => props.theme.palette.secondary.dark};
   margin: 1em;
 `;
 
@@ -25,11 +25,11 @@ const Container = styled.div``;
 
 const Input = styled.input<{ width?: string }>`
   border: 1px solid;
-  border-color: ${(props) => props.theme.black};
-  background-color: ${(props) => props.theme.secondary};
+  border-color: ${(props) => props.theme.palette.common.black};
+  background-color: ${(props) => props.theme.palette.secondary.main};
   border-radius: 5px;
   padding: 0.5em;
-  color: ${(props) => props.theme.text.main};
+  color: ${(props) => props.theme.palette.text.primary};
   font-size: 1em;
   width: ${(props) => props.width || "auto"};
 `;

@@ -1,23 +1,6 @@
-import { DefaultTheme } from "styled-components";
+import { ThemeOptions, createTheme } from "@mui/material";
 
-export const defaultTheme: DefaultTheme = {
-  // Theme
-  white: "#ffffff",
-  black: "#333333",
-  active: "#0050c8",
-  primary: "#aad5ff",
-  secondary: "#ddeeff",
-  background: "#ffffff",
-  text: {
-    light: "#666666",
-    main: "#333333",
-  },
-  zIndex: {
-    player: 1000,
-    header: 3000,
-    popup: 9000,
-    loader: 9999,
-  },
+const commons: ThemeOptions = {
   video: {
     height: "90px",
   },
@@ -26,18 +9,32 @@ export const defaultTheme: DefaultTheme = {
   playerHeight: "270px",
   appMaxWidth: "1000px",
 };
-export const darkTheme: DefaultTheme = {
-  ...defaultTheme,
 
-  // Theme
-  white: "#ffffff",
-  black: "#333333",
-  active: "#ff6189",
-  primary: "#303030",
-  secondary: "#444444",
-  background: "#222222",
-  text: {
-    light: "#ffffff",
-    main: "#dddddd",
+const light: ThemeOptions = {
+  palette: {
+    mode: "light",
+    secondary: {
+      main: "#ddeeff",
+      dark: "#aad5ff",
+    },
   },
+  ...commons,
 };
+export const dark: ThemeOptions = {
+  palette: {
+    mode: "dark",
+    primary: {
+      main: "#ff6189", // = active
+    },
+    secondary: {
+      main: "#444444",
+    },
+    background: {
+      default: "#222222",
+    },
+  },
+
+  ...commons,
+};
+export const defaultTheme = createTheme(light);
+export const darkTheme = createTheme(dark);

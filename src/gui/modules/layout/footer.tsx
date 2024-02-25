@@ -4,7 +4,7 @@ import styled from "styled-components";
 
 export const FooterWrapper = styled.div`
   position: fixed;
-  z-index: ${(props) => props.theme.zIndex.player};
+  z-index: ${(props) => props.theme.zIndex.appBar};
   width: 100%;
   max-width: ${(props) => props.theme.appMaxWidth};
   display: grid;

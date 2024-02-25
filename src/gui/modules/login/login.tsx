@@ -6,6 +6,7 @@ import { ConfigContext, ConfigData } from "src/data/context/configProvider";
 import { login, token } from "src/init/youtubeOAuth";
 import logoUrl from "src/assets/logo192.png";
 import { useFirebase } from "src/hooks/useFirebase";
+import { Button } from "@mui/material";
 
 const YoutubeButton = styled.a`
   display: flex;
@@ -48,7 +49,7 @@ const MainContainer = styled.div`
 
 const Separator = styled.div`
   width: 50%;
-  border-top: 1px solid ${(props) => props.theme.primary};
+  border-top: 1px solid ${(props) => props.theme.palette.secondary.dark};
 `;
 
 const Container = styled.div<{ $alignSelf?: string }>`
@@ -57,11 +58,11 @@ const Container = styled.div<{ $alignSelf?: string }>`
 
 const Input = styled.input<{ width?: string }>`
   border: 1px solid;
-  border-color: ${(props) => props.theme.black};
-  background-color: ${(props) => props.theme.secondary};
+  border-color: ${(props) => props.theme.palette.common.black};
+  background-color: ${(props) => props.theme.palette.secondary.main};
   border-radius: 5px;
   padding: 0.5em;
-  color: ${(props) => props.theme.text.main};
+  color: ${(props) => props.theme.palette.text.primary};
   font-size: 1em;
   width: ${(props) => props.width || "auto"};
 `;

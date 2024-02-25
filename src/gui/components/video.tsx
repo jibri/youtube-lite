@@ -14,7 +14,7 @@ export type VisualAction = {
 const LinkWrapper = styled.a`
   padding-left: 5px;
   text-decoration: none;
-  color: ${(props) => props.theme.text.main};
+  color: ${(props) => props.theme.palette.text.primary};
   overflow: hidden;
 `;
 const VideoWrapper = styled.div<{ $height?: number; $videoWidth?: number; $highlight: boolean }>`
@@ -23,11 +23,10 @@ const VideoWrapper = styled.div<{ $height?: number; $videoWidth?: number; $highl
 
   height: ${(props) => `${props.$height}px`};
   background-color: ${(props) =>
-    props.$highlight ? props.theme.secondary : props.theme.background};
+    props.$highlight ? props.theme.palette.secondary.main : props.theme.palette.background.main};
   &:hover {
-    /* background-color: ${(props) => props.theme.secondary}; */
     ${LinkWrapper} {
-      color: ${(props) => props.theme.active};
+      color: ${(props) => props.theme.palette.primary.main};
     }
   }
 `;
@@ -50,8 +49,8 @@ const Time = styled.div`
   position: absolute;
   bottom: 2px;
   right: 2px;
-  color: ${(props) => props.theme.white};
-  background-color: ${(props) => props.theme.black};
+  color: ${(props) => props.theme.palette.common.white};
+  background-color: ${(props) => props.theme.palette.common.black};
 `;
 const Image = styled.img`
   display: block;
@@ -67,9 +66,9 @@ const ActionWrapper = styled.div`
 
   > * {
     margin: 0 10px;
-    color: ${(props) => props.theme.text.main};
+    color: ${(props) => props.theme.palette.text.primary};
     &:hover {
-      color: ${(props) => props.theme.active};
+      color: ${(props) => props.theme.palette.primary.main};
     }
   }
 `;

@@ -173,6 +173,10 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
     if (!playlistId || !token) {
       return;
     }
+
+    // On limite à 500 le nombre de video fetch.
+    const LIMIT = 500;
+    let totalFetched = 0;
     // Token de la page suivante. on va récupérer les videos tant qu'il n'est pas vide
     let pageToken: string | undefined;
     // Va contenir toutes les videos récupérées (pages par pages), et sera ajouté au state en une fois
@@ -190,6 +194,7 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
       const { items, nextPageToken } = response.data;
       const videos = await fetchVideos(items || []);
       if (videos) {
+        totalFetched += videos.length;
         const videosToAdd = videos.map((v) => ({
           playlistItem: items.find((i) => i.snippet?.resourceId?.videoId === v.id) || {},
           video: v,
@@ -206,7 +211,7 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
           } as Record<keyof PlaylistConfig, unknown>);
         }
       }
-      pageToken = nextPageToken;
+      pageToken = totalFetched >= LIMIT ? undefined : nextPageToken;
     } while (pageToken);
   }, [callYoutube, fb, fetchVideos, handleError, playlistId, userId]);
 

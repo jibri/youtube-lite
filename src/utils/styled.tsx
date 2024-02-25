@@ -15,17 +15,17 @@ export const Flex = styled.div<{
 `;
 
 export const button = css`
-  color: ${(props) => props.theme.text.main};
+  color: ${(props) => props.theme.palette.text.primary};
   text-align: center;
   height: 3em;
   line-height: 3em;
   font-weight: bold;
-  background-color: ${(props) => props.theme.primary};
+  background-color: ${(props) => props.theme.palette.secondary.dark};
   flex: 1 0 auto;
   cursor: pointer;
   &:hover {
-    border-color: ${(props) => props.theme.active};
-    color: ${(props) => props.theme.active};
+    border-color: ${(props) => props.theme.palette.primary.main};
+    color: ${(props) => props.theme.palette.primary.main};
   }
 `;
 export const ButtonLink = styled(NavLink).attrs({ activeClassName: "active" })`
@@ -34,8 +34,8 @@ export const ButtonLink = styled(NavLink).attrs({ activeClassName: "active" })`
   border-top: 2px solid transparent;
 
   &.active {
-    border-color: ${(props) => props.theme.active};
-    color: ${(props) => props.theme.active};
+    border-color: ${(props) => props.theme.palette.primary.main};
+    color: ${(props) => props.theme.palette.primary.main};
   }
 `;
 
@@ -45,15 +45,15 @@ export const ActionButton = styled.button<{
   background-color: transparent;
   padding: 0 10px;
   height: ${(p) => p.height};
-  color: ${(props) => props.theme.active};
+  color: ${(props) => props.theme.palette.primary.main};
   border: none;
   font-size: inherit;
   cursor: pointer;
   &:hover {
-    color: ${(props) => props.theme.text.main};
+    color: ${(props) => props.theme.palette.text.primary};
   }
   &:active {
-    color: ${(props) => props.theme.active};
+    color: ${(props) => props.theme.palette.primary.main};
   }
 `;
 export const VideoWrapper = styled.div`
@@ -62,5 +62,5 @@ export const VideoWrapper = styled.div`
 `;
 
 export const Text = styled.span`
-  color: ${(props) => props.theme.text.main};
+  color: ${(props) => props.theme.palette.text.primary};
 `;

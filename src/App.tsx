@@ -9,7 +9,7 @@ import PlaylistsProvider from "src/data/context/playlistsProvider";
 
 const GlobalStyle = createGlobalStyle`
   body {
-    background-color: ${(props) => props.theme.background};
+    background-color: ${(props) => props.theme.palette.background.default};
   }
 `;
 

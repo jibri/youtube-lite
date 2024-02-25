@@ -10,7 +10,7 @@ import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 
 const PlayerContainer = styled.div`
-  background-color: ${(props) => props.theme.background};
+  background-color: ${(props) => props.theme.palette.background.default};
 `;
 
 const IFrameWrapper = styled.div`
