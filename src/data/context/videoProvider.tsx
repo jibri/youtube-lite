@@ -77,7 +77,7 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
 
   const fetchVideos = useCallback(
     async (playlistItems: youtube.PlaylistItem[]) => {
-      if (!token) return;
+      if (!token || !playlistItems?.length) return;
       const response = await callYoutube(listVideos, playlistItems, token.access_token);
       if (!response.ok) return handleError(response.status, response.error);
       return response.data.items;

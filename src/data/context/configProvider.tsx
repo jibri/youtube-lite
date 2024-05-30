@@ -22,7 +22,7 @@ export interface ConfigData {
 
 const defaultData: ConfigData = {
   minDuration: 0,
-  maxAge: 0,
+  maxAge: 10,
   playlistId: "",
   autoAuth: false,
   useSwipe: false,

@@ -6,9 +6,8 @@ import { ConfigContext, ConfigData } from "src/data/context/configProvider";
 import { login, token } from "src/init/youtubeOAuth";
 import logoUrl from "src/assets/logo192.png";
 import { useFirebase } from "src/hooks/useFirebase";
-import { Button } from "@mui/material";
 
-const YoutubeButton = styled.a`
+const BigButton = styled(ActionButton)`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -21,7 +20,6 @@ const YoutubeButton = styled.a`
   max-width: 300px;
 
   text-decoration: none;
-  color: inherit;
 
   span {
     font-weight: bold;
@@ -140,7 +138,7 @@ function Login() {
             <Text>Max age video in feed (days) : </Text>
             <Input
               width="2em"
-              onBlur={(e) => updateConfig("maxAge", +e.target.value)}
+              onBlur={(e) => updateConfig("maxAge", +e.target.value || 100)}
               value={maxAgeInputValue}
               onChange={(e) => setMaxAgeInputValue(e.target.value)}
             />
@@ -170,13 +168,10 @@ function Login() {
           <Separator />
         </>
       )}
-      <ActionButton onClick={handleAuthClick}>
-        {userId ? "Sign out" : "Sign In/Authorize"}
-      </ActionButton>
-      <YoutubeButton href="http://youtube.com" target="_blank" rel="noopener noreferer">
+      <BigButton onClick={handleAuthClick}>
         <img src={logoUrl} width="100px" alt="Logo Youtube-lite" />
-        <Text>Go to Youtube</Text>
-      </YoutubeButton>
+        {userId ? "Sign out" : "Sign In"}
+      </BigButton>
       <Separator />
       <Container $alignSelf="end">
         <Text>version v{import.meta.env.VITE_VERSION}</Text>

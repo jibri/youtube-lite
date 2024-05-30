@@ -82,8 +82,8 @@ function Playlists() {
   };
 
   const addYtbPlaylistsToYtbLitePlaylists = async () => {
-    // on charge les playlists seulement si on a token et si on ne les à pas déjà chargé.
-    if (token && mesPlaylistsConfig.length) {
+    // on charge les playlists seulement si on a token.
+    if (token) {
       let nextToken: string | undefined;
       const myPlaylists: youtube.Playlist[] = [];
       do {
