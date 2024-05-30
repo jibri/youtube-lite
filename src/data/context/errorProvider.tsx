@@ -25,11 +25,16 @@ const ErrorProvider = ({ children }: React.PropsWithChildren) => {
               <ActionButton onClick={() => login(true)}>login</ActionButton>
             </>,
           );
-          setTimeout(() => setError(undefined), 5000);
+          setTimeout(() => setError(undefined), 10000);
         }
       } else {
-        setError(<Text>Error : {message || "erreur inconnue"}</Text>);
-        setTimeout(() => setError(undefined), 5000);
+        setError(
+          <>
+            <Text>Error : {message || "erreur inconnue"}</Text>
+            <ActionButton onClick={() => setError(undefined)}>close</ActionButton>
+          </>,
+        );
+        setTimeout(() => setError(undefined), 10000);
       }
     },
     [autoAuth],

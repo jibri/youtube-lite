@@ -53,7 +53,11 @@ function Feed() {
             token.access_token,
           );
           if (!response.ok) {
-            handleError(response.status, response.error);
+            const message =
+              response.status === 403
+                ? "You cannot add video to the current playlist. The current playlist must belong to your channel if you want to add videos."
+                : response.error;
+            handleError(response.status, message);
             return;
           }
         }
