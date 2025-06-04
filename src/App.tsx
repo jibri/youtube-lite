@@ -15,18 +15,18 @@ const GlobalStyle = createGlobalStyle`
 
 const App = () => (
   <BrowserRouter>
-    <ErrorProvider>
-      <LoginProvider>
-        <ConfigProvider>
+    <LoginProvider>
+      <ConfigProvider>
+        <ErrorProvider>
           <PlaylistsProvider>
             <MyThemeProvider>
               <GlobalStyle />
               <Home />
             </MyThemeProvider>
           </PlaylistsProvider>
-        </ConfigProvider>
-      </LoginProvider>
-    </ErrorProvider>
+        </ErrorProvider>
+      </ConfigProvider>
+    </LoginProvider>
   </BrowserRouter>
 );
 

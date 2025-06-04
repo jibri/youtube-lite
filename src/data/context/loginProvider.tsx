@@ -1,5 +1,4 @@
-import { createContext, useState, useEffect, useCallback, useContext } from "react";
-import { ErrorUpdaterContext } from "src/data/context/errorProvider";
+import { createContext, useState, useEffect, useCallback } from "react";
 import { fetchUserInfos, initClient, login, logout } from "src/init/youtubeOAuth";
 
 interface LoginData {
@@ -21,7 +20,6 @@ export const LoginContext = createContext<LoginData>(defaultData);
 const LoginProvider = ({ children }: React.PropsWithChildren) => {
   const [userId, setUserId] = useState<string>();
   const [loading, setLoading] = useState(0);
-  const handleError = useContext(ErrorUpdaterContext);
 
   const incLoading = useCallback((inc: number) => {
     // Petit délai sur le décrément pour permettre un chevauchement en cas d'appels chainés
@@ -31,10 +29,14 @@ const LoginProvider = ({ children }: React.PropsWithChildren) => {
 
   useEffect(() => {
     // on crée le client d'accès à l'api youtube
-    initClient(() => fetchUserInfos(setUserId, handleError));
+    initClient(() =>
+      fetchUserInfos(setUserId, () =>
+        alert("Erreur lors de la récupération des infos utilisateur"),
+      ),
+    );
     // Connexion auto
     login();
-  }, [handleError]);
+  }, []);
 
   const signout = () => {
     logout(() => setUserId(undefined));
