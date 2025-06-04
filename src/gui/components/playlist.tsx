@@ -1,11 +1,13 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import styled from "styled-components";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { ConfigContext } from "src/data/context/configProvider";
-import CurrentPlaylist from "src/gui/components/currentPlaylist";
 import { PlaylistYtbLite } from "src/utils/types";
-import { IconButton } from "@mui/material";
-import { MoreVert } from "@mui/icons-material";
+import { useFirebase } from "src/hooks/useFirebase";
+import { LoginContext } from "src/data/context/loginProvider";
+import { ActionWrapper } from "src/utils/styled";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export type VisualAction = {
   action: (video: youtube.Playlist) => void;
@@ -52,37 +54,11 @@ const Image = styled.img`
   width: ${thumbnailWidth};
   height: ${thumbnailHeight};
 `;
-const ActionWrapper = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-const Animated = styled.div<{ show: boolean }>`
-  height: ${(props) => (props.show ? "200px" : 0)};
-  overflow: hidden;
-  transition: height 0.5s;
-  position: absolute;
-  right: 1em;
-  transform: translate(0, calc(50% + 1.5em));
-`;
-
-const Menu = styled.div`
-  background-color: ${(props) => props.theme.palette.secondary.main};
-  border-radius: 0.5em;
-  padding: 1em;
-`;
-const Overlay = styled.div`
-  position: fixed;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #00000033;
-`;
 
 const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: () => void }) => {
   const { playlistId } = useContext(ConfigContext);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const { userId } = useContext(LoginContext);
+  const fb = useFirebase();
   const thumbnail =
     playlist.playlist.snippet?.thumbnails?.default || playlist.playlist.snippet?.thumbnails?.medium;
 
@@ -91,8 +67,10 @@ const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: (
   const title = playlist.playlist.snippet?.title || "";
   const titleEllipsis = title.length > 30 ? title.substring(0, 30).concat("...") : title;
 
-  const openMenu: React.MouseEventHandler = () => {
-    setMenuOpen(true);
+  const deletePlaylist = () => {
+    if (userId && fb) {
+      fb.deleteDoc(fb.doc(fb.db, "playlists", userId, "playlists", playlistId));
+    }
   };
 
   return (
@@ -102,21 +80,8 @@ const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: (
         <Author title={artists}>{artistsEllipsis}</Author>
         <Title title={title}>{titleEllipsis}</Title>
       </ContentWrapper>
-      <ActionWrapper onClick={(e) => e.stopPropagation()}>
-        <IconButton onClick={openMenu}>
-          {/* $highlight={playlistId === playlist.playlist.id} */}
-          {/* <FontAwesomeIcon icon={faEllipsisVertical} fixedWidth /> */}
-          {/* FIXME gestion thme */}
-          <MoreVert />
-        </IconButton>
-        {menuOpen && <Overlay onClick={() => setMenuOpen(false)} />}
-        <Animated show={menuOpen}>
-          {menuOpen && (
-            <Menu>
-              <CurrentPlaylist playlist={playlist.config} />
-            </Menu>
-          )}
-        </Animated>
+      <ActionWrapper>
+        <FontAwesomeIcon icon={faTrash} onClick={deletePlaylist} size="xs" />
       </ActionWrapper>
     </VideoWrapper>
   );

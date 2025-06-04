@@ -56,6 +56,21 @@ export const ActionButton = styled.button<{
     color: ${(props) => props.theme.palette.primary.main};
   }
 `;
+export const ActionWrapper = styled.div`
+  /* width: ${(props) => props.theme.video.height}; */
+  font-size: ${(props) => `calc(${props.theme.video.height} - 50px)`};
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  > * {
+    margin: 0 10px;
+    color: ${(props) => props.theme.palette.text.primary};
+    &:hover {
+      color: ${(props) => props.theme.palette.primary.main};
+    }
+  }
+`;
 export const VideoWrapper = styled.div`
   position: relative;
   cursor: pointer;

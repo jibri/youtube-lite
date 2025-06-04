@@ -5,6 +5,7 @@ import { VideoContext } from "src/data/context/videoProvider";
 import { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getTimeDisplay } from "src/utils/utils";
+import { ActionWrapper } from "src/utils/styled";
 
 export type VisualAction = {
   action: (video: VideoItem) => void;
@@ -56,21 +57,6 @@ const Image = styled.img`
   display: block;
   width: 120px;
   height: 90px;
-`;
-const ActionWrapper = styled.div`
-  /* width: ${(props) => props.theme.video.height}; */
-  font-size: ${(props) => `calc(${props.theme.video.height} - 50px)`};
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  > * {
-    margin: 0 10px;
-    color: ${(props) => props.theme.palette.text.primary};
-    &:hover {
-      color: ${(props) => props.theme.palette.primary.main};
-    }
-  }
 `;
 
 const Video = ({ video, actions }: { video: VideoItem; actions: VisualAction[] }) => {
