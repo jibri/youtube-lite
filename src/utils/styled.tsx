@@ -16,9 +16,13 @@ export const Flex = styled.div<{
 
 export const button = css`
   color: ${(props) => props.theme.palette.text.primary};
-  text-align: center;
+  /* text-align: center; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   height: 3em;
-  line-height: 3em;
+  /* line-height: 3em; */
   font-weight: bold;
   background-color: ${(props) => props.theme.palette.secondary.dark};
   flex: 1 0 auto;
@@ -28,6 +32,7 @@ export const button = css`
     color: ${(props) => props.theme.palette.primary.main};
   }
 `;
+
 export const ButtonLink = styled(NavLink).attrs({ activeClassName: "active" })`
   ${button}
   text-decoration: none;

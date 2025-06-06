@@ -1,3 +1,4 @@
+import { PlaylistPlay, RssFeed, Settings, Subscriptions } from "@mui/icons-material";
 import { PATHS } from "src/router/path";
 import { ButtonLink } from "src/utils/styled";
 import styled from "styled-components";
@@ -19,10 +20,18 @@ export const FooterWrapper = styled.div`
 
 const Footer = () => (
   <FooterWrapper>
-    <ButtonLink to={PATHS.FEED}>Feed</ButtonLink>
-    <ButtonLink to={PATHS.PLAYLIST}>Current playlist</ButtonLink>
-    <ButtonLink to={PATHS.PLAYLISTS}>All playlists</ButtonLink>
-    <ButtonLink to={PATHS.PARAMETERS}>Parameters</ButtonLink>
+    <ButtonLink to={PATHS.FEED}>
+      <RssFeed />
+    </ButtonLink>
+    <ButtonLink to={PATHS.PLAYLIST}>
+      <PlaylistPlay />
+    </ButtonLink>
+    <ButtonLink to={PATHS.PLAYLISTS}>
+      <Subscriptions />
+    </ButtonLink>
+    <ButtonLink to={PATHS.PARAMETERS}>
+      <Settings />
+    </ButtonLink>
   </FooterWrapper>
 );
 export default Footer;

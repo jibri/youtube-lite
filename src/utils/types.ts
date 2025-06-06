@@ -16,3 +16,10 @@ export type PlaylistYtbLite = {
   playlist: youtube.Playlist;
   config: PlaylistConfig;
 };
+
+export type VideoStatus = {
+  /** Video Id */
+  id: string;
+  /** Là où on est rendu en sec */
+  timer: number;
+};
