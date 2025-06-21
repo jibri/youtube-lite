@@ -13,7 +13,6 @@ export enum HeaderComponents {
   SHUFFLE_BTN = "SHUFFLE_BTN",
   PREV_BTN = "PREV_BTN",
   NEXT_BTN = "NEXT_BTN",
-  SAVE_TIMER_BTN = "SAVE_TIMER_BTN",
   CLOSE_BTN = "CLOSE_BTN",
 }
 export type HeaderComponentsType = { [key in PATHS]: HeaderComponents[] };

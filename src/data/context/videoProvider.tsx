@@ -220,7 +220,7 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
   };
 
   const playVideo = useCallback(
-    (video?: VideoItem) => {
+    async (video?: VideoItem) => {
       setPlayedVideosIdx(
         video?.video.id
           ? (old) => {
@@ -230,10 +230,18 @@ const VideoProvider = ({ children }: React.PropsWithChildren) => {
             }
           : [],
       );
+      if (userId && video?.video.id) {
+        const videoStats = await fb?.getDoc(
+          fb.doc(fb.db, "videos", userId, "videos", video?.video.id),
+        );
+        if (videoStats?.exists()) {
+          video.stats = videoStats.data() as VideoItem["stats"];
+        }
+      }
       setVideoPlaying(video);
       setDescriptionOpened(false);
     },
-    [playlistVideos],
+    [fb, playlistVideos, userId],
   );
   const nextVideo = useCallback(() => {
     const currentPlaylist = playlistId ? playlists.find((pl) => pl.id === playlistId) : undefined;

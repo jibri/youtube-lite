@@ -1,7 +1,9 @@
 export interface VideoItem {
   playlistItem: youtube.PlaylistItem;
   video: youtube.Video;
+  stats?: VideoStats;
 }
+export type VideoStats = { timer: number };
 
 export type PlaylistConfig = {
   id: string;

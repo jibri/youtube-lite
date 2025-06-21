@@ -6,7 +6,6 @@ import {
   faForwardStep,
   faPlay,
   faXmark,
-  faStopwatch,
   faRepeat,
   faShuffle,
   faNewspaper,
@@ -149,14 +148,6 @@ const Header = () => {
             return (
               <IconButton key="NEXT_BTN" onClick={nextVideo}>
                 <FontAwesomeIcon icon={faForwardStep} />
-              </IconButton>
-            );
-
-          // FIXME action d'enregistrer le timer courant de la video en lecture
-          case HeaderComponents.SAVE_TIMER_BTN:
-            return (
-              <IconButton key="SAVE_TIMER_BTN" onClick={() => null}>
-                <FontAwesomeIcon icon={faStopwatch} />
               </IconButton>
             );
           default:

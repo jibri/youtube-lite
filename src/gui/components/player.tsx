@@ -1,6 +1,6 @@
-import React, { useCallback, useContext, useEffect, useRef } from "react";
+import React, { useCallback, useContext, useEffect, useState } from "react";
 import styled from "styled-components";
-import { VideoItem } from "src/utils/types";
+import { VideoItem, VideoStats } from "src/utils/types";
 import { VideoContext } from "src/data/context/videoProvider";
 import { Text } from "src/utils/styled";
 import { insertPlaylistItem } from "src/utils/youtubeApi";
@@ -8,6 +8,8 @@ import { ConfigContext } from "src/data/context/configProvider";
 import { token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
+import { useFirebase } from "src/hooks/useFirebase";
+import { LoginContext } from "src/data/context/loginProvider";
 
 const PlayerContainer = styled.div`
   background-color: ${(props) => props.theme.palette.background.default};
@@ -75,14 +77,16 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
 };
 
 const Player = ({ video }: { video: VideoItem }) => {
-  const player = useRef<YT.Player>();
+  const [player, setPlayer] = useState<YT.Player>();
+  const { userId } = useContext(LoginContext);
   const { playlistId } = useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
   const { descriptionOpened, nextVideo } = useContext(VideoContext);
   const callYoutube = useYoutubeService();
+  const fb = useFirebase();
 
   useEffect(() => {
-    if (!player.current) {
+    if (!player) {
       new window.YT.Player(`video_player`, {
         height: "100%",
         width: "100%",
@@ -90,19 +94,36 @@ const Player = ({ video }: { video: VideoItem }) => {
         playerVars: {
           autoplay: 1,
           rel: 0,
+          start: Math.round(video.stats?.timer || 0),
         },
         events: {
-          onReady: (event) => (player.current = event.target),
+          onReady: (event) => setPlayer(event.target),
           onStateChange: (event) => {
+            console.log("Player state change", event.target);
             // Fin de video, on en charge une autre random
             if (event.data === 0) nextVideo();
+            // paused
+            if (event.data === 2) {
+              if (fb && userId && video?.video.id) {
+                fb.setDoc(
+                  fb.doc(fb.db, "videos", userId, "videos", video?.video.id),
+                  {
+                    // @ts-expect-error TS ici, mais c'est le modèle qui n'est pas bon
+                    timer: event.target.playerInfo.currentTime,
+                  } as Partial<VideoStats>,
+                  {
+                    merge: true,
+                  },
+                );
+              }
+            }
           },
           // sur une erreur, on tente de jouer la suivante
           onError: nextVideo,
         },
       });
     }
-  }, [nextVideo, video.video.id]);
+  }, [nextVideo, video, player, fb, userId]);
 
   const addToWatchlist = useCallback(
     async (videoId: string) => {
