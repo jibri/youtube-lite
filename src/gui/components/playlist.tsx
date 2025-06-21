@@ -6,7 +6,7 @@ import { PlaylistYtbLite } from "src/utils/types";
 import { useFirebase } from "src/hooks/useFirebase";
 import { LoginContext } from "src/data/context/loginProvider";
 import { ActionWrapper } from "src/utils/styled";
-import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faStar, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export type VisualAction = {
@@ -32,6 +32,8 @@ const VideoWrapper = styled.div<{
   background-color: ${(props) =>
     props.$highlight ? props.theme.palette.secondary.main : props.theme.palette.background.main};
   &:hover {
+    cursor: pointer;
+
     ${ContentWrapper} {
       color: ${(props) => props.theme.palette.primary.main};
     }
@@ -54,6 +56,10 @@ const Image = styled.img`
   width: ${thumbnailWidth};
   height: ${thumbnailHeight};
 `;
+const ActivableIcon = styled(FontAwesomeIcon)<{ $highlight: boolean }>`
+  color: ${(props) =>
+    props.$highlight ? props.theme.palette.primary.main : props.theme.palette.text.primary};
+`;
 
 const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: () => void }) => {
   const { playlistId } = useContext(ConfigContext);
@@ -69,18 +75,32 @@ const Playlist = ({ playlist, onClick }: { playlist: PlaylistYtbLite; onClick: (
 
   const deletePlaylist = () => {
     if (userId && fb) {
-      fb.deleteDoc(fb.doc(fb.db, "playlists", userId, "playlists", playlistId));
+      fb.deleteDoc(fb.doc(fb.db, "playlists", userId, "playlists", playlist.config.id));
+    }
+  };
+
+  const updatePlaylistFavorite = () => {
+    if (userId && fb) {
+      fb.updateDoc(fb.doc(fb.db, "playlists", userId, "playlists", playlist.config.id), {
+        fav: !playlist.config.fav,
+      });
     }
   };
 
   return (
-    <VideoWrapper $highlight={playlistId === playlist.playlist.id} onClick={onClick} role="button">
-      <Image alt="youtube thumbnail" loading="lazy" src={thumbnail?.url} />
-      <ContentWrapper>
+    <VideoWrapper $highlight={playlistId === playlist.config.id} role="button">
+      <Image alt="youtube thumbnail" loading="lazy" src={thumbnail?.url} onClick={onClick} />
+      <ContentWrapper onClick={onClick}>
         <Author title={artists}>{artistsEllipsis}</Author>
         <Title title={title}>{titleEllipsis}</Title>
       </ContentWrapper>
       <ActionWrapper>
+        <ActivableIcon
+          icon={faStar}
+          $highlight={playlist.config.fav}
+          onClick={updatePlaylistFavorite}
+          size="xs"
+        />
         <FontAwesomeIcon icon={faTrash} onClick={deletePlaylist} size="xs" />
       </ActionWrapper>
     </VideoWrapper>

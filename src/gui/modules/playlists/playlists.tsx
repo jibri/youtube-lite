@@ -76,6 +76,7 @@ function Playlists() {
         random: false,
         loop: false,
         mine,
+        fav: false,
       } satisfies PlaylistConfig);
       setPlaylistIdValue("");
     }
@@ -128,11 +129,29 @@ function Playlists() {
 
         setMesPlaylistsYtbLite(
           uniqBy(myPlaylists, "id")
-            .sort((p1, p2) => (p1.snippet?.title || "").localeCompare(p2.snippet?.title || ""))
             .map((pl) => ({
               playlist: pl,
               config: mesPlaylistsConfig.find((cfg) => cfg.id === pl.id)!,
-            })),
+            }))
+            .sort((p1, p2) => {
+              // En premier on trie par favoris
+              if (p1.config.fav !== p2.config.fav) {
+                return p1.config.fav ? -1 : 1;
+              }
+              // Ensuite on trie par artistes
+              if (p1.config.artists && p1.config.artists[0]) {
+                if (p2.config.artists && p2.config.artists[0]) {
+                  return p1.config.artists[0].localeCompare(p2.config.artists[0]);
+                }
+                return -1;
+              } else if (p2.config.artists && p2.config.artists[0]) {
+                return 1;
+              }
+              // Enfin on trie par titre de la playlist
+              return (p1.playlist.snippet?.title || "").localeCompare(
+                p2.playlist.snippet?.title || "",
+              );
+            }),
         );
       }
     };

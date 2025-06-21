@@ -12,6 +12,7 @@ export type PlaylistConfig = {
   loop: boolean;
   mine: boolean;
   artists?: string[];
+  fav: boolean;
 };
 
 export type PlaylistYtbLite = {
