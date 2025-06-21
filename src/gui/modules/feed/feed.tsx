@@ -17,6 +17,7 @@ import { token } from "src/init/youtubeOAuth";
 import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 import { useFirebase } from "src/hooks/useFirebase";
+import usePlaylists from "src/hooks/usePlaylists";
 
 function Feed() {
   const [removing, setRemoving] = useState<string[]>([]);
@@ -29,6 +30,12 @@ function Feed() {
   const reactSwipeEl = useRef<ReactSwipe>(null);
   const callYoutube = useYoutubeService();
   const fb = useFirebase();
+  const playlistConfig = usePlaylists();
+
+  const currentPlaylistConfig = useMemo(
+    () => (playlistId ? playlistConfig.find((pl) => pl.id === playlistId) : undefined),
+    [playlistId, playlistConfig],
+  );
 
   const shouldNotSwipe = !useSwipe || matchesLageScreen;
 
@@ -97,9 +104,11 @@ function Feed() {
   const videoActions = useMemo(() => {
     const actions: VisualAction[] = [];
     if (shouldNotSwipe) actions.push(...swipeActions);
-    actions.push({ action: (video) => addToWatchlist(video), actionIcon: faPlus });
+    if (currentPlaylistConfig?.mine) {
+      actions.push({ action: (video) => addToWatchlist(video), actionIcon: faPlus });
+    }
     return actions;
-  }, [addToWatchlist, shouldNotSwipe, swipeActions]);
+  }, [addToWatchlist, shouldNotSwipe, swipeActions, currentPlaylistConfig]);
 
   return (
     <>

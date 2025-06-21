@@ -27,9 +27,13 @@ import usePlaylists from "src/hooks/usePlaylists";
 // nb request (if nb subs = 50) : 1 => 1 => 50 => 50 = 102 request
 
 interface VideoData {
+  /** Les videos présentes dans l'onglet feed */
   feedVideos: VideoItem[];
+  /** La playlist en cours */
   playlistVideos: VideoItem[];
+  /** La video en cours de lecture */
   videoPlaying?: VideoItem;
+  /** si la description de la video est ouverte */
   descriptionOpened: boolean;
   setDescriptionOpened: React.Dispatch<React.SetStateAction<boolean>>;
   fetchWatchList: (pageToken?: string) => void;
