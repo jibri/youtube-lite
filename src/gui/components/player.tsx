@@ -10,6 +10,7 @@ import useYoutubeService from "src/hooks/useYoutubeService";
 import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 import { useFirebase } from "src/hooks/useFirebase";
 import { LoginContext } from "src/data/context/loginProvider";
+import Notification from "src/gui/components/notification";
 
 const PlayerContainer = styled.div`
   background-color: ${(props) => props.theme.palette.background.default};
@@ -78,6 +79,7 @@ const formatDescription = (text?: string, handleYtbLink?: (videoId: string) => v
 
 const Player = ({ video }: { video: VideoItem }) => {
   const [player, setPlayer] = useState<YT.Player>();
+  const [openNotifSaved, setOpenNotifSaved] = useState(false);
   const { userId } = useContext(LoginContext);
   const { playlistId } = useContext(ConfigContext);
   const handleError = useContext(ErrorUpdaterContext);
@@ -98,14 +100,14 @@ const Player = ({ video }: { video: VideoItem }) => {
         },
         events: {
           onReady: (event) => setPlayer(event.target),
-          onStateChange: (event) => {
+          onStateChange: async (event) => {
             console.log("Player state change", event.target);
             // Fin de video, on en charge une autre random
             if (event.data === 0) nextVideo();
             // paused
             if (event.data === 2) {
               if (fb && userId && video?.video.id) {
-                fb.setDoc(
+                await fb.setDoc(
                   fb.doc(fb.db, "videos", userId, "videos", video?.video.id),
                   {
                     // @ts-expect-error TS ici, mais c'est le modèle qui n'est pas bon
@@ -115,6 +117,8 @@ const Player = ({ video }: { video: VideoItem }) => {
                     merge: true,
                   },
                 );
+                setOpenNotifSaved(true);
+                setTimeout(() => setOpenNotifSaved(false), 2000);
               }
             }
           },
@@ -152,6 +156,7 @@ const Player = ({ video }: { video: VideoItem }) => {
       <Description open={descriptionOpened}>
         <Text>{formatDescription(video.video.snippet?.description, addToWatchlist)}</Text>
       </Description>
+      <Notification show={openNotifSaved}>Progression saved</Notification>
     </PlayerContainer>
   );
 };
