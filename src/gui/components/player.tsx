@@ -156,7 +156,9 @@ const Player = ({ video }: { video: VideoItem }) => {
       <Description open={descriptionOpened}>
         <Text>{formatDescription(video.video.snippet?.description, addToWatchlist)}</Text>
       </Description>
-      <Notification show={openNotifSaved}>Progression saved</Notification>
+      <Notification show={openNotifSaved}>
+        <Text>Progression saved</Text>
+      </Notification>
     </PlayerContainer>
   );
 };
