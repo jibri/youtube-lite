@@ -101,7 +101,7 @@ const Player = ({ video }: { video: VideoItem }) => {
         events: {
           onReady: (event) => setPlayer(event.target),
           onStateChange: async (event) => {
-            console.log("Player state change", event.target);
+            console.log("Player state change", event);
             // Fin de video, on en charge une autre random
             if (event.data === 0) nextVideo();
             // paused
