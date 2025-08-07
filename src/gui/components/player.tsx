@@ -106,6 +106,7 @@ const Player = ({ video }: { video: VideoItem }) => {
             if (event.data === 0) nextVideo();
             // paused
             if (event.data === 2) {
+              console.log("Player state paused", video?.video.id, userId, fb);
               if (fb && userId && video?.video.id) {
                 await fb.setDoc(
                   fb.doc(fb.db, "videos", userId, "videos", video?.video.id),
