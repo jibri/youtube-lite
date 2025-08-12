@@ -89,7 +89,7 @@ const Player = ({ video }: { video: VideoItem }) => {
 
   useEffect(() => {
     console.log("useeffect", player, video?.video.id, userId, fb);
-    if (!player) {
+    if (!player && video?.video.id && fb && userId) {
       console.log("useeffect redefine player", video?.video.id, userId, fb);
       new window.YT.Player(`video_player`, {
         height: "100%",
