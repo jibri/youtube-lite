@@ -10,6 +10,8 @@ import {
   faShuffle,
   faNewspaper,
   faRotateRight,
+  faFloppyDisk,
+  faPause,
 } from "@fortawesome/free-solid-svg-icons";
 import { VideoContext } from "src/data/context/videoProvider";
 import {
@@ -136,6 +138,23 @@ const Header = () => {
                 }
               >
                 <FontAwesomeIcon icon={faShuffle} />
+              </ActivableButton>
+            );
+          case HeaderComponents.SAVE_ON_PAUSE_BTN:
+            return (
+              <ActivableButton
+                key="SAVE_ON_PAUSE_BTN"
+                $active={playlists.find((pl) => pl.id === playlistId)?.saveOnPause || false}
+                onClick={() =>
+                  updatePlaylist({
+                    saveOnPause: !playlists.find((pl) => pl.id === playlistId)?.saveOnPause,
+                  })
+                }
+              >
+                <span className="fa-layers fa-lg">
+                  <FontAwesomeIcon icon={faFloppyDisk} />
+                  <FontAwesomeIcon icon={faPause} transform="shrink-6 right-6 down-6" />
+                </span>
               </ActivableButton>
             );
           case HeaderComponents.PREV_BTN:

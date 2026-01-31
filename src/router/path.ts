@@ -14,6 +14,7 @@ export enum HeaderComponents {
   PREV_BTN = "PREV_BTN",
   NEXT_BTN = "NEXT_BTN",
   CLOSE_BTN = "CLOSE_BTN",
+  SAVE_ON_PAUSE_BTN = "SAVE_ON_PAUSE_BTN",
 }
 export type HeaderComponentsType = { [key in PATHS]: HeaderComponents[] };
 export const defaultHeaderComponents = {
@@ -23,6 +24,7 @@ export const defaultHeaderComponents = {
     HeaderComponents.AUTOPLAY_BTN,
     HeaderComponents.LOOP_BTN,
     HeaderComponents.SHUFFLE_BTN,
+    HeaderComponents.SAVE_ON_PAUSE_BTN,
   ],
   [PATHS.PLAYLISTS]: [],
   [PATHS.PARAMETERS]: [],
@@ -41,6 +43,7 @@ export const playingHeaderComponents = {
     HeaderComponents.AUTOPLAY_BTN,
     HeaderComponents.LOOP_BTN,
     HeaderComponents.SHUFFLE_BTN,
+    HeaderComponents.SAVE_ON_PAUSE_BTN,
     HeaderComponents.PREV_BTN,
     HeaderComponents.NEXT_BTN,
     HeaderComponents.CLOSE_BTN,

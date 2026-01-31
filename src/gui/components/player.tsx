@@ -11,6 +11,7 @@ import { ErrorUpdaterContext } from "src/data/context/errorProvider";
 import { useFirebase } from "src/hooks/useFirebase";
 import { LoginContext } from "src/data/context/loginProvider";
 import Notification from "src/gui/components/notification";
+import usePlaylists from "src/hooks/usePlaylists";
 
 const PlayerContainer = styled.div`
   background-color: ${(props) => props.theme.palette.background.default};
@@ -86,6 +87,9 @@ const Player = ({ video }: { video: VideoItem }) => {
   const { descriptionOpened, nextVideo } = useContext(VideoContext);
   const callYoutube = useYoutubeService();
   const fb = useFirebase();
+  const playlists = usePlaylists();
+
+  const playlistConfig = playlists.find((pl) => pl.id === playlistId);
 
   useEffect(() => {
     console.log("useeffect", player, video?.video.id, userId, fb);
@@ -98,7 +102,7 @@ const Player = ({ video }: { video: VideoItem }) => {
         playerVars: {
           autoplay: 1,
           rel: 0,
-          start: Math.round(video.stats?.timer || 0),
+          start: playlistConfig?.saveOnPause ? Math.round(video.stats?.timer || 0) : 0,
         },
         events: {
           onReady: (event) => setPlayer(event.target),
@@ -109,7 +113,7 @@ const Player = ({ video }: { video: VideoItem }) => {
             // paused
             if (event.data === 2) {
               console.log("Player state paused", video?.video.id, userId, fb);
-              if (fb && userId && video?.video.id) {
+              if (fb && userId && video?.video.id && playlistConfig?.saveOnPause) {
                 await fb.setDoc(
                   fb.doc(fb.db, "videos", userId, "videos", video?.video.id),
                   {
@@ -130,7 +134,7 @@ const Player = ({ video }: { video: VideoItem }) => {
         },
       });
     }
-  }, [nextVideo, video, player, fb, userId]);
+  }, [nextVideo, video, player, fb, userId, playlistConfig]);
 
   const addToWatchlist = useCallback(
     async (videoId: string) => {

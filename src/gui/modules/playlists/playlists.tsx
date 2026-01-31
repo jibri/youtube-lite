@@ -77,6 +77,7 @@ function Playlists() {
         loop: false,
         mine,
         fav: false,
+        saveOnPause: false,
       } satisfies PlaylistConfig);
       setPlaylistIdValue("");
     }

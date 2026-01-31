@@ -13,6 +13,8 @@ export type PlaylistConfig = {
   mine: boolean;
   artists?: string[];
   fav: boolean;
+  /** si on enregistre le playtime de la video au clic sur pause */
+  saveOnPause: boolean;
 };
 
 export type PlaylistYtbLite = {
