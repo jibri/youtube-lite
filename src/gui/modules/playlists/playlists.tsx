@@ -23,7 +23,7 @@ const Separator = styled.div`
 
 const Container = styled.div``;
 
-const Input = styled.input<{ width?: string }>`
+const Input = styled.input<{ width?: string; margin?: string }>`
   border: 1px solid;
   border-color: ${(props) => props.theme.palette.common.black};
   background-color: ${(props) => props.theme.palette.secondary.main};
@@ -32,10 +32,12 @@ const Input = styled.input<{ width?: string }>`
   color: ${(props) => props.theme.palette.text.primary};
   font-size: 1em;
   width: ${(props) => props.width || "auto"};
+  margin: ${(props) => props.margin || "auto"};
 `;
 
 function Playlists() {
   const [playlistIdValue, setPlaylistIdValue] = useState("");
+  const [searchString, setSearchString] = useState("");
 
   // Playlist youtube gérées par youtube-lite (n'appartienne pas forcément au compte youtube) (info vient de youtube)
   const [mesPlaylistsYtbLite, setMesPlaylistsYtbLite] = useState<PlaylistYtbLite[]>([]);
@@ -164,17 +166,39 @@ function Playlists() {
       {userId && (
         <>
           <Container>
+            <label>
+              <Input
+                value={searchString}
+                placeholder="Search"
+                aria-label="Search"
+                onChange={(e) => setSearchString(e.target.value)}
+                width="90%"
+                margin="0 2%"
+              />
+            </label>
+          </Container>
+          <Container>
             <div>
-              {mesPlaylistsYtbLite.map((pl) => (
-                <Playlist
-                  key={pl.playlist.id}
-                  playlist={pl}
-                  onClick={() => {
-                    updateConfig("playlistId", pl.playlist.id);
-                    history.push(PATHS.PLAYLIST);
-                  }}
-                />
-              ))}
+              {mesPlaylistsYtbLite
+                .filter(
+                  (pl) =>
+                    pl.playlist.snippet?.title
+                      ?.toLowerCase()
+                      .includes(searchString.toLowerCase()) ||
+                    pl.config.artists?.some((artist) =>
+                      artist.toLowerCase().includes(searchString.toLowerCase()),
+                    ),
+                )
+                .map((pl) => (
+                  <Playlist
+                    key={pl.playlist.id}
+                    playlist={pl}
+                    onClick={() => {
+                      updateConfig("playlistId", pl.playlist.id);
+                      history.push(PATHS.PLAYLIST);
+                    }}
+                  />
+                ))}
             </div>
           </Container>
           <Separator />
